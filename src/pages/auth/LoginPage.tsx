@@ -63,7 +63,7 @@ const LoginPage = () => {
                             label="Email"
                             placeholder="nhập email của bạn"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={setEmail}
                             required
                             error={error && !email ? "Email là bắt buộc" : ""}
                         />
@@ -73,7 +73,7 @@ const LoginPage = () => {
                             label="Mật khẩu"
                             placeholder="nhập mật khẩu của bạn"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={setPassword}
                             required
                             error={error && !password ? "Mật khẩu là bắt buộc" : ""}
                         />

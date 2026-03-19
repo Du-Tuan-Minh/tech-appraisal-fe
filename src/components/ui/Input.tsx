@@ -1,6 +1,7 @@
-type Props = React.InputHTMLAttributes<HTMLInputElement> & {
+type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
     label?: string;
     error?: string;
+    onChange?: (value: string) => void;
 };
 
 const Input = ({
@@ -8,6 +9,8 @@ const Input = ({
     label,
     error,
     required,
+    onChange,
+    value,
     ...props
 }: Props) => {
 
@@ -15,6 +18,12 @@ const Input = ({
         "w-full px-4 py-2 rounded-lg border bg-dark-800 text-white border-dark-700 placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500";
 
     const errorClasses = error ? "border-red-500 focus:ring-red-500" : "";
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (onChange) {
+            onChange(e.target.value);
+        }
+    };
 
     return (
         <div className={`space-y-1 ${className}`}>
@@ -27,6 +36,8 @@ const Input = ({
 
             <input
                 className={`${baseClasses} ${errorClasses}`}
+                value={value}
+                onChange={handleChange}
                 {...props}
             />
 
