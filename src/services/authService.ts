@@ -1,5 +1,5 @@
 import axiosClient from "./axiosClient";
-import { API_ENDPOINTS } from "../config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { LoginRequest, LoginResponse, UserCreateDto, UserResponseDto } from "../types/user";
 
 export const login = async (data: LoginRequest) => {

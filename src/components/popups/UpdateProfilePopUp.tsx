@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import Button from "../ui/Button";
-import Input from "../ui/Input";
-import Form from "../ui/Form";
-import PopUp from "../ui/PopUp";
-import { updateProfile } from "../../services/userService";
-import type { UserResponseDto, UpdateProfileDto } from "../../types/user";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Form from "@/components/ui/Form";
+import PopUp from "@/components/ui/PopUp";
+import { updateProfile } from "@/services/userService";
+import type { UserResponseDto, UpdateProfileDto } from "@/types/user";
 
 type Props = {
     isOpen: boolean;

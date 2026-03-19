@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import Card from "../../components/ui/Card";
-import Form from "../../components/ui/Form";
-import { register } from "../../services/authService";
-import type { UserCreateDto } from "../../types/user";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Card from "@/components/ui/Card";
+import Form from "@/components/ui/Form";
+import { register } from "@/services/authService";
+import type { UserCreateDto } from "@/types/user";
 
 const RegisterPage = () => {
     const navigate = useNavigate();

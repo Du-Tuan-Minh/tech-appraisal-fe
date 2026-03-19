@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile } from "../../services/userService";
-import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
-import { useToast } from "../../components/ui/ToastContext";
-import ChangePasswordPopUp from "../../components/popups/ChangePasswordPopUp";
-import UpdateProfilePopUp from "../../components/popups/UpdateProfilePopUp";
-import { UserRole } from "../../constants/enum/UserRole";
-import type { UserResponseDto } from "../../types/user";
+import { getProfile } from "@/services/userService";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { useToast } from "@/components/ui/ToastContext";
+import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
+import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
+import { UserRole } from "@/constants/enum/UserRole";
+import type { UserResponseDto } from "@/types/user";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -73,7 +73,7 @@ const ProfilePage = () => {
                         <h2 className="text-xl font-bold text-white mb-6">Tài Khoản</h2>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{getRoleLabel(userData.role)}</span></div>
-                            <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">Hoạt động</span></div>
+                            <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">{userData.isActive ? "Hoạt động" : "Không hoạt động"}</span></div>
                         </div>
                         <Button variant="outline" className="w-full mt-10" onClick={() => setIsPassOpen(true)}>Đổi mật khẩu</Button>
                     </Card>

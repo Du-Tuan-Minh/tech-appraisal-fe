@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import type { ToastProps, ToastVariant } from "../../components/ui/Toast";
+import type { ToastProps, ToastVariant } from "@/components/ui/Toast";
 
 const ToastContext = createContext<any>(null);
 

@@ -1,5 +1,5 @@
 import axiosClient from "./axiosClient";
-import { API_ENDPOINTS } from "../config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto } from "../types/user";
 
 export const getProfile = async () => {

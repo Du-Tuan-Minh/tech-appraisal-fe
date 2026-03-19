@@ -1,4 +1,4 @@
-import { UserRole } from "../constants/enum/UserRole";
+import { UserRole } from "@/constants/enum/UserRole";
 
 export interface UserResponseDto {
     id: string;
