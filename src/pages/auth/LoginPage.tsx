@@ -41,7 +41,6 @@ const LoginPage = () => {
 
             <div className="relative z-10 w-full max-w-md">
                 <Card className="p-8 shadow-neon-green">
-                    {/* Logo/Title Section */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-green rounded-full mb-4 shadow-dark-green">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +55,6 @@ const LoginPage = () => {
                         </p>
                     </div>
 
-                    {/* Login Form */}
                     <Form onSubmit={handleSubmit}>
                         <Input
                             type="email"
@@ -101,8 +99,7 @@ const LoginPage = () => {
                             type="submit"
                             size="lg"
                             disabled={isLoading}
-                            className="w-full py-3 text-lg font-semibold shadow-dark-green hover:shadow-neon-green transition-all duration-300"
-                        >
+                            className="w-full py-3 text-lg font-semibold shadow-dark-green hover:shadow-neon-green transition-all duration-300">
                             {isLoading ? (
                                 <span className="flex items-center justify-center">
                                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -117,7 +114,6 @@ const LoginPage = () => {
                         </Button>
                     </Form>
 
-                    {/* Footer */}
                     <div className="mt-6 text-center">
                         <p className="text-primary-400 text-sm">
                             Chưa có tài khoản?{" "}

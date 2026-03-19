@@ -5,7 +5,6 @@ import Input from "../../components/ui/Input";
 import Card from "../../components/ui/Card";
 import Form from "../../components/ui/Form";
 import { register } from "../../services/authService";
-import { UserRole } from "../../constants/enum/UserRole";
 import type { UserCreateDto } from "../../types/user";
 
 const RegisterPage = () => {
@@ -13,7 +12,6 @@ const RegisterPage = () => {
     const [formData, setFormData] = useState<UserCreateDto>({
         email: "",
         password: "",
-        role: UserRole.CnlStaff,
         firstName: "",
         lastName: ""
     });
@@ -35,13 +33,8 @@ const RegisterPage = () => {
             newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
         }
 
-        if (!formData.firstName) {
-            newErrors.firstName = "Họ là bắt buộc";
-        }
-
-        if (!formData.lastName) {
-            newErrors.lastName = "Tên là bắt buộc";
-        }
+        if (!formData.firstName) newErrors.firstName = "Họ là bắt buộc";
+        if (!formData.lastName) newErrors.lastName = "Tên là bắt buộc";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -51,15 +44,11 @@ const RegisterPage = () => {
         e.preventDefault();
 
         if (!validateForm()) return;
-
         setIsLoading(true);
         setErrors({});
 
         try {
-            await register({
-                ...formData,
-                role: Number(formData.role) as any
-            });
+            await register(formData);
             navigate("/login", {
                 state: { message: "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay." }
             });
@@ -88,7 +77,6 @@ const RegisterPage = () => {
 
             <div className="relative z-10 w-full max-w-2xl">
                 <Card className="p-8 shadow-neon-green">
-                    {/* Logo/Title Section */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-green rounded-full mb-4 shadow-dark-green">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,8 +157,7 @@ const RegisterPage = () => {
                             type="submit"
                             size="lg"
                             disabled={isLoading}
-                            className="w-full py-3 text-lg font-semibold shadow-dark-green hover:shadow-neon-green transition-all duration-300 mt-6"
-                        >
+                            className="w-full py-3 text-lg font-semibold shadow-dark-green hover:shadow-neon-green transition-all duration-300 mt-6">
                             {isLoading ? (
                                 <span className="flex items-center justify-center">
                                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -185,7 +172,6 @@ const RegisterPage = () => {
                         </Button>
                     </Form>
 
-                    {/* Footer */}
                     <div className="mt-6 text-center">
                         <p className="text-primary-400 text-sm">
                             Đã có tài khoản?{" "}

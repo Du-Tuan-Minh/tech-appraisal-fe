@@ -16,7 +16,6 @@ export interface UserResponseDto {
 export interface UserCreateDto {
     email: string;
     password: string;
-    role: UserRole;
     firstName: string;
     lastName: string;
 }
