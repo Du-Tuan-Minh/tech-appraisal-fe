@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getProfile } from "@/services/userService";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { useToast } from "@/components/ui/ToastContext";
+import { toast } from "react-hot-toast";
 import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
 import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
 import { UserRole } from "@/constants/enum/UserRole";
@@ -11,8 +11,6 @@ import type { UserResponseDto } from "@/types/user";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
-    const toast = useToast();
-
     const [userData, setUserData] = useState<UserResponseDto | null>(null);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isPassOpen, setIsPassOpen] = useState(false);

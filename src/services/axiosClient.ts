@@ -25,21 +25,14 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
+        const originalRequest = error.config as any;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
             try {
                 const refreshToken = localStorage.getItem("refreshToken");
-
-                const res = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
-                    {
-                        refreshToken: refreshToken,
-                    }
-                );
-
+                const res = await axiosClient.post("/auth/refresh-token", { refreshToken, });
                 const newAccessToken = res.data.accessToken;
 
                 localStorage.setItem("accessToken", newAccessToken);

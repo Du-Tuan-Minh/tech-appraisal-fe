@@ -7,7 +7,7 @@ import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProfilePage from "../pages/auth/ProfilePage";
 
 import UserManagementPage from "../pages/admin/UserManagementPage";
-import DepartmentManagementPage from "../pages/admin/DepartmentManagementPage";
+import DepartmentListPage from "../pages/admin/DepartmentListPage";
 
 import InvitationsPage from "../pages/invitations/InvitationsPage";
 
@@ -53,7 +53,7 @@ const AppRoutes = () => {
 
             {/* ADMIN */}
             <Route path="/admin/users" element={<UserManagementPage />} />
-            <Route path="/admin/departments" element={<DepartmentManagementPage />} />
+            <Route path="/departments" element={<DepartmentListPage />} />
 
             {/* INVITATIONS */}
             <Route path="/invitations" element={<InvitationsPage />} />
