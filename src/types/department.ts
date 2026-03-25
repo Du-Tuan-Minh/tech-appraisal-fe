@@ -1,18 +1,18 @@
 export interface DepartmentResponseDto {
     id: string;
     name: string;
-    description?: string;
-    managerName?: string;
+    description: string | null;
+    managerName: string | null;
 }
 
 export interface DepartmentCreateDto {
     name: string;
-    description?: string;
+    description: string | null;
 }
 
 export interface DepartmentUpdateDto {
     name: string;
-    description?: string;
+    description: string | null;
 }
 
 export interface DepartmentInvitationResponseDto {
