@@ -84,12 +84,6 @@ const Header = () => {
                                     >
                                         👤 Hồ sơ cá nhân
                                     </Link>
-                                    <Link
-                                        to="/settings"
-                                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white"
-                                    >
-                                        ⚙️ Cài đặt
-                                    </Link>
                                     <hr className="my-1 border-dark-700" />
                                     <button
                                         onClick={handleLogout}

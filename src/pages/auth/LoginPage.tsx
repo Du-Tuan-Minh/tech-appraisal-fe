@@ -23,7 +23,7 @@ const LoginPage = () => {
         try {
             const res = await login({ email, password });
             setAuth(res.accessToken, res.refreshToken);
-            navigate("/dashboard");
+            navigate("/departments");
         } catch (err) {
             setError("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
         } finally {

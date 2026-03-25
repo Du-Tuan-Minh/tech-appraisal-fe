@@ -22,8 +22,8 @@ export const API_ENDPOINTS = {
     documents: {
         create: `/documents/create-document`,
         submitInternal: (id: string) => `/documents/${id}/submit-internal`,
-        handleFeedback: (id: string) => `/documents/${id}/feedback-handling`,
-        createFromIssue: (issueId: string) => `/documents/from-issue/${issueId}`,
+        handleFeedback: (id: string) => `/documents/${id}/create-version-appraisal`,
+        createFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
         getDetail: (id: string) => `/documents/${id}/document-detail`,
         updateDraft: (id: string) => `/documents/${id}/update-draft`,
         list: `/documents/list-document`,
@@ -41,18 +41,17 @@ export const API_ENDPOINTS = {
         assignStaff: `/appraisal/assign-internal-staff`,
         confirmDepartment: `/appraisal/department-confirm`,
         submitReview: (reviewerId: string) => `/appraisal/staff-submit-review/${reviewerId}`,
-        finalize: (docId: string) => `/appraisal/${docId}/complete-appraisal`,
+        finalize: `/appraisal/complete-appraisal`,
     },
 
     appraisalHistory: {
         getByDocument: (documentId: string) => `/appraisal-history/document/${documentId}`,
-        create: `/appraisal-history`,
         getRejections: (historyId: string) => `/appraisal-history/${historyId}/rejections`,
     },
 
     attachments: {
         upload: `/attachments/upload`,
-        getByEntity: (entityId: string) => `/attachments/gattachment-detail/${entityId}`,
+        getByEntity: (entityId: string) => `/attachments/attachment-detail/${entityId}`,
         delete: (id: string) => `/attachments/${id}`,
         fileDetail: (id: string) => `/attachments/attachment-file-detail/${id}`,
     },
@@ -68,8 +67,6 @@ export const API_ENDPOINTS = {
     signing: {
         approve: `/signing/approve-sign`,
         reject: `/signing/reject`,
-        bulk: `/signing/bulk-appraisal`,
-        qr: (docId: string) => `/signing/${docId}/qr-data`,
         issue: (docId: string) => `/signing/${docId}/issue`,
         exportPdf: (versionId: string) => `/signing/export-pdf/${versionId}`,
     },
@@ -86,7 +83,6 @@ export const API_ENDPOINTS = {
 
     departments: {
         invite: `/departments/invite`,
-        join: `/departments/join`,
         create: `/departments/create-department`,
         update: (id: string) => `/departments/${id}/update-department`,
         delete: (id: string) => `/departments/${id}/delete-department`,
