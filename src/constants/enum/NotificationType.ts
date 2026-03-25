@@ -9,3 +9,10 @@ export const NotificationType = {
 export type NotificationType =
     (typeof NotificationType)[keyof typeof NotificationType];
 
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+    [NotificationType.System]: "Hệ thống",
+    [NotificationType.Appraisal]: "Thẩm định",
+    [NotificationType.Approval]: "Phê duyệt",
+    [NotificationType.Feedback]: "Phản hồi",
+    [NotificationType.AiWarning]: "Cảnh báo AI"
+};

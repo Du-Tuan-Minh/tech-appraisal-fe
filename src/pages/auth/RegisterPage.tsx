@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Form from "@/components/ui/Form";
 import { register } from "@/services/authService";
 import type { UserCreateDto } from "@/types/user";
+import { Link } from "react-router-dom";
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -140,19 +141,6 @@ const RegisterPage = () => {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between mt-6">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-primary-600 bg-dark-800 border-dark-600 rounded focus:ring-primary-500 focus:ring-2"
-                                    required
-                                />
-                                <span className="ml-2 text-sm text-primary-400">
-                                    Tôi đồng ý với điều khoản sử dụng
-                                </span>
-                            </label>
-                        </div>
-
                         <Button
                             type="submit"
                             size="lg"
@@ -175,16 +163,12 @@ const RegisterPage = () => {
                     <div className="mt-6 text-center">
                         <p className="text-primary-400 text-sm">
                             Đã có tài khoản?{" "}
-                            <a
-                                href="/login"
+                            <Link
+                                to="/login"
                                 className="text-primary-600 hover:text-primary-500 font-medium transition-colors"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate("/login");
-                                }}
                             >
                                 Đăng nhập ngay
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </Card>

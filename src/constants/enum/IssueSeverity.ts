@@ -9,3 +9,12 @@ export const IssueSeverity = {
 
 export type IssueSeverity =
     (typeof IssueSeverity)[keyof typeof IssueSeverity];
+
+export const ISSUE_SEVERITY_LABELS: Record<IssueSeverity, string> = {
+    [IssueSeverity.Information]: "Thông tin",
+    [IssueSeverity.Low]: "Thấp",
+    [IssueSeverity.Medium]: "Trung bình",
+    [IssueSeverity.Warning]: "Cảnh báo",
+    [IssueSeverity.High]: "Cao",
+    [IssueSeverity.Critical]: "Nghiêm trọng"
+};

@@ -7,3 +7,10 @@ export const AttachmentCategory = {
 
 export type AttachmentCategory =
     (typeof AttachmentCategory)[keyof typeof AttachmentCategory];
+
+export const ATTACHMENT_CATEGORY_LABELS: Record<AttachmentCategory, string> = {
+    [AttachmentCategory.SupportingEvidence]: "Tài liệu bổ trợ",
+    [AttachmentCategory.AppraisalProof]: "Bằng chứng thẩm định",
+    [AttachmentCategory.IssueEvidence]: "Minh chứng lỗi/vấn đề",
+    [AttachmentCategory.MainDocumentScan]: "Bản quét tài liệu chính"
+};

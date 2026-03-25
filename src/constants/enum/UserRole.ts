@@ -10,3 +10,13 @@ export const UserRole = {
 
 export type UserRole =
     (typeof UserRole)[keyof typeof UserRole];
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+    [UserRole.Admin]: "Quản trị viên",
+    [UserRole.CnlStaff]: "Nhân viên CNL",
+    [UserRole.CnlManager]: "Quản lý CNL",
+    [UserRole.S2Staff]: "Nhân viên S2",
+    [UserRole.S2Manager]: "Quản lý S2",
+    [UserRole.Inspector]: "Thẩm định viên",
+    [UserRole.Executive]: "Ban giám đốc"
+};

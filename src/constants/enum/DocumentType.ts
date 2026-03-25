@@ -7,3 +7,10 @@ export const DocumentType = {
 
 export type DocumentType =
     (typeof DocumentType)[keyof typeof DocumentType];
+
+export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+    [DocumentType.TechnicalSpecifications]: "Thông số kỹ thuật",
+    [DocumentType.TechnicalRequirements]: "Yêu cầu kỹ thuật",
+    [DocumentType.ContractAppendix]: "Phụ lục hợp đồng",
+    [DocumentType.ProductInspectionGuide]: "Hướng dẫn kiểm tra sản phẩm"
+};

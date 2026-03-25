@@ -7,3 +7,8 @@ export const AssignmentStatus = {
 export type AssignmentStatus =
     (typeof AssignmentStatus)[keyof typeof AssignmentStatus];
 
+export const ASSIGNMENT_STATUS_LABELS: Record<AssignmentStatus, string> = {
+    [AssignmentStatus.Pending]: "Chờ xử lý",
+    [AssignmentStatus.Completed]: "Hoàn thành",
+    [AssignmentStatus.Rejected]: "Từ chối"
+};

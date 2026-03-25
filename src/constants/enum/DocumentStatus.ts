@@ -15,3 +15,16 @@ export const DocumentStatus = {
 export type DocumentStatus =
     (typeof DocumentStatus)[keyof typeof DocumentStatus];
 
+export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
+    [DocumentStatus.Draft]: "Bản nháp",
+    [DocumentStatus.InternalPending]: "Chờ duyệt nội bộ",
+    [DocumentStatus.AppraisalPending]: "Chờ thẩm định",
+    [DocumentStatus.Appraising]: "Đang thẩm định",
+    [DocumentStatus.Consolidated]: "Đã tổng hợp",
+    [DocumentStatus.Signing]: "Đang trình ký",
+    [DocumentStatus.Approved]: "Đã phê duyệt",
+    [DocumentStatus.Issued]: "Đã ban hành",
+    [DocumentStatus.FeedbackReceived]: "Đã nhận phản hồi",
+    [DocumentStatus.Improving]: "Đang hoàn thiện",
+    [DocumentStatus.Rejected]: "Bị từ chối"
+};

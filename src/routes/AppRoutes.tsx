@@ -9,13 +9,10 @@ import ProfilePage from "../pages/auth/ProfilePage";
 import UserManagementPage from "../pages/admin/UserManagementPage";
 import DepartmentListPage from "../pages/admin/DepartmentListPage";
 
-import InvitationsPage from "../pages/invitations/InvitationsPage";
-
 import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
 import DocumentEditorPage from "../pages/documents/DocumentEditorPage";
 import DocumentVersionsPage from "../pages/documents/DocumentVersionsPage";
-import SubmitForAppraisalPage from "../pages/documents/SubmitForAppraisalPage";
 
 import AppraisalDashboardPage from "../pages/appraisals/AppraisalDashboardPage";
 import AppraisalAssignmentPage from "../pages/appraisals/AppraisalAssignmentPage";
@@ -55,15 +52,11 @@ const AppRoutes = () => {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/departments" element={<DepartmentListPage />} />
 
-            {/* INVITATIONS */}
-            <Route path="/invitations" element={<InvitationsPage />} />
-
             {/* DOCUMENTS */}
             <Route path="/documents" element={<DocumentListPage />} />
             <Route path="/documents/create" element={<CreateDocumentPage />} />
             <Route path="/documents/:id/editor" element={<DocumentEditorPage />} />
             <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
-            <Route path="/documents/:id/submit" element={<SubmitForAppraisalPage />} />
 
             {/* APPRAISALS */}
             <Route path="/appraisals" element={<AppraisalDashboardPage />} />

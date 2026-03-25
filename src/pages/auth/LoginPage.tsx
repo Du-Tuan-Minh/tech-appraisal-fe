@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Form from "@/components/ui/Form";
 import { login } from "@/services/authService";
 import { setAuth } from "@/utils/authStorage";
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -117,9 +118,12 @@ const LoginPage = () => {
                     <div className="mt-6 text-center">
                         <p className="text-primary-400 text-sm">
                             Chưa có tài khoản?{" "}
-                            <a href="#" className="text-primary-600 hover:text-primary-500 font-medium transition-colors">
-                                Liên hệ quản trị viên
-                            </a>
+                            <Link
+                                to="/register"
+                                className="text-primary-600 hover:text-primary-500 font-medium transition-colors"
+                            >
+                                Đăng ký ngay
+                            </Link>
                         </p>
                     </div>
                 </Card>
