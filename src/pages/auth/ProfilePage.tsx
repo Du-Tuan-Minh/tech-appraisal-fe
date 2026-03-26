@@ -7,8 +7,8 @@ import { toast } from "react-hot-toast";
 import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
 import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
 import RequestPromotionPopUp from "@/components/popups/RequestPromotionPopUp";
-import { UserRole } from "@/constants/enum/UserRole";
 import type { UserResponseDto } from "@/types/user";
+import { UserRole, USER_ROLE_LABELS } from "@/constants/enum/UserRole";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -29,15 +29,6 @@ const ProfilePage = () => {
         };
         fetchProfile();
     }, [toast]);
-
-    const getRoleLabel = (role: UserRole) => {
-        const labels: Record<number, string> = {
-            [UserRole.Admin]: "Quản trị viên",
-            [UserRole.CnlStaff]: "C&L Staff",
-            [UserRole.CnlManager]: "C&L Manager"
-        };
-        return labels[role] || "Nhân viên";
-    };
 
     const handleRequestPromotion = async (data: { currentRole: UserRole; requestedRole: UserRole; reason: string }) => {
         setIsPromotionLoading(true);
@@ -86,7 +77,7 @@ const ProfilePage = () => {
                     <Card className="p-6 h-fit border-dark-700">
                         <h2 className="text-xl font-bold text-white mb-6">Tài Khoản</h2>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{getRoleLabel(userData.role)}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{USER_ROLE_LABELS[userData.role]}</span></div>
                             <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">{userData.isActive ? "Hoạt động" : "Không hoạt động"}</span></div>
                         </div>
                         <div className="space-y-3 mt-10">

@@ -23,7 +23,7 @@ const LoginPage = () => {
         try {
             const res = await login({ email, password });
             setAuth(res.accessToken, res.refreshToken);
-            navigate("/departments");
+            navigate("/documents");
         } catch (err) {
             setError("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
         } finally {
@@ -83,15 +83,11 @@ const LoginPage = () => {
                             </div>
                         )}
 
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-primary-600 bg-dark-800 border-dark-600 rounded focus:ring-primary-500 focus:ring-2"
-                                />
-                                <span className="ml-2 text-sm text-primary-400">Ghi nhớ đăng nhập</span>
-                            </label>
-                            <a href="#" className="text-sm text-primary-600 hover:text-primary-500 transition-colors">
+                        <div className="flex items-center">
+                            <a
+                                href="#"
+                                className="ml-auto text-sm text-primary-600 hover:text-primary-1500 transition-colors"
+                            >
                                 Quên mật khẩu?
                             </a>
                         </div>

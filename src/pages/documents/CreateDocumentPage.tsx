@@ -7,6 +7,7 @@ import { documentService } from "@/services/documentService";
 import type { TechnicalDocumentCreateDto } from "@/types/document";
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
+import TechnicalSpecsEditor from "@/components/forms/TechnicalSpecsEditor";
 
 const CreateDocumentPage = () => {
     const navigate = useNavigate();
@@ -65,7 +66,6 @@ const CreateDocumentPage = () => {
                         <h1 className="text-3xl font-bold text-white tracking-tight italic">Tạo Tài Liệu Mới</h1>
                         <p className="text-primary-400 mt-1 text-sm italic">Khởi tạo quy trình thẩm định kỹ thuật hệ thống</p>
                     </div>
-                    <Button variant="ghost" onClick={() => navigate("/documents")}>← Danh sách</Button>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -105,14 +105,9 @@ const CreateDocumentPage = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="block text-xs font-bold text-accent-green mb-2 uppercase tracking-widest flex justify-between">
-                                    Cấu trúc Kỹ thuật (JSON)
-                                    <span className="text-[10px] lowercase font-normal opacity-50">phải đúng định dạng chuẩn</span>
-                                </label>
-                                <textarea
-                                    className="w-full bg-dark-950 border border-dark-700 rounded-lg p-4 text-accent-green font-mono text-xs focus:border-accent-green outline-none min-h-[350px] transition-all shadow-inner"
+                                <TechnicalSpecsEditor
                                     value={formData.technicalSpecsJson}
-                                    onChange={(e) => setFormData(p => ({ ...p, technicalSpecsJson: e.target.value }))}
+                                    onChange={(jsonValue) => setFormData(p => ({ ...p, technicalSpecsJson: jsonValue }))}
                                 />
                             </div>
                         </Card>
@@ -125,7 +120,6 @@ const CreateDocumentPage = () => {
 
                     <aside className="space-y-6">
                         <GuidelineCard />
-                        <TemplateCard />
                     </aside>
                 </div>
             </div>
@@ -151,22 +145,5 @@ const GuidelineCard = () => (
     </Card>
 );
 
-const TemplateCard = () => (
-    <Card className="p-5 bg-primary-950/10 border-primary-900/20">
-        <h3 className="text-sm font-bold text-primary-400 mb-3 uppercase flex items-center gap-2">
-            <span>📄</span> Mẫu JSON cơ bản
-        </h3>
-        <pre className="text-[10px] text-gray-500 bg-dark-950 p-3 rounded-lg overflow-x-auto font-mono leading-tight">
-            {`{
-  "version": "1.0",
-  "specs": {
-    "cpu": "4 cores",
-    "ram": "16GB",
-    "storage": "SSD 512GB"
-  }
-}`}
-        </pre>
-    </Card>
-);
 
 export default CreateDocumentPage;

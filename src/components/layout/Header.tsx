@@ -1,16 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Button from "../ui/Button";
+import { logout } from "@/services/authService";
 
 const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        navigate("/login");
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Logout API error", error);
+        } finally {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            navigate("/login", { replace: true });
+        }
     };
 
     const isActivePath = (path: string) => {
