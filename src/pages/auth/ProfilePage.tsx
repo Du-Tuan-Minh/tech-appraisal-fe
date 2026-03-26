@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile } from "@/services/userService";
+import { getProfile, requestPromotion } from "@/services/userService";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { toast } from "react-hot-toast";
 import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
 import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
+import RequestPromotionPopUp from "@/components/popups/RequestPromotionPopUp";
 import { UserRole } from "@/constants/enum/UserRole";
 import type { UserResponseDto } from "@/types/user";
 
@@ -14,6 +15,8 @@ const ProfilePage = () => {
     const [userData, setUserData] = useState<UserResponseDto | null>(null);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isPassOpen, setIsPassOpen] = useState(false);
+    const [isPromotionOpen, setIsPromotionOpen] = useState(false);
+    const [isPromotionLoading, setIsPromotionLoading] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -34,6 +37,19 @@ const ProfilePage = () => {
             [UserRole.CnlManager]: "C&L Manager"
         };
         return labels[role] || "Nhân viên";
+    };
+
+    const handleRequestPromotion = async (data: { currentRole: UserRole; requestedRole: UserRole; reason: string }) => {
+        setIsPromotionLoading(true);
+        try {
+            await requestPromotion(data);
+            toast.success("Gửi yêu cầu thăng cấp thành công!");
+            setIsPromotionOpen(false);
+        } catch (err) {
+            toast.error("Gửi yêu cầu thăng cấp thất bại.");
+        } finally {
+            setIsPromotionLoading(false);
+        }
     };
 
     if (!userData) {
@@ -73,7 +89,14 @@ const ProfilePage = () => {
                             <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{getRoleLabel(userData.role)}</span></div>
                             <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">{userData.isActive ? "Hoạt động" : "Không hoạt động"}</span></div>
                         </div>
-                        <Button variant="outline" className="w-full mt-10" onClick={() => setIsPassOpen(true)}>Đổi mật khẩu</Button>
+                        <div className="space-y-3 mt-10">
+                            <Button variant="outline" className="w-full" onClick={() => setIsPassOpen(true)}>Đổi mật khẩu</Button>
+                            {userData.role < UserRole.Admin && (
+                                <Button variant="primary" className="w-full" onClick={() => setIsPromotionOpen(true)}>
+                                    Yêu cầu thăng cấp
+                                </Button>
+                            )}
+                        </div>
                     </Card>
                 </div>
             </div>
@@ -94,6 +117,14 @@ const ProfilePage = () => {
                 onClose={() => setIsPassOpen(false)}
                 onSuccess={() => toast.success("Đổi mật khẩu thành công!")}
                 onError={toast.error}
+            />
+
+            <RequestPromotionPopUp
+                isOpen={isPromotionOpen}
+                onClose={() => setIsPromotionOpen(false)}
+                onSubmit={handleRequestPromotion}
+                currentRole={userData.role}
+                isLoading={isPromotionLoading}
             />
         </div>
     );

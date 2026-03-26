@@ -13,22 +13,13 @@ type Props = {
 };
 
 const CreateDepartmentPopUp = ({ isOpen, onClose, onSubmit, isLoading = false }: Props) => {
-  const [formData, setFormData] = useState<DepartmentCreateDto>({
-    name: "",
-    description: ""
-  });
+  const [formData, setFormData] = useState<DepartmentCreateDto>({ name: "", description: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) {
-      newErrors.name = "Tên phòng ban là bắt buộc";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      setErrors({ name: "Tên phòng ban là bắt buộc" });
       return;
     }
 
@@ -42,12 +33,8 @@ const CreateDepartmentPopUp = ({ isOpen, onClose, onSubmit, isLoading = false }:
 
   const handleInputChange = (field: keyof DepartmentCreateDto, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
   };
-
-  if (!isOpen) return null;
 
   return (
     <PopUp isOpen={isOpen} onClose={onClose} title="Tạo Phòng Ban Mới">
@@ -62,14 +49,18 @@ const CreateDepartmentPopUp = ({ isOpen, onClose, onSubmit, isLoading = false }:
           />
           <Input
             label="Mô tả"
-            value={formData.description}
+            value={formData.description ?? ""}
             onChange={(v) => handleInputChange("description", v)}
           />
         </div>
         <div className="flex justify-end space-x-3 mt-6">
-          <Button variant="ghost" onClick={onClose} disabled={isLoading}>Hủy</Button>
-          <Button variant="primary" type="submit" disabled={isLoading}>
-            {isLoading ? "Đang tạo..." : "Tạo Phòng Ban"}
+          <Button variant="ghost" onClick={onClose} type="button">Hủy</Button>
+          <Button
+            variant="primary"
+            type="submit"
+            isLoading={isLoading}
+          >
+            Tạo Phòng Ban
           </Button>
         </div>
       </Form>

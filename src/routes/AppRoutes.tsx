@@ -6,8 +6,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProfilePage from "../pages/auth/ProfilePage";
 
-import UserManagementPage from "../pages/user/UserManagementPage";
-import DepartmentListPage from "../pages/user/DepartmentListPage";
+import DepartmentListPage from "../pages/departments/DepartmentListPage";
 
 import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
@@ -49,7 +48,6 @@ const AppRoutes = () => {
             <Route path="/profile" element={<ProfilePage />} />
 
             {/* ADMIN */}
-            <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/departments" element={<DepartmentListPage />} />
 
             {/* DOCUMENTS */}

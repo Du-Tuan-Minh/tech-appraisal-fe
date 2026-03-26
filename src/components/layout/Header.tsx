@@ -32,7 +32,7 @@ const Header = () => {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex items-center">
-                        <Link to="/dashboard" className="flex items-center space-x-3">
+                        <Link to="/documents" className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-green rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-sm">TA</span>
                             </div>
