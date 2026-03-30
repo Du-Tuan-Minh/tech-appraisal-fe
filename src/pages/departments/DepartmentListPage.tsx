@@ -59,8 +59,9 @@ const DepartmentListPage = () => {
       toast.success("Tạo phòng ban thành công!");
       fetchDepartments(1);
       setIsCreateOpen(false);
-    } catch (err) {
-      toast.error("Tạo phòng ban thất bại.");
+    } catch (err: any) {
+      const serverMessage = err.response?.data?.message;
+      toast.error(serverMessage);
     } finally {
       setIsSubmitting(false);
     }

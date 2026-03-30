@@ -54,8 +54,8 @@ const ProfilePage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-primary-950 p-6">
             <div className="max-w-4xl mx-auto">
-                <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-                    ← Quay lại Dashboard
+                <Button variant="ghost" onClick={() => navigate("/documents")} className="mb-6">
+                    ← Quay lại Documents
                 </Button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

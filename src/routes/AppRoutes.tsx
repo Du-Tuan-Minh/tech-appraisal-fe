@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
-import ProfilePage from "../pages/auth/ProfilePage";
+import ProfilePage from "../pages/users/ProfilePage";
 import DepartmentListPage from "../pages/departments/DepartmentListPage";
 import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
@@ -23,6 +23,8 @@ import IssueDetailPage from "../pages/issues/IssueDetailPage";
 import CreateImprovementVersionPage from "../pages/issues/CreateImprovementVersionPage";
 import KnowledgeBasePage from "../pages/knowledge/KnowledgeBasePage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
+import AppraisalInternalPage from "../pages/appraisals/AppraisalInternalPage";
+import MyTasksPage from "../pages/appraisals/MyTasksPage";
 
 const AppRoutes = () => {
     return (
@@ -40,7 +42,7 @@ const AppRoutes = () => {
                 {/* PROFILE */}
                 <Route path="/profile" element={<ProfilePage />} />
 
-                {/* ADMIN */}
+                {/* DEPARTMENTS */}
                 <Route path="/departments" element={<DepartmentListPage />} />
 
                 {/* DOCUMENTS */}
@@ -48,12 +50,22 @@ const AppRoutes = () => {
                 <Route path="/documents/create" element={<CreateDocumentPage />} />
                 <Route path="/documents/:id/editor" element={<DocumentEditorPage />} />
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
-
+                <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
+                
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:id/assign" element={<AppraisalAssignmentPage />} />
                 <Route path="/appraisals/:id/review" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
+
+                {/* 1. Trang Manager duyệt quyết định cuối cùng */}
+                <Route path="/appraisals/internal/:assignmentId" element={<AppraisalInternalPage mode="department-review" />} />
+
+                {/* 2. Trang Manager phân việc cho nhân viên */}
+                <Route path="/appraisals/assignment/:assignmentId" element={<AppraisalInternalPage mode="staff-assignment" />} />
+
+                {/* 3. Trang Nhân viên thực hiện đánh giá kỹ thuật */}
+                <Route path="/appraisals/staff-review/:assignmentId" element={<AppraisalInternalPage mode="staff-review" />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

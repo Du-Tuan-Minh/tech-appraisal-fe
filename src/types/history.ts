@@ -1,6 +1,7 @@
 import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
 import type { RejectionReasonResponseDto } from "@/types/rejection-reason";
 import type { RejectionReasonCreateDto } from "@/types/rejection-reason";
+import type { FeedbackIssueResponseDto } from "@/types/feedback";
 
 export interface AppraisalHistoryResponseDto {
     id: string;
@@ -11,10 +12,10 @@ export interface AppraisalHistoryResponseDto {
     oldStatus: DocumentStatus;
     newStatus: DocumentStatus;
     comment: string | null;
-    indicatorPath: string | null;
     isAiEvaluated: boolean;
     createdAt: string;
     rejectionReasons: RejectionReasonResponseDto[];
+    linkedIssues: FeedbackIssueResponseDto[];
 }
 
 export interface AppraisalHistoryCreateDto {

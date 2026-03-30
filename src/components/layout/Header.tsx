@@ -28,7 +28,7 @@ const Header = () => {
         { name: "Dashboard", path: "/dashboard", icon: "🏠" },
         { name: "Phòng Ban", path: "/departments", icon: "🏢" },
         { name: "Tài Liệu", path: "/documents", icon: "📄" },
-        { name: "Thẩm Định", path: "/appraisals", icon: "📋" },
+        { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },
         { name: "Ký Số", path: "/signatures", icon: "✍️" },
         { name: "Thư Viện", path: "/library", icon: "📚" },
     ];

@@ -51,5 +51,13 @@ export const documentService = {
 
     submitForAppraisal: async (id: string): Promise<void> => {
         await axiosClient.post<ApiResponse<any>>(API_ENDPOINTS.documents.submitInternal(id));
-    }
+    },
+
+    getMyTasks: async (filters: DocumentFilterDto): Promise<PagedResult<TechnicalDocumentResponseDto>> => {
+    const response = await axiosClient.get<ApiResponse<PagedResult<TechnicalDocumentResponseDto>>>(
+        API_ENDPOINTS.documents.myTasks, 
+        { params: filters }
+    );
+    return response.data.data;
+}
 };
