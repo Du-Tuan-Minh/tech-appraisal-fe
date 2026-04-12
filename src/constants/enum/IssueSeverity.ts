@@ -1,20 +1,15 @@
 export const IssueSeverity = {
-    Information: 1,
-    Low: 2,
-    Medium: 3,
-    Warning: 4,
-    High: 5,
-    Critical: 6
+    Minor: 1,
+    Moderate: 2,
+    Serious: 3,
+    Critical: 4
 } as const;
 
-export type IssueSeverity =
-    (typeof IssueSeverity)[keyof typeof IssueSeverity];
+export type IssueSeverity = (typeof IssueSeverity)[keyof typeof IssueSeverity];
 
 export const ISSUE_SEVERITY_LABELS: Record<IssueSeverity, string> = {
-    [IssueSeverity.Information]: "Thông tin",
-    [IssueSeverity.Low]: "Thấp",
-    [IssueSeverity.Medium]: "Trung bình",
-    [IssueSeverity.Warning]: "Cảnh báo",
-    [IssueSeverity.High]: "Cao",
-    [IssueSeverity.Critical]: "Nghiêm trọng"
+    [IssueSeverity.Minor]: "Thấp (Trình bày/Chính tả)",
+    [IssueSeverity.Moderate]: "Trung bình (Thiếu sở cứ/Thuật ngữ)",
+    [IssueSeverity.Serious]: "Cao (Sai chỉ tiêu/Phương pháp)",
+    [IssueSeverity.Critical]: "Nghiêm trọng (Vi phạm quy chuẩn/An toàn)"
 };

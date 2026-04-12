@@ -67,13 +67,14 @@ const DepartmentListPage = () => {
     }
   };
 
-  const handleInviteMember = async (data: { email: string }) => {
+  const handleInviteMember = async (data: { employeeCode: string }) => {
     if (!selectedDepartment) return;
     try {
       await departmentService.createInvitation({
-        email: data.email
+        employeeCode: data.employeeCode,
+        departmentId: selectedDepartment.id
       });
-      toast.success(`Đã gửi lời mời đến ${data.email}`);
+      toast.success(`Đã gửi lời mời đến ${data.employeeCode}`);
       setIsInviteOpen(false);
     } catch (err) {
       toast.error("Gửi lời mời thất bại.");
@@ -128,7 +129,7 @@ const DepartmentListPage = () => {
               <Card key={dept.id} className="p-6 bg-dark-900/40 border-t-2 border-primary-500 hover:shadow-2xl transition-all group">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-bold text-white group-hover:text-primary-400 transition-colors">
-                    {dept.name}
+                    {dept.nameDepartment}
                   </h3>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="sm" onClick={() => { setSelectedDepartment(dept); setIsInviteOpen(true); }}>Mời</Button>
@@ -174,7 +175,8 @@ const DepartmentListPage = () => {
           isOpen={isInviteOpen}
           onClose={() => setIsInviteOpen(false)}
           onSubmit={handleInviteMember}
-          departmentName={selectedDepartment?.name || ""}
+          departmentName={selectedDepartment?.nameDepartment || ""}
+          departmentId={selectedDepartment?.id || ""}
         />
         <JoinDepartmentPopUp
           isOpen={isJoinOpen}

@@ -1,6 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Layout } from "@/components/layout";
 import { Button, Card, Input } from "@/components/ui";
@@ -8,21 +7,19 @@ import TechnicalSpecsEditor from "@/components/forms/TechnicalSpecsEditor";
 import AssignStaffPopUp from "@/components/popups/AssignStaffPopUp";
 import { appraisalService } from "@/services/appraisalService";
 import { documentService } from "@/services/documentService";
-import { ReviewerStatus } from "@/constants/enum/ReviewerStatus";        
+import { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 import type { AppraisalAssignmentDto } from "@/types/assignment";
 import type { TechnicalDocumentDetailDto } from "@/types/document";
 import type { UserResponseDto } from "@/types/user";
+import { useAuth } from "@/hooks/useAuth";
 
-interface Props {
-    assignmentId?: string;
-    mode?: 'department-review' | 'staff-assignment' | 'staff-review';
-}
-
-const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review' }: Props) => {
+const AppraisalInternalPage = () => {
     const navigate = useNavigate();
-    const { assignmentId: urlId } = useParams<{ assignmentId: string }>();
+    const { id } = useParams<{ id: string }>();
 
-    const id = propId || urlId;
+    const [searchParams] = useSearchParams();
+    const { isManager } = useAuth();
+    const { assignmentId: urlId } = useParams<{ assignmentId: string }>();
 
     const [assignment, setAssignment] = useState<AppraisalAssignmentDto | null>(null);
     const [document, setDocument] = useState<TechnicalDocumentDetailDto | null>(null);
@@ -42,23 +39,20 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
         try {
             const [assignmentData, documentData] = await Promise.all([
                 appraisalService.getAssignmentById(id),
-                // Lấy document qua ID từ assignment
                 appraisalService.getAssignmentById(id).then(res => documentService.getDocumentById(res.documentId))
             ]);
 
             setAssignment(assignmentData);
             setDocument(documentData);
 
-            // Load thông số kỹ thuật hiện tại của phiên bản đang thẩm định
             if (documentData.currentVersion?.technicalSpecsJson) {
                 setTechnicalSpecs(documentData.currentVersion.technicalSpecsJson);
             }
 
-            // Nếu là chế độ phân công, lấy thêm danh sách nhân sự trong phòng
-            if (mode === 'staff-assignment') {
-                const users = await appraisalService.getDepartmentUsers(assignmentData.departmentId);
-                setDepartmentUsers(users);
-            }
+
+            const users = await appraisalService.getDepartmentUsers(assignmentData.departmentId);
+            setDepartmentUsers(users);
+
         } catch (err: any) {
             toast.error("Lỗi tải dữ liệu thẩm định kỹ thuật.");
             navigate("/appraisals");
@@ -67,7 +61,7 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
         }
     };
 
-    useEffect(() => { fetchData(); }, [id, mode]);
+    useEffect(() => { fetchData(); }, [id]);
 
     const handleAction = async (action: () => Promise<void>, successMsg: string, targetPath?: string) => {
         setIsSubmitting(true);
@@ -77,7 +71,7 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
             if (targetPath) {
                 navigate(targetPath);
             } else {
-                navigate(mode === 'staff-review' ? "/appraisals/my-tasks" : "/appraisals");
+                navigate("/appraisals/my-tasks");
             }
         } catch (err: any) {
             const errorMsg = err.response?.data?.message || "Thao tác thất bại.";
@@ -96,9 +90,7 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                 <header className="flex flex-col md:flex-row justify-between items-start gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-white italic tracking-tight uppercase">
-                            {mode === 'department-review' && 'Quyết định Thẩm định Nội bộ'}
-                            {mode === 'staff-assignment' && 'Phân công Nhân sự Kỹ thuật'}
-                            {mode === 'staff-review' && 'Đánh giá Chi tiết Hệ thống'}
+                            Quyết định Thẩm định && Phân công Nội bộ
                         </h1>
                         <p className="text-primary-400 mt-1 italic text-sm">
                             Hồ sơ: <span className="text-white font-bold">{document.title}</span> — v{assignment.versionNumber}
@@ -121,7 +113,7 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                             <h2 className="text-sm font-bold text-white mb-4 uppercase tracking-widest">Ghi chú & Nhận xét chuyên môn</h2>
                             <textarea
                                 className="w-full bg-dark-800 border border-dark-700 rounded-lg p-4 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[200px] transition-all placeholder:text-gray-600 font-sans"
-                                placeholder={mode === 'staff-assignment' ? "Ghi chú hướng dẫn cho các thẩm định viên..." : "Nhập nhận xét chi tiết về hạ tầng, phần mềm, hoặc các rủi ro hệ thống..."}
+                                placeholder="Ghi chú hướng dẫn cho các thẩm định viên..."
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
                             />
@@ -149,7 +141,7 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                             </div>
 
                             <div className="space-y-3">
-                                {mode === 'department-review' && (
+                                {
                                     <>
                                         <Button
                                             className="w-full shadow-lg shadow-primary-500/20"
@@ -182,9 +174,9 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                                             )}
                                         >Từ chối & Trả về</Button>
                                     </>
-                                )}
+                                }
 
-                                {mode === 'staff-assignment' && (
+                                {
                                     <Button
                                         className="w-full"
                                         onClick={() => setIsAssignPopUpOpen(true)}
@@ -192,9 +184,9 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                                     >
                                         {selectedStaffIds.length > 0 ? `Thay đổi (${selectedStaffIds.length})` : 'Chọn Thẩm định viên'}
                                     </Button>
-                                )}
+                                }
 
-                                {mode === 'staff-review' && (
+                                {
                                     <>
                                         <Button
                                             className="w-full"
@@ -214,11 +206,10 @@ const AppraisalInternalPage = ({ assignmentId: propId, mode = 'department-review
                                             )}
                                         >Yêu cầu Chỉnh sửa</Button>
                                     </>
-                                )}
+                                }
                             </div>
                         </Card>
 
-                        {/* Reviewers List */}
                         <Card className="p-5 border-dark-800 bg-dark-900/20">
                             <h3 className="text-xs font-bold text-white uppercase mb-4 tracking-widest">Tiến độ nhân sự ({assignment.reviewers.length})</h3>
                             <div className="space-y-4">

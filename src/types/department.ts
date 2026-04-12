@@ -1,30 +1,39 @@
 export interface DepartmentResponseDto {
     id: string;
-    name: string;
-    description: string | null;
-    managerName: string | null;
+    nameDepartment: string;
+    codeDepartment: string;
+    description?: string | null;
+    managerName?: string | null;
+    parentId?: string | null;
+    userCount: number;
+    subDepartmentCount?: number | null;
+    createdAt: string;
 }
 
 export interface DepartmentCreateDto {
-    name: string;
-    description: string | null;
+    nameDepartment: string;
+    codeDepartment: string;
+    description?: string | null;
+    parentId?: string | null;
 }
 
 export interface DepartmentUpdateDto {
-    name: string;
-    description: string | null;
+    nameDepartment: string;
+    description?: string | null;
+    parentId?: string | null;
 }
 
 export interface DepartmentInvitationResponseDto {
     id: string;
-    email: string;
+    inviteeEmployeeCode: string;
     invitationCode: string;
-    expiryDate: string;
+    expiresAt: string;
     isUsed: boolean;
     departmentName: string;
     inviterName: string;
 }
 
 export interface DepartmentInvitationCreateDto {
-    email: string;
+    departmentId: string;
+    employeeCode: string;
 }

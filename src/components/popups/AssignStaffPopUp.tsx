@@ -17,10 +17,9 @@ const AssignStaffPopUp = ({ isOpen, onClose, users, selectedIds, onConfirm, isLo
     const [searchTerm, setSearchTerm] = useState("");
     const [tempSelected, setTempSelected] = useState<string[]>(selectedIds);
 
-    // Lọc nhân viên theo tên hoặc email
     const filteredUsers = users.filter(u =>
         `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        u.employeeCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const toggleUser = (id: string) => {
@@ -33,7 +32,7 @@ const AssignStaffPopUp = ({ isOpen, onClose, users, selectedIds, onConfirm, isLo
         <PopUp isOpen={isOpen} onClose={onClose} title="Phân Công Thẩm Định Viên">
             <div className="space-y-4">
                 <Input
-                    placeholder="Tìm kiếm theo tên hoặc email..."
+                    placeholder="Tìm kiếm theo tên hoặc mã nhân viên..."
                     value={searchTerm}
                     onChange={setSearchTerm}
                 />
@@ -50,7 +49,7 @@ const AssignStaffPopUp = ({ isOpen, onClose, users, selectedIds, onConfirm, isLo
                             >
                                 <div className="flex flex-col">
                                     <span className="text-sm font-medium text-white">{user.firstName} {user.lastName}</span>
-                                    <span className="text-xs text-gray-500">{user.email}</span>
+                                    <span className="text-xs text-gray-500">{user.employeeCode}</span>
                                 </div>
                                 <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${tempSelected.includes(user.id) ? 'bg-primary-500 border-primary-500' : 'border-dark-600'}`}>
                                     {tempSelected.includes(user.id) && <span className="text-white text-xs">✓</span>}

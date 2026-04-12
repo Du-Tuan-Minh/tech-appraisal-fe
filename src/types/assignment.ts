@@ -16,43 +16,43 @@ export interface AppraisalAssignmentDto {
     responsibleManagerId: string;
     responsibleManagerName: string;
     status: AssignmentStatus;
-    deadline: string | null;
-    managerComment: string | null;
+    deadline?: string | null;
+    managerComment?: string | null;
     createdAt: string;
-    completedAt: string | null;
+    completedAt?: string | null;
+    reviewerCount: number;
     attachmentCount: number;
     issueCount: number;
     reviewers: AppraisalReviewerDto[];
 }
 
 export interface AssignStaffRequest {
-    assignmentId: string;
-    staffIds: string[];
-    managerNote: string | null;
+    assignmentId: string;       // [Required]
+    staffIds: string[];         // List<Guid>
+    managerNote?: string | null; // string? ManagerNote
 }
 
 export interface CompleteAssignmentRequest {
-    assignmentId: string | null;
-    finalComment: string | null;
-    decision: AssignmentStatus;
-    validatedIssueIds: string[];
-    rejectedIssueIds: string[];
-    attachmentIds: string[];
+    assignmentId: string;       // [Required]
+    finalComment: string;        // [Required] string FinalComment
+    validatedIssueIds: string[]; // List<Guid>
+    rejectedIssueIds: string[];  // List<Guid>
+    attachmentIds: string[];     // List<Guid>
 }
 
 export interface ConsolidateAppraisalRequest {
-    documentId: string;
-    requestVersionId: string;
+    documentId: string;         // [Required]
+    requestVersionId: string;   // [Required]
     validatedIssueIds: string[];
     rejectedIssueIds: string[];
     newEntries: AppraisalEntry[];
-    finalComment: string | null;
+    finalComment?: string | null;
     isPass: boolean;
     attachmentIds: string[];
 }
 
 export interface AppraisalEntry {
-    indicatorPath: string | null;
+    indicatorPath: string;
     comment: string;
     severity: IssueSeverity;
 }
@@ -60,14 +60,13 @@ export interface AppraisalEntry {
 export interface CreateParallelAssignmentsRequest {
     documentId: string;
     requestVersionId: string;
-    assignments: DepartmentAssignmentInfo[];
-    s2StaffIds: string[];
-    globalDeadline: string | null;
-    globalComment: string | null;
+    departmentAssignments: DepartmentAssignmentInfo[];
+    globalDeadline?: string | null;
+    globalComment?: string | null;
 }
 
 export interface DepartmentAssignmentInfo {
     departmentId: string;
-    individualDeadline: string | null;
-    individualComment: string | null;
+    deadline?: string | null;
+    managerComment?: string | null;
 }

@@ -1,16 +1,13 @@
 export const ReviewerStatus = {
-    Reviewing: 0,
-    Submitted: 1,
-    Rejected: 2,
-    Accepted: 3,
+    Pending: 0,
+    Reviewing: 1,
+    Completed: 2
 } as const;
 
-export type ReviewerStatus =
-    typeof ReviewerStatus[keyof typeof ReviewerStatus];
+export type ReviewerStatus = (typeof ReviewerStatus)[keyof typeof ReviewerStatus];
 
 export const REVIEWER_STATUS_LABELS: Record<ReviewerStatus, string> = {
-    [ReviewerStatus.Reviewing]: "Đang đánh giá",
-    [ReviewerStatus.Submitted]: "Đã nộp",
-    [ReviewerStatus.Rejected]: "Từ chối",
-    [ReviewerStatus.Accepted]: "Chấp nhận",
+    [ReviewerStatus.Pending]: "Chờ thẩm định",
+    [ReviewerStatus.Reviewing]: "Đang thẩm định",
+    [ReviewerStatus.Completed]: "Đã hoàn thành"
 };

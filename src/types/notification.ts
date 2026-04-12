@@ -6,8 +6,10 @@ export interface UserNotificationResponseDto {
     title: string;
     content: string;
     type: NotificationType;
-    dataJson?: string | null;
+    metadata?: any | null;
+    senderId?: string | null;
     senderName?: string | null;
+    senderAvatar?: string | null;
     isRead: boolean;
     readAt?: string | null;
     createdAt: string;
@@ -17,7 +19,7 @@ export interface NotificationCreateDto {
     title: string;
     content: string;
     type: NotificationType;
-    dataJson?: string | null;
+    metadata?: any | null;
     senderId?: string | null;
     targetUserIds: string[];
 }

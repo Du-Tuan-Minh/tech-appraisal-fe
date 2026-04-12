@@ -11,8 +11,6 @@ import Pagination from "../../components/ui/Pagination";
 import { getUsers, updateAccountStatus } from "../../services/userService";
 import { UserRole, USER_ROLE_LABELS } from "../../constants/enum/UserRole";
 import type { UserResponseDto } from "@/types/user";
-
-// Popups
 import UpdateAccountStatusPopUp from "../../components/popups/UpdateAccountStatusPopUp";
 
 const UserListPage = () => {
@@ -104,7 +102,7 @@ const UserListPage = () => {
                         <div className="relative">
                             <Input
                                 label="Tìm kiếm nhanh"
-                                placeholder="Tên, Email nhân viên..."
+                                placeholder="Tên, mã nhân viên..."
                                 value={searchQuery}
                                 onChange={(v) => setSearchQuery(v)}
                             />
@@ -197,7 +195,7 @@ const UserListPage = () => {
                                                     </div>
                                                     <div>
                                                         <div className="text-white font-semibold">{user.firstName} {user.lastName}</div>
-                                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                                        <div className="text-xs text-gray-500">{user.employeeCode}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -247,9 +245,6 @@ const UserListPage = () => {
                 </Card>
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-dark-900/20 p-4 rounded-xl border border-dark-800">
-                    <p className="text-sm text-gray-500">
-                        Hiển thị <span className="text-primary-400 font-bold">{users.length}</span> trên tổng số <span className="text-white font-bold">{totalData.totalItems}</span> nhân sự
-                    </p>
                     <Pagination
                         currentPage={filters.page}
                         totalPages={totalData.totalPages}

@@ -5,12 +5,11 @@ export const DocumentType = {
     ProductInspectionGuide: 3
 } as const;
 
-export type DocumentType =
-    (typeof DocumentType)[keyof typeof DocumentType];
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
 
 export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
-    [DocumentType.TechnicalSpecifications]: "Thông số kỹ thuật",
+    [DocumentType.TechnicalSpecifications]: "Chỉ tiêu kỹ thuật",
     [DocumentType.TechnicalRequirements]: "Yêu cầu kỹ thuật",
-    [DocumentType.ContractAppendix]: "Phụ lục hợp đồng",
-    [DocumentType.ProductInspectionGuide]: "Hướng dẫn kiểm tra sản phẩm"
+    [DocumentType.ContractAppendix]: "Phụ lục chỉ tiêu kỹ thuật hợp đồng",
+    [DocumentType.ProductInspectionGuide]: "Tài liệu kiểm tra sản phẩm"
 };

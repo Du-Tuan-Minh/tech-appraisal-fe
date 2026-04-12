@@ -39,7 +39,7 @@ const DocumentEditorPage = () => {
             setDoc(res);
             setFormData({
                 title: res.title,
-                description: res.description || "",
+                description: res.currentVersion?.technicalSpecsJson || "",
                 type: res.type,
                 priority: res.priority,
                 technicalSpecsJson: res.currentVersion?.technicalSpecsJson || "{}"
@@ -70,13 +70,19 @@ const DocumentEditorPage = () => {
     };
 
     const handleSendToAppraisal = async () => {
-        if (!id || !window.confirm("Xác nhận gửi tài liệu này đi thẩm định nội bộ?")) return;
+        if (!id || !formData) return;
+
+        const confirm = window.confirm("Hệ thống sẽ lưu bản nháp hiện tại và gửi đi thẩm định. Xác nhận?");
+        if (!confirm) return;
 
         setIsSubmittingAction(true);
         try {
+            await documentService.updateDocument(id, formData);
             await documentService.submitForAppraisal(id);
-            toast.success("Đã gửi thẩm định thành công");
-            fetchDoc();
+            toast.success("Hồ sơ đã được gửi đi thẩm định thành công!");
+            navigate("/documents");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Gửi thẩm định thất bại");
         } finally {
             setIsSubmittingAction(false);
         }
@@ -146,7 +152,6 @@ const DocumentEditorPage = () => {
                     <aside className="space-y-6">
                         <Card className="p-5 space-y-4 bg-dark-900/60 border-none shadow-xl">
                             <h3 className="text-sm font-bold text-white uppercase border-b border-dark-700 pb-2">Thông tin hệ thống</h3>
-                            {/* Fix lỗi indexing enum: Sử dụng Label Map và Color Map */}
                             <MetaRow
                                 label="Trạng thái"
                                 value={DOCUMENT_STATUS_LABELS[doc.status]}
@@ -158,17 +163,14 @@ const DocumentEditorPage = () => {
                         </Card>
 
                         <div className="space-y-3">
-                            {doc.status === DocumentStatus.Draft && (
-                                <Button
-                                    variant="primary"
-                                    className="w-full shadow-lg shadow-primary-500/20"
-                                    onClick={handleSendToAppraisal}
-                                    isLoading={isSubmittingAction}
-                                >
-                                    🚀 Gửi Thẩm Định
-                                </Button>
-                            )}
-
+                            <Button
+                                variant="primary"
+                                className="w-full shadow-lg shadow-primary-500/20"
+                                onClick={handleSendToAppraisal}
+                                isLoading={isSubmittingAction}
+                            >
+                                🚀 Gửi Thẩm Định
+                            </Button>
                             <Button variant="outline" className="w-full" onClick={() => navigate(`/documents/${id}/versions`)}>📜 Lịch sử phiên bản</Button>
                             <Button variant="ghost" className="w-full text-gray-500 hover:text-gray-300" onClick={() => navigate(`/documents/${id}`)}>👁️ Xem chi tiết tài liệu</Button>
                         </div>

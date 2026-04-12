@@ -10,16 +10,17 @@ type Props = {
   onClose: () => void;
   onSubmit: (data: DepartmentInvitationCreateDto) => Promise<void>;
   departmentName: string;
+  departmentId: string;
   isLoading?: boolean;
 };
 
-const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, isLoading = false }: Props) => {
-  const [email, setEmail] = useState("");
+const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, departmentId, isLoading = false }: Props) => {
+  const [employeeCode, setEmployeeCode] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      setEmail("");
+      setEmployeeCode("");
       setError("");
     }
   }, [isOpen]);
@@ -27,11 +28,10 @@ const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, isLoadin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email.trim()) return setError("Email là bắt buộc");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError("Email không hợp lệ");
+    if (!employeeCode.trim()) return setError("mã nhân viên là bắt buộc");
 
     try {
-      await onSubmit({ email });
+      await onSubmit({ departmentId, employeeCode });
       onClose();
     } catch (err) { }
   };
@@ -51,12 +51,12 @@ const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, isLoadin
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Email"
-              type="email"
-              placeholder="nhap-email@cong-ty.com"
-              value={email}
+              label="Mã Nhân Viên"
+              type="text"
+              placeholder="Nhập mã nhân viên"
+              value={employeeCode}
               onChange={(val) => {
-                setEmail(val);
+                setEmployeeCode(val);
                 if (error) setError("");
               }}
               error={error}

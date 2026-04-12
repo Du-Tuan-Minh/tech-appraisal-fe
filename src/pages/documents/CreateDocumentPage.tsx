@@ -7,7 +7,7 @@ import { documentService } from "@/services/documentService";
 import type { TechnicalDocumentCreateDto } from "@/types/document";
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import TechnicalSpecsEditor from "@/components/forms/TechnicalSpecsEditor";
+import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
 
 const CreateDocumentPage = () => {
     const navigate = useNavigate();
@@ -15,44 +15,55 @@ const CreateDocumentPage = () => {
 
     const [formData, setFormData] = useState<TechnicalDocumentCreateDto>({
         title: "",
+        documentCode: "",
         description: "",
         type: DocumentType.TechnicalSpecifications,
-        priority: IssueSeverity.Medium,
-        technicalSpecsJson: "{}"
+        priority: IssueSeverity.Minor,
+        attachmentIds: [],
+        technicalSpecs: {}
     });
 
     const typeOptions = useMemo(() =>
-        Object.values(DocumentType).map((v) => ({
-            value: String(v),
-            label: DOCUMENT_TYPE_LABELS[v as DocumentType]
-        })), []);
+        Object.values(DocumentType)
+            .filter(v => typeof v === 'number')
+            .map((v) => ({
+                value: String(v),
+                label: DOCUMENT_TYPE_LABELS[v as DocumentType]
+            })), []);
 
     const priorityOptions = useMemo(() =>
-        Object.values(IssueSeverity).map((v) => ({
-            value: String(v),
-            label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
-        })), []);
+        Object.values(IssueSeverity)
+            .filter(v => typeof v === 'number')
+            .map((v) => ({
+                value: String(v),
+                label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
+            })), []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.title.trim() || !formData.description.trim()) {
-            return toast.error("Vui lòng nhập đầy đủ thông tin bắt buộc.");
-        }
-
-        try {
-            JSON.parse(formData.technicalSpecsJson);
-        } catch {
-            return toast.error("Cấu trúc JSON thông số kỹ thuật không hợp lệ.");
-        }
+        if (!formData.title.trim()) return toast.error("Tiêu đề không được để trống.");
+        if (!formData.documentCode.trim()) return toast.error("Mã tài liệu không được để trống.");
 
         setIsLoading(true);
         try {
-            const newDoc = await documentService.createDocument(formData);
+            const payload: TechnicalDocumentCreateDto = {
+                title: formData.title,
+                documentCode: formData.documentCode,
+                description: formData.description,
+                type: formData.type,
+                priority: formData.priority,
+                attachmentIds: formData.attachmentIds,
+                technicalSpecs: formData.technicalSpecs
+            };
+
+            const newDoc = await documentService.createDocument(payload);
             toast.success("Khởi tạo tài liệu thành công");
-            navigate(`/documents/${newDoc.id}/editor`);
-        } catch (err) {
-            toast.error("Lỗi khi tạo tài liệu mới.");
+
+            navigate(`/documents/${newDoc.id}`);
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.response?.data?.message || "Lỗi khi tạo tài liệu mới.");
         } finally {
             setIsLoading(false);
         }
@@ -61,23 +72,32 @@ const CreateDocumentPage = () => {
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-6">
-                <header className="flex justify-between items-end">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight italic">Tạo Tài Liệu Mới</h1>
-                        <p className="text-primary-400 mt-1 text-sm italic">Khởi tạo quy trình thẩm định kỹ thuật hệ thống</p>
-                    </div>
+                <header>
+                    <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">Tạo Tài Liệu Mới</h1>
+                    <p className="text-primary-400 mt-1 text-sm italic">Khởi tạo quy trình thẩm định kỹ thuật hệ thống</p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
                         <Card className="p-6 space-y-5 border-t-2 border-primary-500 bg-dark-900/40">
-                            <Input
-                                label="Tiêu đề dự án/tài liệu"
-                                placeholder="VD: Hệ thống quản lý tài liệu kỹ thuật - Viettel"
-                                value={formData.title}
-                                onChange={(v) => setFormData(p => ({ ...p, title: v }))}
-                                required
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="Tiêu đề dự án/tài liệu"
+                                        placeholder="VD: Hệ thống Core Banking - Viettel"
+                                        value={formData.title}
+                                        onChange={(v) => setFormData(p => ({ ...p, title: v }))}
+                                        required
+                                    />
+                                </div>
+                                <Input
+                                    label="Mã tài liệu"
+                                    placeholder="VD: DOC-2026-001"
+                                    value={formData.documentCode}
+                                    onChange={(v) => setFormData(p => ({ ...p, documentCode: v }))}
+                                    required
+                                />
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <Select
@@ -95,30 +115,34 @@ const CreateDocumentPage = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="block text-xs font-bold text-primary-400 uppercase tracking-wider">Mô tả mục tiêu</label>
+                                <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">Mô tả mục tiêu</label>
                                 <textarea
-                                    className="w-full bg-dark-800 border border-dark-700 rounded-lg p-3 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[120px] transition-all"
-                                    placeholder="Nội dung tóm tắt và phạm vi của tài liệu..."
-                                    value={formData.description}
+                                    className="w-full bg-dark-950/50 border border-dark-700 rounded-lg p-3 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[100px] transition-all"
+                                    placeholder="Nội dung tóm tắt phạm vi kỹ thuật..."
+                                    value={formData.description || ""}
                                     onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <TechnicalSpecsEditor
-                                    value={formData.technicalSpecsJson}
-                                    onChange={(jsonValue) => setFormData(p => ({ ...p, technicalSpecsJson: jsonValue }))}
+                            <div className="pt-4">
+                                <NestedTechnicalSpecsEditor
+                                    value={JSON.stringify(formData.technicalSpecs || {})}
+                                    onChange={(jsonValue) => setFormData(p => ({ ...p, technicalSpecs: JSON.parse(jsonValue) }))}
                                 />
                             </div>
                         </Card>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-dark-800">
-                            <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>Hủy bỏ</Button>
-                            <Button variant="primary" type="submit" isLoading={isLoading}>Khởi tạo & Soạn thảo</Button>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>
+                                Hủy bỏ
+                            </Button>
+                            <Button variant="primary" type="submit" isLoading={isLoading} className="px-8 shadow-lg shadow-primary-900/20">
+                                Khởi tạo hệ thống
+                            </Button>
                         </div>
                     </form>
 
-                    <aside className="space-y-6">
+                    <aside>
                         <GuidelineCard />
                     </aside>
                 </div>
@@ -128,22 +152,21 @@ const CreateDocumentPage = () => {
 };
 
 const GuidelineCard = () => (
-    <Card className="p-5 bg-dark-900/50 border-none shadow-xl">
-        <h3 className="text-sm font-bold text-white mb-4 uppercase border-b border-dark-700 pb-2 flex items-center gap-2">
-            <span>💡</span> Hướng dẫn
+    <Card className="p-5 bg-dark-900/50 border-dark-800 shadow-xl sticky top-6">
+        <h3 className="text-xs font-bold text-white mb-4 uppercase border-b border-dark-700 pb-2 flex items-center gap-2">
+            <span className="text-primary-500">⚡</span> Quy chuẩn tài liệu
         </h3>
         <ul className="space-y-4">
-            <li className="text-xs text-gray-400 leading-relaxed">
-                <strong className="text-primary-300 block mb-1 uppercase tracking-tighter">Tiêu đề</strong>
-                Phải bao gồm tên hệ thống và mã định danh dự án. Tránh đặt tên quá ngắn.
+            <li className="text-[11px] text-gray-400 leading-relaxed">
+                <strong className="text-primary-300 block mb-1">MÃ TÀI LIỆU</strong>
+                Sử dụng mã định danh duy nhất của dự án để AI và Manager có thể truy xuất lịch sử thẩm định.
             </li>
-            <li className="text-xs text-gray-400 leading-relaxed">
-                <strong className="text-primary-300 block mb-1 uppercase tracking-tighter">Cấu trúc JSON</strong>
-                Cung cấp các thông số kỹ thuật cốt lõi. AI sẽ dựa vào cấu trúc này để tính toán rủi ro.
+            <li className="text-[11px] text-gray-400 leading-relaxed">
+                <strong className="text-primary-300 block mb-1">THÔNG SỐ CẤU TRÚC</strong>
+                Các thông số kỹ thuật (Specs) nên được chia theo cụm (Ví dụ: Infrastructure, Database) để hệ thống phân tích rủi ro chính xác.
             </li>
         </ul>
     </Card>
 );
-
 
 export default CreateDocumentPage;

@@ -5,7 +5,8 @@ import type {
     TechnicalDocumentCreateDto,
     TechnicalDocumentUpdateDto,
     DocumentFilterDto,
-    TechnicalDocumentResponseDto
+    TechnicalDocumentResponseDto,
+    TechnicalDocumentDetailDto
 } from "../types/document";
 import type { PagedResult } from "../types/paginationResult";
 
@@ -18,8 +19,8 @@ export const documentService = {
         return response.data.data;
     },
 
-    getDocumentById: async (id: string): Promise<TechnicalDocumentResponseDto> => {
-        const response = await axiosClient.get<ApiResponse<TechnicalDocumentResponseDto>>(
+    getDocumentById: async (id: string): Promise<TechnicalDocumentDetailDto> => {
+        const response = await axiosClient.get<ApiResponse<TechnicalDocumentDetailDto>>(
             API_ENDPOINTS.documents.getDetail(id)
         );
         return response.data.data;
@@ -54,10 +55,10 @@ export const documentService = {
     },
 
     getMyTasks: async (filters: DocumentFilterDto): Promise<PagedResult<TechnicalDocumentResponseDto>> => {
-    const response = await axiosClient.get<ApiResponse<PagedResult<TechnicalDocumentResponseDto>>>(
-        API_ENDPOINTS.documents.myTasks, 
-        { params: filters }
-    );
-    return response.data.data;
-}
+        const response = await axiosClient.get<ApiResponse<PagedResult<TechnicalDocumentResponseDto>>>(
+            API_ENDPOINTS.documents.myTasks,
+            { params: filters }
+        );
+        return response.data.data;
+    }
 };

@@ -1,18 +1,21 @@
 export const NotificationType = {
     System: 1,
-    Appraisal: 2,
-    Approval: 3,
-    Feedback: 4,
-    AiWarning: 5
+    Assignment: 2,
+    AppraisalComment: 3,
+    WorkflowResult: 4,
+    DeadlineReminder: 5,
+    IssueReported: 6,
+    DocumentMention: 7
 } as const;
 
-export type NotificationType =
-    (typeof NotificationType)[keyof typeof NotificationType];
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
     [NotificationType.System]: "Hệ thống",
-    [NotificationType.Appraisal]: "Thẩm định",
-    [NotificationType.Approval]: "Phê duyệt",
-    [NotificationType.Feedback]: "Phản hồi",
-    [NotificationType.AiWarning]: "Cảnh báo AI"
+    [NotificationType.Assignment]: "Phân công nhiệm vụ",
+    [NotificationType.AppraisalComment]: "Ý kiến thẩm định mới",
+    [NotificationType.WorkflowResult]: "Kết quả phê duyệt",
+    [NotificationType.DeadlineReminder]: "Nhắc nhở hạn xử lý",
+    [NotificationType.IssueReported]: "Báo cáo lỗi kỹ thuật",
+    [NotificationType.DocumentMention]: "Nhắc tên trong thảo luận"
 };

@@ -4,7 +4,7 @@ type Props = {
   required?: boolean;
   className?: string;
   htmlFor?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 const FormField = ({

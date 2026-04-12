@@ -1,27 +1,26 @@
-import type { IssueSeverity } from "@/constants/enum/IssueSeverity";
 import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
+import type { FeedbackIssueCreateDto } from "@/types/feedback-issue";
 
 export interface AppraisalReviewerDto {
     id: string;
     assignmentId: string;
     staffId: string;
     staffName: string;
+    departmentName: string;
     status: ReviewerStatus;
-    comment: string | null;
-    completedAt: string | null;
+    taskDescription?: string | null;
+    comment?: string | null;
+    deadline?: string | null;
+    completedAt?: string | null;
     createdAt: string;
+    issueCount: number;
+    attachmentCount: number;
 }
 
-export interface UpdateAppraisalReviewerDto {
+export interface UpdateReviewerProgressRequest {
+    reviewerId: string;
     status: ReviewerStatus;
-    comment: string | null;
-    issues: FeedbackIssueReviewDto[] | null;
-    attachmentIds: string[] | null;
-}
-
-export interface FeedbackIssueReviewDto {
-    indicatorPath: string;
-    description: string;
-    issueType: string | null;
-    severity: IssueSeverity;
+    comment?: string | null;
+    newIssues: FeedbackIssueCreateDto[];
+    attachmentIds: string[];
 }

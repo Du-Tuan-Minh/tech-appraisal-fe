@@ -39,9 +39,10 @@ export const API_ENDPOINTS = {
     appraisal: {
         createParallel: `/appraisal/create-parallel-assignments`,
         assignStaff: `/appraisal/assign-internal-staff`,
-        confirmDepartment: `/appraisal/department-confirm`,
+        confirmDepartment: (docId: string) => `/appraisal/department-confirm?documentId=${docId}`,
         submitReview: (reviewerId: string) => `/appraisal/staff-submit-review/${reviewerId}`,
         finalize: `/appraisal/complete-appraisal`,
+        getDetail: (id: string) => `/appraisal/${id}`,
     },
 
     appraisalHistory: {

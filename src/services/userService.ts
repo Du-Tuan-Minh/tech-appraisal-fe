@@ -41,6 +41,6 @@ export const requestPromotion = async (data: { currentRole: UserRole; requestedR
 };
 
 export const updateAccountStatus = async (id: string, data: UserUpdateAccountDto) => {
-    const res = await axiosClient.put<ApiResponse<any>>(API_ENDPOINTS.users.updateAccountStatus(id), data);
+    const res = await axiosClient.patch<ApiResponse<any>>(API_ENDPOINTS.users.updateAccountStatus(id), data);
     return res.data.data;
 };

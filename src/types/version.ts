@@ -1,24 +1,26 @@
-import type { RejectionReasonResponseDto } from "@/types/rejection-reason";
+import type { FeedbackIssueResponseDto } from "@/types/feedback-issue";
+import type { AttachmentResponseDto } from "@/types/attachment";
 
 export interface DocumentVersionDto {
     id: string;
-    documentId: string;
+    requestId: string;
     versionNumber: number;
     changeReason?: string | null;
     isCurrent: boolean;
     createdAt: string;
-    technicalSpecsJson?: string | null;
-    aiEvaluationResult?: string | null;
+    technicalSpecsJson?: any | null;
+    sourceIssueId?: string | null;
 }
 
 export interface DocumentVersionDetailDto extends DocumentVersionDto {
-    technicalSpecsJson: string;
-    rejectionReasons: RejectionReasonResponseDto[];
+    issuesReported: FeedbackIssueResponseDto[];
+    issuesResolved: FeedbackIssueResponseDto[];
+    attachments: AttachmentResponseDto[];
 }
 
 export interface DocumentVersionCreateDto {
-    documentId: string;
-    technicalSpecsJson: string;
+    requestId: string;
+    technicalSpecsJson: any;
     changeReason?: string | null;
-    content: string;
+    sourceIssueId?: string | null;
 }

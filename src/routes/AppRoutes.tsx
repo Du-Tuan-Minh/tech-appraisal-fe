@@ -25,6 +25,7 @@ import KnowledgeBasePage from "../pages/knowledge/KnowledgeBasePage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import AppraisalInternalPage from "../pages/appraisals/AppraisalInternalPage";
 import MyTasksPage from "../pages/appraisals/MyTasksPage";
+import UserListPage from "../pages/users/UserListPage";
 
 const AppRoutes = () => {
     return (
@@ -38,6 +39,7 @@ const AppRoutes = () => {
             <Route element={<ProtectedRoute />}>
                 {/* DASHBOARD */}
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/list-users" element={<UserListPage />} />
 
                 {/* PROFILE */}
                 <Route path="/profile" element={<ProfilePage />} />
@@ -51,21 +53,13 @@ const AppRoutes = () => {
                 <Route path="/documents/:id/editor" element={<DocumentEditorPage />} />
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
                 <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
-                
+
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:id/assign" element={<AppraisalAssignmentPage />} />
                 <Route path="/appraisals/:id/review" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
-
-                {/* 1. Trang Manager duyệt quyết định cuối cùng */}
-                <Route path="/appraisals/internal/:assignmentId" element={<AppraisalInternalPage mode="department-review" />} />
-
-                {/* 2. Trang Manager phân việc cho nhân viên */}
-                <Route path="/appraisals/assignment/:assignmentId" element={<AppraisalInternalPage mode="staff-assignment" />} />
-
-                {/* 3. Trang Nhân viên thực hiện đánh giá kỹ thuật */}
-                <Route path="/appraisals/staff-review/:assignmentId" element={<AppraisalInternalPage mode="staff-review" />} />
+                <Route path="/appraisals/internal/:id" element={<AppraisalInternalPage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

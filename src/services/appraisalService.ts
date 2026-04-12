@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "../config/apiConfig";
 import type { ApiResponse } from "../types/apiResponse";
-import type { AppraisalAssignmentDto, AssignStaffRequest } from "../types/assignment";
+import type { AppraisalAssignmentDto, AssignStaffRequest, CompleteAssignmentRequest } from "../types/assignment";
 import type { AppraisalReviewerDto, UpdateAppraisalReviewerDto } from "../types/reviewer";
 import type { UserResponseDto } from "../types/user";
 
@@ -25,10 +25,7 @@ export const appraisalService = {
 
     confirmDepartment: async (data: {
         documentId: string;
-        requestVersionId: string;
-        isApproved: boolean;
-        comment?: string;
-        technicalSpecsJson?: string;
+        CompleteAssignmentRequest: CompleteAssignmentRequest;
     }) => {
         const res = await axiosClient.post<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.confirmDepartment,
@@ -54,10 +51,10 @@ export const appraisalService = {
     },
 
     getAssignmentById: async (id: string): Promise<AppraisalAssignmentDto> => {
-        const res = await axiosClient.get<ApiResponse<AppraisalAssignmentDto>>(
-            `/appraisal/assignments/${id}`
+        const response = await axiosClient.get<ApiResponse<AppraisalAssignmentDto>>(
+            API_ENDPOINTS.appraisal.getDetail(id)
         );
-        return res.data.data;
+        return response.data.data;
     },
 
     getDepartmentUsers: async (departmentId: string): Promise<UserResponseDto[]> => {

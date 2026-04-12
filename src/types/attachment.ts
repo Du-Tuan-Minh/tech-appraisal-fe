@@ -1,35 +1,40 @@
 import type { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
+import type { LinkedEntityType } from "@/constants/enum/LinkedEntityType";
+
+export interface AttachmentLinkDto {
+    entityId: string;
+    entityType: LinkedEntityType;
+}
 
 export interface AttachmentResponseDto {
     id: string;
-    documentId: string;
-    documentTitle: string;
-    requestVersionId: string | null;
-    appraisalHistoryId: string | null;
-    feedbackIssueId: string | null;
+    technicalDocumentId: string;
     fileName: string;
-    filePath: string;
     fileSize: number;
     fileType: string;
     contentCategory: AttachmentCategory;
     uploadedById: string;
     uploaderName: string;
     createdAt: string;
-    appraisalReviewerId: string | null;
+    links: AttachmentLinkDto[];
 }
 
 export interface AttachmentCreateDto {
-    documentId: string;
-    requestVersionId: string | null;
-    appraisalHistoryId: string | null;
-    feedbackIssueId: string | null;
-    appraisalReviewerId: string | null;
+    technicalDocumentId: string;
     contentCategory: AttachmentCategory;
     file: File;
+    linkedEntityId?: string | null;
+    linkedEntityType?: LinkedEntityType | null;
 }
 
 export interface FileStreamResultDto {
     fileStream: Blob;
     fileType: string;
     fileName: string;
+}
+
+export interface CreateAttachmentLinkRequest {
+    attachmentId: string;
+    entityId: string;
+    entityType: LinkedEntityType;
 }

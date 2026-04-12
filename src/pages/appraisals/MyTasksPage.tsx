@@ -1,23 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select, Pagination } from "@/components/ui";
 import { documentService } from "@/services/documentService";
-import { getProfile } from "@/services/userService";
 import { DocumentStatus, DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import { UserRole } from "@/constants/enum/UserRole";
 import type { TechnicalDocumentResponseDto } from "@/types/document";
-import type { PagedResult } from "@/types/paginationResult";
+import { useAuth } from "@/hooks/useAuth";
 
 const MyTasksPage = () => {
     const navigate = useNavigate();
-
+    const { isManager } = useAuth();
     const [tasks, setTasks] = useState<TechnicalDocumentResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [userRole, setUserRole] = useState<UserRole | null>(null);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0 });
 
     const [filters, setFilters] = useState({
@@ -28,7 +24,6 @@ const MyTasksPage = () => {
         priority: undefined as IssueSeverity | undefined
     });
 
-    // --- DYNAMIC OPTIONS (Kế thừa từ Enums) ---
     const statusOptions = useMemo(() => [
         { value: "", label: "Tất cả trạng thái" },
         ...Object.entries(DOCUMENT_STATUS_LABELS).map(([value, label]) => ({ value, label }))
@@ -38,7 +33,6 @@ const MyTasksPage = () => {
         { value: "", label: "Tất cả mức độ" },
         ...Object.entries(ISSUE_SEVERITY_LABELS).map(([value, label]) => ({ value, label }))
     ], []);
-
 
     const fetchTasks = async (page: number = 1) => {
         setIsLoading(true);
@@ -54,28 +48,31 @@ const MyTasksPage = () => {
     };
 
     useEffect(() => {
-        const init = async () => {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) setUserRole(JSON.parse(storedUser).role);
-            fetchTasks();
-        };
-        init();
+        fetchTasks();
     }, []);
 
     const handleTaskClick = (task: TechnicalDocumentResponseDto) => {
-        // Logic điều hướng thông minh dựa trên vai trò
-        const isManager = [UserRole.CnlManager, UserRole.S2Manager, UserRole.Admin].includes(userRole as UserRole);
-        
+        // Lấy ID phân công (nếu có)
+        const assignmentId = task.currentAssignmentId || (task as any).CurrentAssignmentId;
+
         if (isManager) {
-            // Manager sang trang phân việc hoặc duyệt nội bộ
-            navigate(`/appraisals/internal/${task.id}?mode=department-review`);
+            if (assignmentId && assignmentId !== "0") {
+                // Đã giao việc -> Vào trang quản lý phân công
+                navigate(`/appraisals/assignment/${assignmentId}`);
+            } else {
+                // CHƯA GIAO VIỆC -> Manager vào duyệt nội bộ (truyền documentId để lấy thông tin)
+                navigate(`/appraisals/internal/new?documentId=${task.id}`);
+            }
         } else {
-            // Nhân viên sang trang review chuyên môn
-            navigate(`/appraisals/internal/${task.id}?mode=staff-review`);
+            // Nhân viên
+            if (assignmentId && assignmentId !== "0") {
+                navigate(`/appraisals/staff-review/${assignmentId}`);
+            } else {
+                toast.error("Hồ sơ đang chờ duyệt nội bộ.");
+            }
         }
     };
 
-    // --- UI HELPERS ---
     const getSeverityStyle = (severity: IssueSeverity) => {
         const styles: Record<IssueSeverity, string> = {
             [IssueSeverity.Information]: "text-blue-400 bg-blue-900/20",
@@ -95,9 +92,6 @@ const MyTasksPage = () => {
                     <div>
                         <h1 className="text-3xl font-bold text-white italic tracking-tight">Nhiệm Vụ Của Tôi</h1>
                         <p className="text-primary-400 mt-1 italic text-sm">Quản lý và xử lý các hồ sơ thẩm định kỹ thuật được phân công</p>
-                    </div>
-                    <div className="text-[10px] uppercase font-bold text-gray-500 tracking-widest border-l-2 border-primary-500 pl-3">
-                        Role: <span className="text-primary-400">{userRole}</span>
                     </div>
                 </header>
 
@@ -152,20 +146,33 @@ const MyTasksPage = () => {
                                         <tr key={task.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => handleTaskClick(task)}>
                                             <td className="p-4">
                                                 <div className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">{task.title}</div>
-                                                <div className="text-[10px] text-gray-500 mt-1 font-mono uppercase">{task.documentCode} • {new Date(task.createdAt).toLocaleDateString()}</div>
+                                                <div className="text-[10px] text-gray-500 mt-1 font-mono uppercase">{task.departmentName} • {new Date(task.createdAt).toLocaleDateString()}</div>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${getSeverityStyle(task.priority)}`}>
-                                                    {ISSUE_SEVERITY_LABELS[task.priority]}
+                                                <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${getSeverityStyle(Number(task.priority) as IssueSeverity)}`}>
+                                                    {ISSUE_SEVERITY_LABELS[Number(task.priority) as IssueSeverity] || `${task.priority}`}
                                                 </span>
                                             </td>
                                             <td className="p-4">
                                                 <span className="text-xs text-gray-300 font-medium border-l-2 border-dark-600 pl-2">
-                                                    {DOCUMENT_STATUS_LABELS[task.status]}
+                                                    {DOCUMENT_STATUS_LABELS[Number(task.status) as DocumentStatus] || `${task.status}`}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <Button variant="ghost" size="sm" className="text-primary-500">Xử lý</Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-primary-500 font-bold"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTaskClick(task);
+                                                    }}
+                                                >
+                                                    {isManager
+                                                        ? (task.currentAssignmentId ? "Giao việc" : "Duyệt nội bộ")
+                                                        : "Thẩm định"
+                                                    }
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))
@@ -177,10 +184,10 @@ const MyTasksPage = () => {
 
                 {pagination.totalPages > 1 && (
                     <div className="flex justify-center pt-4">
-                        <Pagination 
-                            currentPage={pagination.page} 
-                            totalPages={pagination.totalPages} 
-                            onPageChange={fetchTasks} 
+                        <Pagination
+                            currentPage={pagination.page}
+                            totalPages={pagination.totalPages}
+                            onPageChange={fetchTasks}
                         />
                     </div>
                 )}

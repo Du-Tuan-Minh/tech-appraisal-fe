@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 const RegisterPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<UserCreateDto>({
-        email: "",
+        employeeCode: "",
         password: "",
         firstName: "",
         lastName: ""
@@ -22,10 +22,8 @@ const RegisterPage = () => {
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.email) {
-            newErrors.email = "Email là bắt buộc";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = "Email không hợp lệ";
+        if (!formData.employeeCode) {
+            newErrors.employeeCode = "Mã nhân viên là bắt buộc";
         }
 
         if (!formData.password) {
@@ -121,13 +119,13 @@ const RegisterPage = () => {
                             />
 
                             <Input
-                                type="email"
-                                label="Email"
-                                placeholder="nhập email của bạn"
-                                value={formData.email}
-                                onChange={(value) => handleInputChange("email", value)}
+                                type="text"
+                                label="Mã nhân viên"
+                                placeholder="Nhập mã nhân viên của bạn"
+                                value={formData.employeeCode}
+                                onChange={(value) => handleInputChange("employeeCode", value)}
                                 required
-                                error={errors.email}
+                                error={errors.employeeCode}
                             />
 
                             <Input

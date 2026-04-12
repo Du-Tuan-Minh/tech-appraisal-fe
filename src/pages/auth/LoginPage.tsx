@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState("");
+    const [employeeCode, setEmployeeCode] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -21,11 +21,11 @@ const LoginPage = () => {
         setError("");
 
         try {
-            const res = await login({ email, password });
+            const res = await login({ employeeCode, password });
             setAuth(res.accessToken, res.refreshToken);
             navigate("/documents");
         } catch (err) {
-            setError("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
+            setError("Mã nhân viên hoặc mật khẩu không đúng. Vui lòng thử lại.");
         } finally {
             setIsLoading(false);
         }
@@ -58,13 +58,13 @@ const LoginPage = () => {
 
                     <Form onSubmit={handleSubmit}>
                         <Input
-                            type="email"
-                            label="Email"
-                            placeholder="nhập email của bạn"
-                            value={email}
-                            onChange={setEmail}
+                            type="text"
+                            label="Mã nhân viên"
+                            placeholder="nhập mã nhân viên của bạn"
+                            value={employeeCode}
+                            onChange={setEmployeeCode}
                             required
-                            error={error && !email ? "Email là bắt buộc" : ""}
+                            error={error && !employeeCode ? "Mã nhân viên là bắt buộc" : ""}
                         />
 
                         <Input

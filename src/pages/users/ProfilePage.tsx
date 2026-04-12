@@ -69,7 +69,7 @@ const ProfilePage = () => {
 
                         <div className="grid grid-cols-2 gap-y-6">
                             <div><p className="text-primary-400 text-sm">Họ và Tên</p><p className="text-white text-lg font-medium">{userData.firstName} {userData.lastName}</p></div>
-                            <div><p className="text-primary-400 text-sm">Email</p><p className="text-white text-lg font-medium">{userData.email}</p></div>
+                            <div><p className="text-primary-400 text-sm">Mã nhân viên</p><p className="text-white text-lg font-medium">{userData.employeeCode}</p></div>
                             <div><p className="text-primary-400 text-sm">Số điện thoại</p><p className="text-white text-lg font-medium">{userData.phoneNumber || "Chưa cập nhật"}</p></div>
                         </div>
                     </Card>

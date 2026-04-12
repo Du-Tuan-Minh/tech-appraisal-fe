@@ -3,7 +3,7 @@ import type { pagination } from "@/types/pagination";
 
 export interface UserResponseDto {
     id: string;
-    email: string;
+    employeeCode: string;
     role: UserRole;
     isActive: boolean;
     lastLoginAt?: string;
@@ -11,12 +11,13 @@ export interface UserResponseDto {
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
+    departmentId?: string;
     phoneNumber?: string;
     departmentName?: string
 }
 
 export interface UserCreateDto {
-    email: string;
+    employeeCode: string;
     password: string;
     firstName: string;
     lastName: string;
@@ -41,7 +42,7 @@ export interface UpdateProfileDto {
 }
 
 export interface LoginRequest {
-    email: string;
+    employeeCode: string;
     password: string;
 }
 
