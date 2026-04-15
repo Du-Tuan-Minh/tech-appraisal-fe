@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select } from "@/components/ui";
@@ -8,20 +8,45 @@ import type { TechnicalDocumentCreateDto } from "@/types/document";
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
 import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
+import { departmentService } from "@/services/departmentService";
+import type { DepartmentResponseDto } from "@/types/department";
 
 const CreateDocumentPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [centers, setCenters] = useState<DepartmentResponseDto[]>([]);
 
-    const [formData, setFormData] = useState<TechnicalDocumentCreateDto>({
+    const [formData, setFormData] = useState<TechnicalDocumentCreateDto & { departmentIds: string[] }>({
         title: "",
         documentCode: "",
         description: "",
         type: DocumentType.TechnicalSpecifications,
         priority: IssueSeverity.Minor,
         attachmentIds: [],
-        technicalSpecs: {}
+        technicalSpecs: {},
+        departmentIds: []
     });
+
+    useEffect(() => {
+        const fetchCenters = async () => {
+            try {
+                const result = await departmentService.getDepartments(1, 100);
+                setCenters(result.items);
+            } catch (err) {
+                toast.error("Không thể tải danh sách đơn vị.");
+            }
+        };
+        fetchCenters();
+    }, []);
+
+    const toggleCenter = (id: string) => {
+        setFormData(prev => ({
+            ...prev,
+            departmentIds: prev.departmentIds.includes(id)
+                ? prev.departmentIds.filter(itemId => itemId !== id)
+                : [...prev.departmentIds, id]
+        }));
+    };
 
     const typeOptions = useMemo(() =>
         Object.values(DocumentType)
@@ -60,7 +85,7 @@ const CreateDocumentPage = () => {
             const newDoc = await documentService.createDocument(payload);
             toast.success("Khởi tạo tài liệu thành công");
 
-            navigate(`/documents/${newDoc.id}`);
+            navigate(`/documents/${newDoc.id}/editor`);
         } catch (err: any) {
             console.error(err);
             toast.error(err.response?.data?.message || "Lỗi khi tạo tài liệu mới.");
@@ -84,7 +109,7 @@ const CreateDocumentPage = () => {
                                 <div className="md:col-span-2">
                                     <Input
                                         label="Tiêu đề dự án/tài liệu"
-                                        placeholder="VD: Hệ thống Core Banking - Viettel"
+                                        placeholder="VD: Hệ thống Core Banking"
                                         value={formData.title}
                                         onChange={(v) => setFormData(p => ({ ...p, title: v }))}
                                         required
@@ -130,6 +155,32 @@ const CreateDocumentPage = () => {
                                     onChange={(jsonValue) => setFormData(p => ({ ...p, technicalSpecs: JSON.parse(jsonValue) }))}
                                 />
                             </div>
+
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">
+                                    Đơn vị thẩm định phối hợp ({formData.departmentIds.length})
+                                </label>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {centers.map((center) => {
+                                        const isSelected = formData.departmentIds.includes(center.id);
+                                        return (
+                                            <button
+                                                key={center.id}
+                                                type="button"
+                                                onClick={() => toggleCenter(center.id)}
+                                                className={`p-3 rounded-lg border text-left transition-all ${isSelected
+                                                    ? "border-primary-500 bg-primary-500/10 text-white shadow-[0_0_10px_rgba(var(--color-primary-500),0.1)]"
+                                                    : "border-dark-700 bg-dark-950/30 text-gray-400 hover:border-dark-600"
+                                                    }`}
+                                            >
+                                                <div className="text-[10px] font-mono opacity-60">{center.codeDepartment}</div>
+                                                <div className="text-xs font-bold truncate">{center.nameDepartment}</div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                         </Card>
 
                         <div className="flex justify-end gap-3 pt-4">

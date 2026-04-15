@@ -55,7 +55,7 @@ const AppraisalInternalPage = () => {
 
         } catch (err: any) {
             toast.error("Lỗi tải dữ liệu thẩm định kỹ thuật.");
-            navigate("/appraisals");
+            //    navigate("/appraisals");
         } finally {
             setIsLoading(false);
         }

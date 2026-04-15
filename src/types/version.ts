@@ -1,4 +1,4 @@
-import type { FeedbackIssueResponseDto } from "@/types/feedback-issue";
+import type { FeedbackIssueResponseDto } from "@/types/feedback";
 import type { AttachmentResponseDto } from "@/types/attachment";
 
 export interface DocumentVersionDto {

@@ -60,7 +60,7 @@ const LoginPage = () => {
                         <Input
                             type="text"
                             label="Mã nhân viên"
-                            placeholder="nhập mã nhân viên của bạn"
+                            placeholder="nhập mã nhân viên"
                             value={employeeCode}
                             onChange={setEmployeeCode}
                             required
@@ -70,7 +70,7 @@ const LoginPage = () => {
                         <Input
                             type="password"
                             label="Mật khẩu"
-                            placeholder="nhập mật khẩu của bạn"
+                            placeholder="nhập mật khẩu"
                             value={password}
                             onChange={setPassword}
                             required

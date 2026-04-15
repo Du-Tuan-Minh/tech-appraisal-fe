@@ -60,5 +60,35 @@ export const documentService = {
             { params: filters }
         );
         return response.data.data;
+    },
+
+    getDocumentVersions: async (documentId: string): Promise<any[]> => {
+        const response = await axiosClient.get<ApiResponse<any[]>>(
+            API_ENDPOINTS.documents.getVersions(documentId)
+        );
+        return response.data.data;
+    },
+
+    getVersionDetail: async (versionId: string): Promise<any> => {
+        const response = await axiosClient.get<ApiResponse<any>>(
+            API_ENDPOINTS.documents.getVersionDetail(versionId)
+        );
+        return response.data.data;
+    },
+
+    updateVersion: async (versionId: string, data: any): Promise<any> => {
+        const response = await axiosClient.put<ApiResponse<any>>(
+            API_ENDPOINTS.documents.updateVersion(versionId),
+            data
+        );
+        return response.data.data;
+    },
+
+    createFromImprovement: async (issueId: string, data: any): Promise<any> => {
+        const response = await axiosClient.post<ApiResponse<any>>(
+            API_ENDPOINTS.documents.createVersionFromIssue(issueId),
+            data
+        );
+        return response.data.data;
     }
 };

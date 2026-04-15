@@ -139,7 +139,7 @@ const DocumentListPage = () => {
                                                     <Button variant="outline" size="sm" onClick={() => handleAction(() => documentService.submitForAppraisal(doc.id), "Đã gửi!")} isLoading={isSubmittingAction}>Gửi</Button>
                                                 )}
                                                 <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button>
-                                                <Button variant="ghost" size="sm" className="text-red-500/70" onClick={() => { if (confirm("Xác nhận xóa tài liệu?")) handleAction(() => documentService.getDocumentById(doc.id), "Đã xóa"); }}>Xóa</Button>
+                                                {/* <Button variant="ghost" size="sm" className="text-red-500/70" onClick={() => { if (confirm("Xác nhận xóa tài liệu?")) handleAction(() => documentService.getDocumentById(doc.id), "Đã xóa"); }}>Xóa</Button> */}
                                             </div>
                                         </td>
                                     </tr>

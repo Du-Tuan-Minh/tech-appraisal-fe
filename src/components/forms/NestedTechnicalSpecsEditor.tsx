@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Card from "../ui/Card";
@@ -18,155 +18,176 @@ interface Topic {
 
 interface Props {
     value: string;
-    onChange: (value: string) => void;
+    onChange?: (value: string) => void;
+    onSelectPath?: (path: string) => void;
     className?: string;
+    readOnly?: boolean;
 }
 
-const NestedTechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
+const NestedTechnicalSpecsEditor = ({ value, onChange, onSelectPath, className = "", readOnly = false }: Props) => {
     const [topics, setTopics] = useState<Topic[]>([]);
+    const isInternalUpdate = useRef(false);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
+        if (isInternalUpdate.current) {
+            isInternalUpdate.current = false;
+            return;
+        }
         try {
-            if (value) {
-                const parsed = JSON.parse(value);
-                const topicsArray: Topic[] = Object.entries(parsed).map(([topicTitle, topicData]) => ({
-                    id: crypto.randomUUID(), // Sử dụng chuẩn mới thay vì Math.random
-                    title: topicTitle,
-                    subItems: typeof topicData === 'object' && topicData !== null
-                        ? Object.entries(topicData).map(([key, val]) => ({
-                            id: crypto.randomUUID(),
-                            key,
-                            value: String(val)
-                        }))
-                        : []
-                }));
-                setTopics(topicsArray);
-            }
+            const parsed = value ? JSON.parse(value) : {};
+            const topicsArray: Topic[] = Object.entries(parsed).map(([title, data]) => ({
+                id: crypto.randomUUID(),
+                title,
+                subItems: typeof data === 'object' && data !== null
+                    ? Object.entries(data).map(([k, v]) => ({
+                        id: crypto.randomUUID(),
+                        key: k,
+                        value: typeof v === 'object' ? JSON.stringify(v) : String(v)
+                    }))
+                    : []
+            }));
+            setTopics(topicsArray);
         } catch (e) {
+            console.error("Lỗi parse JSON đầu vào:", e);
         }
     }, [value]);
 
-    const notifyChange = useCallback((newTopics: Topic[]) => {
-        setTopics(newTopics);
-        const jsonObj: Record<string, Record<string, any>> = {};
+    const syncToParent = useCallback((newTopics: Topic[]) => {
+        if (readOnly || !onChange) return;
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-        newTopics.forEach(topic => {
-            jsonObj[topic.title] = {};
-            topic.subItems.forEach(subItem => {
-                if (subItem.key.trim()) {
-                    try {
-                        jsonObj[topic.title][subItem.key.trim()] = JSON.parse(subItem.value);
-                    } catch {
-                        jsonObj[topic.title][subItem.key.trim()] = subItem.value;
+        debounceTimer.current = setTimeout(() => {
+            const jsonObj: Record<string, any> = {};
+            newTopics.forEach(t => {
+                const cleanTitle = t.title.trim();
+                if (!cleanTitle) return;
+
+                jsonObj[cleanTitle] = {};
+                t.subItems.forEach(s => {
+                    const cleanKey = s.key.trim();
+                    if (!cleanKey) return;
+
+                    const val = s.value.trim();
+                    if ((val.startsWith('{') || val.startsWith('['))) {
+                        try {
+                            jsonObj[cleanTitle][cleanKey] = JSON.parse(val);
+                        } catch {
+                            jsonObj[cleanTitle][cleanKey] = s.value;
+                        }
+                    } else {
+                        jsonObj[cleanTitle][cleanKey] = s.value;
                     }
-                }
+                });
             });
-        });
 
-        onChange(JSON.stringify(jsonObj, null, 2));
-    }, [onChange]);
+            isInternalUpdate.current = true;
+            onChange(JSON.stringify(jsonObj, null, 2));
+        }, 500);
+    }, [onChange, readOnly]);
 
-    const addTopic = () => {
-        const newTopic: Topic = { id: crypto.randomUUID(), title: "", subItems: [] };
-        notifyChange([...topics, newTopic]);
-    };
-
-    const updateTopic = (index: number, title: string) => {
-        const newTopics = topics.map((t, i) => i === index ? { ...t, title } : t);
-        notifyChange(newTopics);
-    };
-
-    const addSubItem = (topicIndex: number) => {
-        const newTopics = [...topics];
-        newTopics[topicIndex].subItems.push({ id: crypto.randomUUID(), key: "", value: "" });
-        notifyChange(newTopics);
-    };
-
-    const updateSubItem = (tIdx: number, sIdx: number, field: keyof SubItem, val: string) => {
-        const newTopics = [...topics];
-        newTopics[tIdx].subItems[sIdx] = { ...newTopics[tIdx].subItems[sIdx], [field]: val };
-        notifyChange(newTopics);
+    const handleUpdate = (updater: (old: Topic[]) => Topic[]) => {
+        if (readOnly) return;
+        const next = updater(topics);
+        setTopics(next);
+        syncToParent(next);
     };
 
     return (
         <div className={`space-y-4 ${className}`}>
-            <div className="flex justify-between items-end">
-                <FormField label={`Thông số kỹ thuật (${topics.length} chủ đề)`} required />
-                <Button variant="outline" size="sm" onClick={addTopic} type="button">
+            <div className="flex justify-between items-center">
+                <FormField label={`Thông số kỹ thuật (${topics.length})`} />
+                <Button variant="outline" size="sm" onClick={() => handleUpdate(prev => [...prev, { id: crypto.randomUUID(), title: "", subItems: [] }])} type="button">
                     + Thêm chủ đề
                 </Button>
             </div>
 
-            <Card className="bg-dark-950/50 p-4 border-dark-700">
-                <div className="max-h-[500px] overflow-y-auto custom-scrollbar space-y-6">
-                    {topics.length === 0 ? (
-                        <div className="text-center py-10 opacity-50 italic text-sm">
-                            Chưa có dữ liệu thông số.
-                        </div>
-                    ) : (
-                        topics.map((topic, tIdx) => (
-                            <div key={topic.id} className="group relative border border-dark-700 rounded-lg p-4 bg-dark-800/40 hover:border-primary-900/50 transition-colors">
-                                <div className="flex gap-3 mb-4">
-                                    <Input
-                                        placeholder="Tên chủ đề (ví dụ: Vi xử lý, RAM...)"
-                                        value={topic.title}
-                                        onChange={(v) => updateTopic(tIdx, v)}
-                                        className="font-bold text-primary-400"
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => notifyChange(topics.filter((_, i) => i !== tIdx))}
-                                        className="text-red-500 hover:bg-red-500/10"
-                                    >✕</Button>
-                                </div>
-
-                                <div className="pl-6 space-y-3 border-l border-dark-700">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Chi tiết cấu hình</span>
-                                        <Button variant="ghost" size="sm" onClick={() => addSubItem(tIdx)} className="h-7 text-xs text-primary-500">
-                                            + Thêm dòng
-                                        </Button>
-                                    </div>
-
-                                    {topic.subItems.map((sub, sIdx) => (
-                                        <div key={sub.id} className="flex gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
-                                            <Input
-                                                placeholder="Khóa (Key)"
-                                                value={sub.key}
-                                                onChange={(v) => updateSubItem(tIdx, sIdx, "key", v)}
-                                                className="text-sm"
-                                            />
-                                            <Input
-                                                placeholder="Giá trị (Value)"
-                                                value={sub.value}
-                                                onChange={(v) => updateSubItem(tIdx, sIdx, "value", v)}
-                                                className="text-sm"
-                                            />
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    const newTopics = [...topics];
-                                                    newTopics[tIdx].subItems.splice(sIdx, 1);
-                                                    notifyChange(newTopics);
-                                                }}
-                                                className="text-gray-600 hover:text-red-400"
-                                            >✕</Button>
-                                        </div>
-                                    ))}
-                                </div>
+            <Card className="bg-dark-950/50 p-4 border-dark-700 max-h-[600px] overflow-y-auto custom-scrollbar">
+                <div className="space-y-6">
+                    {topics.map((topic, tIdx) => (
+                        <div key={topic.id} className="group relative border border-dark-700 rounded-lg p-4 bg-dark-800/40 hover:border-primary-500/30 transition-all">
+                            <div className="flex gap-3 mb-4">
+                                <Input
+                                    placeholder="Tên chủ đề"
+                                    value={topic.title}
+                                    onChange={(v) => handleUpdate(prev => prev.map((t, i) => i === tIdx ? { ...t, title: v } : t))}
+                                    className="font-bold text-primary-400 border-none bg-transparent focus:bg-dark-900"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-500"
+                                    onClick={() => handleUpdate(prev => prev.filter((_, i) => i !== tIdx))}
+                                >✕</Button>
                             </div>
-                        ))
-                    )}
+
+                            <div className="pl-6 space-y-3 border-l-2 border-dark-700">
+                                {topic.subItems.map((sub, sIdx) => (
+                                    <div key={sub.id} className="group/item flex gap-2 items-center">
+                                        <Input
+                                            placeholder="Key"
+                                            value={sub.key}
+                                            onChange={(v) => handleUpdate(prev => {
+                                                const next = [...prev];
+                                                next[tIdx].subItems[sIdx].key = v;
+                                                return next;
+                                            })}
+                                            className="text-sm h-8"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => onSelectPath?.(`${topic.title} > ${sub.key}`)}
+                                            className="px-2 text-primary-500 hover:scale-125 transition-transform opacity-0 group-hover/item:opacity-100"
+                                            title="Trích xuất vị trí này"
+                                        >
+                                            📍
+                                        </button>
+
+                                        <Input
+                                            placeholder="Value"
+                                            value={sub.value}
+                                            onChange={(v) => handleUpdate(prev => {
+                                                const next = [...prev];
+                                                next[tIdx].subItems[sIdx].value = v;
+                                                return next;
+                                            })}
+                                            className="text-sm h-8"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            className="text-gray-600 hover:text-red-500 px-1"
+                                            onClick={() => handleUpdate(prev => {
+                                                const next = [...prev];
+                                                next[tIdx].subItems = next[tIdx].subItems.filter((_, i) => i !== sIdx);
+                                                return next;
+                                            })}
+                                        >✕</button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={() => handleUpdate(prev => {
+                                        const next = [...prev];
+                                        next[tIdx].subItems.push({ id: crypto.randomUUID(), key: "", value: "" });
+                                        return next;
+                                    })}
+                                    className="text-[10px] text-primary-500 hover:underline uppercase font-bold"
+                                >
+                                    + Thêm dòng
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </Card>
-
-            <details className="group">
-                <summary className="text-[10px] text-gray-600 cursor-pointer uppercase font-bold hover:text-primary-500">
-                    Raw JSON Output
+            <details className="group mt-4">
+                <summary className="text-[10px] text-gray-600 cursor-pointer uppercase font-bold hover:text-primary-500 transition-colors">
+                    View Raw Specifications JSON
                 </summary>
-                <pre className="mt-2 p-3 bg-black/60 rounded border border-dark-800 text-[10px] text-green-500 overflow-x-auto font-mono">
+                <pre className="mt-2 p-3 bg-black/60 rounded border border-dark-800 text-[10px] text-green-500 overflow-x-auto font-mono custom-scrollbar">
                     {value || "{}"}
                 </pre>
             </details>

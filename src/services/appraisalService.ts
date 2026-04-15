@@ -64,15 +64,15 @@ export const appraisalService = {
         return res.data.data;
     },
 
-    rejectDocument: async (data: {
-        documentId: string;
-        reason: string;
-        technicalSpecsJson?: string;
-    }) => {
-        const res = await axiosClient.post<ApiResponse<any>>(
-            API_ENDPOINTS.signing.reject,
-            data
-        );
-        return res.data.data;
-    }
+    // rejectDocument: async (data: {
+    //     documentId: string;
+    //     reason: string;
+    //     technicalSpecsJson?: string;
+    // }) => {
+    //     const res = await axiosClient.post<ApiResponse<any>>(
+    //         API_ENDPOINTS.signing.reject,
+    //         data
+    //     );
+    //     return res.data.data;
+    // }
 };

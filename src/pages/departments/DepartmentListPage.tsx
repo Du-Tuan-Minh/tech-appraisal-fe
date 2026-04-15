@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/layout";
 import { Button, Card, Pagination } from "@/components/ui";
 import { toast } from "react-hot-toast";
@@ -11,6 +11,7 @@ import type { DepartmentResponseDto } from "@/types/department";
 
 const DepartmentListPage = () => {
   const navigate = useNavigate();
+  const { parentId } = useParams<{ parentId: string }>();
 
   const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
   const [pagination, setPagination] = useState({
@@ -22,7 +23,6 @@ const DepartmentListPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Popup 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -31,7 +31,7 @@ const DepartmentListPage = () => {
   const fetchDepartments = useCallback(async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await departmentService.getDepartments(page, pagination.limit);
+      const response = await departmentService.getDepartments(page, pagination.limit, "", parentId);
 
       setDepartments(response.items);
       setPagination(prev => ({
@@ -41,12 +41,11 @@ const DepartmentListPage = () => {
         totalPages: response.totalPages
       }));
     } catch (err: any) {
-      console.error("Fetch Departments Failed:", err);
-      toast.error(err.response?.data?.message || "Không thể tải danh sách phòng ban.");
+      toast.error(err.response?.data?.message);
     } finally {
       setIsLoading(false);
     }
-  }, [pagination.limit]);
+  }, [pagination.limit, parentId]);
 
   useEffect(() => {
     fetchDepartments(1);
@@ -55,7 +54,7 @@ const DepartmentListPage = () => {
   const handleCreateDepartment = async (data: any) => {
     setIsSubmitting(true);
     try {
-      await departmentService.createDepartment(data);
+      await departmentService.createDepartment({ ...data, parentId });
       toast.success("Tạo phòng ban thành công!");
       fetchDepartments(1);
       setIsCreateOpen(false);
@@ -72,7 +71,6 @@ const DepartmentListPage = () => {
     try {
       await departmentService.createInvitation({
         employeeCode: data.employeeCode,
-        departmentId: selectedDepartment.id
       });
       toast.success(`Đã gửi lời mời đến ${data.employeeCode}`);
       setIsInviteOpen(false);

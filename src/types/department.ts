@@ -2,11 +2,9 @@ export interface DepartmentResponseDto {
     id: string;
     nameDepartment: string;
     codeDepartment: string;
-    description?: string | null;
-    managerName?: string | null;
-    parentId?: string | null;
-    userCount: number;
-    subDepartmentCount?: number | null;
+    description: string | null;
+    managerName: string | null;
+    parentId: string | null;
     createdAt: string;
 }
 
@@ -14,13 +12,12 @@ export interface DepartmentCreateDto {
     nameDepartment: string;
     codeDepartment: string;
     description?: string | null;
-    parentId?: string | null;
 }
 
 export interface DepartmentUpdateDto {
     nameDepartment: string;
     description?: string | null;
-    parentId?: string | null;
+    parentId: string | null;
 }
 
 export interface DepartmentInvitationResponseDto {
@@ -34,6 +31,5 @@ export interface DepartmentInvitationResponseDto {
 }
 
 export interface DepartmentInvitationCreateDto {
-    departmentId: string;
     employeeCode: string;
 }

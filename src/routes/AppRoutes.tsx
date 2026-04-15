@@ -6,6 +6,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProfilePage from "../pages/users/ProfilePage";
 import DepartmentListPage from "../pages/departments/DepartmentListPage";
+import CenterListPage from "../pages/departments/CenterListPage";
 import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
 import DocumentEditorPage from "../pages/documents/DocumentEditorPage";
@@ -27,6 +28,7 @@ import AppraisalInternalPage from "../pages/appraisals/AppraisalInternalPage";
 import MyTasksPage from "../pages/appraisals/MyTasksPage";
 import UserListPage from "../pages/users/UserListPage";
 
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -45,7 +47,8 @@ const AppRoutes = () => {
                 <Route path="/profile" element={<ProfilePage />} />
 
                 {/* DEPARTMENTS */}
-                <Route path="/departments" element={<DepartmentListPage />} />
+                <Route path="/centers" element={<CenterListPage />} />
+                <Route path="/centers/:parentId/departments" element={<DepartmentListPage />} />
 
                 {/* DOCUMENTS */}
                 <Route path="/documents" element={<DocumentListPage />} />
@@ -57,9 +60,9 @@ const AppRoutes = () => {
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:id/assign" element={<AppraisalAssignmentPage />} />
-                <Route path="/appraisals/:id/review" element={<AppraisalReviewPage />} />
+                <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
-                <Route path="/appraisals/internal/:id" element={<AppraisalInternalPage />} />
+                <Route path="/appraisals/internal/:documentId/:assignmentId?" element={<AppraisalInternalPage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

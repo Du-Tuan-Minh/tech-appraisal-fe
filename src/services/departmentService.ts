@@ -11,10 +11,12 @@ import type { PagedResult } from "../types/paginationResult";
 import type { ApiResponse } from "@/types/apiResponse";
 
 export const departmentService = {
-    getDepartments: async (page: number = 1, pageSize: number = 10, searchTerm?: string): Promise<PagedResult<DepartmentResponseDto>> => {
-        const response = await axiosClient.get<ApiResponse<PagedResult<DepartmentResponseDto>>>(
-            API_ENDPOINTS.departments.getAll({ page, pageSize }, searchTerm)
-        );
+    getDepartments: async (page: number = 1, pageSize: number = 10, searchTerm?: string, parentId?: string): Promise<PagedResult<DepartmentResponseDto>> => {
+        const url = parentId
+            ? API_ENDPOINTS.departments.getSubDepartments(parentId, { page, pageSize }, searchTerm)
+            : API_ENDPOINTS.departments.getCenters({ page, pageSize }, searchTerm);
+
+        const response = await axiosClient.get<ApiResponse<PagedResult<DepartmentResponseDto>>>(url);
         return response.data.data;
     },
 

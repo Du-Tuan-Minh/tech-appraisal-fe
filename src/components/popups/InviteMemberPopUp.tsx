@@ -14,7 +14,14 @@ type Props = {
   isLoading?: boolean;
 };
 
-const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, departmentId, isLoading = false }: Props) => {
+const InviteMemberPopUp = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  departmentName,
+  departmentId,
+  isLoading = false
+}: Props) => {
   const [employeeCode, setEmployeeCode] = useState("");
   const [error, setError] = useState("");
 
@@ -28,12 +35,18 @@ const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, departme
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!employeeCode.trim()) return setError("mã nhân viên là bắt buộc");
+    if (!employeeCode.trim()) {
+      return setError("Mã nhân viên là bắt buộc");
+    }
 
     try {
-      await onSubmit({ departmentId, employeeCode });
+      await onSubmit({
+        employeeCode: employeeCode.trim()
+      });
       onClose();
-    } catch (err) { }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Không thể gửi lời mời. Vui lòng thử lại.");
+    }
   };
 
   return (
@@ -43,17 +56,19 @@ const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, departme
       title="Mời Thành Viên"
     >
       <div className="space-y-6">
-        <p className="text-primary-400 text-sm">
-          Mời thành viên tham gia phòng ban:{" "}
-          <span className="text-white font-medium">{departmentName}</span>
-        </p>
+        <div className="bg-primary-900/20 p-3 rounded-lg border border-primary-500/20">
+          <p className="text-primary-400 text-sm">
+            Đang mời tham gia:{" "}
+            <span className="text-white font-semibold">{departmentName}</span>
+          </p>
+        </div>
 
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
               label="Mã Nhân Viên"
               type="text"
-              placeholder="Nhập mã nhân viên"
+              placeholder="Ví dụ: VTS_123456"
               value={employeeCode}
               onChange={(val) => {
                 setEmployeeCode(val);
@@ -67,15 +82,20 @@ const InviteMemberPopUp = ({ isOpen, onClose, onSubmit, departmentName, departme
           </div>
 
           <div className="flex justify-end space-x-3 mt-8">
-            <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              disabled={isLoading}
+              type="button"
+            >
               Hủy
             </Button>
             <Button
               variant="primary"
               type="submit"
-              disabled={isLoading}
+              isLoading={isLoading}
             >
-              {isLoading ? "Đang gửi..." : "Gửi Lời Mời"}
+              Gửi Lời Mời
             </Button>
           </div>
         </Form>

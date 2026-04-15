@@ -1,5 +1,5 @@
 import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
-import type { FeedbackIssueResponseDto, FeedbackIssueCreateDto } from "@/types/feedback-issue";
+import type { FeedbackIssueResponseDto, FeedbackIssueCreateDto } from "@/types/feedback";
 
 export interface AppraisalHistoryResponseDto {
     id: string;
@@ -19,9 +19,7 @@ export interface AppraisalHistoryResponseDto {
 
 export interface AppraisalHistoryCreateDto {
     documentId: string;
-    requestVersionId: string;
     appraisalAssignmentId?: string | null;
-    newStatus: DocumentStatus;
     comment?: string | null;
     newIssues: FeedbackIssueCreateDto[];
     attachmentIds: string[];

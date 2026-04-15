@@ -1,17 +1,16 @@
+import { useMemo } from "react";
 import { getRoleFromToken } from "@/utils/auth";
 import { UserRole } from "@/constants/enum/UserRole";
 
 export const useAuth = () => {
     const rawRole = getRoleFromToken();
-    let role: number;
 
-    if (typeof rawRole === 'string' && isNaN(Number(rawRole))) {
-        role = (UserRole as any)[rawRole] || 0;
-    } else {
-        role = Number(rawRole);
-    }
-
-    console.log("🔍 [useAuth Debug] Raw:", rawRole, "-> Parsed Role:", role);
+    const role: number = useMemo(() => {
+        if (typeof rawRole === 'string' && isNaN(Number(rawRole))) {
+            return (UserRole as any)[rawRole] || 0;
+        }
+        return Number(rawRole) || 0;
+    }, [rawRole]);
 
     return {
         role,

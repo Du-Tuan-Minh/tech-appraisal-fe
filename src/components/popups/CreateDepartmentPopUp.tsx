@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Form from "../ui/Form";
@@ -13,27 +13,53 @@ type Props = {
 };
 
 const CreateDepartmentPopUp = ({ isOpen, onClose, onSubmit, isLoading = false }: Props) => {
-  const [formData, setFormData] = useState<DepartmentCreateDto>({ name: "", description: "" });
+  // Khởi tạo form đúng với DTO: ParentCode
+  const initialForm: DepartmentCreateDto = {
+    nameDepartment: "",
+    codeDepartment: "",
+    description: "",
+  };
+
+  const [formData, setFormData] = useState<DepartmentCreateDto>(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Reset form khi đóng/mở popup
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(initialForm);
+      setErrors({});
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      setErrors({ name: "Tên phòng ban là bắt buộc" });
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.nameDepartment.trim()) {
+      newErrors.nameDepartment = "Tên phòng ban là bắt buộc";
+    }
+    if (!formData.codeDepartment.trim()) {
+      newErrors.codeDepartment = "Mã phòng ban là bắt buộc";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
-      await onSubmit(formData);
-      setFormData({ name: "", description: "" });
-      setErrors({});
+      const submitData = {
+        ...formData
+      };
+
+      await onSubmit(submitData);
       onClose();
     } catch (err) { }
   };
 
   const handleInputChange = (field: keyof DepartmentCreateDto, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   return (
@@ -42,19 +68,34 @@ const CreateDepartmentPopUp = ({ isOpen, onClose, onSubmit, isLoading = false }:
         <div className="space-y-4">
           <Input
             label="Tên phòng ban"
-            value={formData.name}
-            onChange={(v) => handleInputChange("name", v)}
-            error={errors.name}
+            placeholder="Ví dụ: Trung tâm Kỹ thuật"
+            value={formData.nameDepartment}
+            onChange={(v) => handleInputChange("nameDepartment", v)}
+            error={errors.nameDepartment}
             required
           />
+
+          <Input
+            label="Mã phòng ban"
+            placeholder="Ví dụ: TTKT_01"
+            value={formData.codeDepartment}
+            onChange={(v) => handleInputChange("codeDepartment", v)}
+            error={errors.codeDepartment}
+            required
+          />
+
           <Input
             label="Mô tả"
+            placeholder="Nhập mô tả ngắn gọn..."
             value={formData.description ?? ""}
             onChange={(v) => handleInputChange("description", v)}
           />
         </div>
+
         <div className="flex justify-end space-x-3 mt-6">
-          <Button variant="ghost" onClick={onClose} type="button">Hủy</Button>
+          <Button variant="ghost" onClick={onClose} type="button" disabled={isLoading}>
+            Hủy
+          </Button>
           <Button
             variant="primary"
             type="submit"

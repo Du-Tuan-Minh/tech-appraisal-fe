@@ -9,46 +9,51 @@ interface TechnicalSpec {
 }
 
 interface Props {
-    value: string;
-    onChange: (value: string) => void;
+    value: Record<string, any>; // ✅ đổi sang object
+    onChange: (value: Record<string, any>) => void; // ✅ trả object
     className?: string;
 }
 
 const TechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
     const [specs, setSpecs] = useState<TechnicalSpec[]>([]);
 
+    // ✅ sync từ parent → local state
     useEffect(() => {
-        try {
-            if (value) {
-                const parsed = JSON.parse(value);
-                if (JSON.stringify(parsed) !== JSON.stringify(Object.fromEntries(specs.map(s => [s.key, s.value])))) {
-                    const specsArray = Object.entries(parsed).map(([key, val]) => ({
-                        key,
-                        value: String(val)
-                    }));
-                    setSpecs(specsArray);
-                }
-            }
-        } catch (e) {
+        if (!value || typeof value !== "object") {
+            setSpecs([]);
+            return;
         }
+
+        const specsArray = Object.entries(value).map(([key, val]) => ({
+            key,
+            value: typeof val === "object" ? JSON.stringify(val) : String(val)
+        }));
+
+        setSpecs(specsArray);
     }, [value]);
 
-    // Hàm cập nhật và bắn data ngược lên Parent
-    const notifyChange = (newSpecs: TechnicalSpec[]) => {
-        setSpecs(newSpecs);
-        const jsonObj: Record<string, any> = {};
-        newSpecs.forEach(s => {
-            if (s.key.trim()) {
-                try {
-                    // Thử parse xem có phải số hoặc object không, nếu không thì để string
-                    jsonObj[s.key.trim()] = JSON.parse(s.value);
-                } catch {
-                    jsonObj[s.key.trim()] = s.value;
-                }
+    // ✅ build object từ UI
+    const buildJson = (list: TechnicalSpec[]) => {
+        const obj: Record<string, any> = {};
+
+        list.forEach(s => {
+            if (!s.key.trim()) return;
+
+            try {
+                obj[s.key.trim()] = JSON.parse(s.value);
+            } catch {
+                obj[s.key.trim()] = s.value;
             }
         });
-        onChange(JSON.stringify(jsonObj, null, 2));
+
+        return obj;
     };
+
+    const notifyChange = (newSpecs: TechnicalSpec[]) => {
+        setSpecs(newSpecs);
+        onChange(buildJson(newSpecs)); // ✅ trả object
+    };
+
     const addRow = () => notifyChange([...specs, { key: "", value: "" }]);
 
     const removeRow = (index: number) => {
@@ -84,7 +89,7 @@ const TechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
                     ) : (
                         <div className="space-y-4">
                             {specs.map((spec, index) => (
-                                <div key={index} className="flex gap-3 items-start animate-fadeIn">
+                                <div key={index} className="flex gap-3 items-start">
                                     <Input
                                         placeholder="Tên (Key)..."
                                         value={spec.key}
@@ -113,11 +118,11 @@ const TechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
             </Card>
 
             <details className="cursor-pointer group">
-                <summary className="text-[10px] text-gray-500 uppercase font-bold hover:text-primary-400 transition-colors">
-                    Xem cấu trúc JSON thực tế
+                <summary className="text-[10px] text-gray-500 uppercase font-bold hover:text-primary-400">
+                    Xem JSON
                 </summary>
-                <pre className="mt-2 p-3 bg-black/40 rounded text-[10px] font-mono text-accent-green border border-dark-800 overflow-x-auto">
-                    {value || "{}"}
+                <pre className="mt-2 p-3 bg-black/40 rounded text-[10px] font-mono text-green-400 border border-dark-800 overflow-x-auto">
+                    {JSON.stringify(value || {}, null, 2)}
                 </pre>
             </details>
         </div>

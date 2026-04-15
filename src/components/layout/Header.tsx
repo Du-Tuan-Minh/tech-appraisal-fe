@@ -26,7 +26,7 @@ const Header = () => {
 
     const navigation = [
         { name: "Dashboard", path: "/dashboard", icon: "🏠" },
-        { name: "Phòng Ban", path: "/departments", icon: "🏢" },
+        { name: "Phòng Ban", path: "/centers", icon: "🏢" },
         { name: "Tài Liệu", path: "/documents", icon: "📄" },
         { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },
         { name: "Ký Số", path: "/signatures", icon: "✍️" },
@@ -64,9 +64,7 @@ const Header = () => {
                         ))}
                     </nav>
 
-                    {/* User Menu */}
                     <div className="flex items-center space-x-4">
-                        {/* Notifications */}
                         <Button variant="ghost" size="sm" className="relative">
                             <span className="text-xl">🔔</span>
                             <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -82,7 +80,6 @@ const Header = () => {
                                 <span className="text-gray-400">▼</span>
                             </Button>
 
-                            {/* Dropdown Menu */}
                             <div className="absolute right-0 mt-2 w-48 bg-dark-800 border border-dark-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                                 <div className="py-1">
                                     <Link
@@ -102,7 +99,6 @@ const Header = () => {
                             </div>
                         </div>
 
-                        {/* Mobile Menu Button */}
                         <Button
                             variant="ghost"
                             size="sm"
@@ -134,7 +130,6 @@ const Header = () => {
                             </Link>
                         ))}
 
-                        {/* Mobile User Menu */}
                         <div className="pt-2 mt-2 border-t border-dark-800">
                             <Link
                                 to="/profile"

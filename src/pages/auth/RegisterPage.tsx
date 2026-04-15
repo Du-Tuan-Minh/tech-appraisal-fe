@@ -121,7 +121,7 @@ const RegisterPage = () => {
                             <Input
                                 type="text"
                                 label="Mã nhân viên"
-                                placeholder="Nhập mã nhân viên của bạn"
+                                placeholder="Nhập mã nhân viên"
                                 value={formData.employeeCode}
                                 onChange={(value) => handleInputChange("employeeCode", value)}
                                 required
@@ -131,7 +131,7 @@ const RegisterPage = () => {
                             <Input
                                 type="password"
                                 label="Mật khẩu"
-                                placeholder="nhập mật khẩu của bạn"
+                                placeholder="nhập mật khẩu"
                                 value={formData.password}
                                 onChange={(value) => handleInputChange("password", value)}
                                 required

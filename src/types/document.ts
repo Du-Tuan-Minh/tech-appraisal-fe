@@ -24,6 +24,7 @@ export interface TechnicalDocumentResponseDto {
     totalVersions: number;
     currentAssignmentId?: string | null;
     qrCode?: string | null;
+    currentVersionId?: string | null;
 }
 
 export interface TechnicalDocumentDetailDto extends TechnicalDocumentResponseDto {
@@ -49,6 +50,7 @@ export interface TechnicalDocumentUpdateDto {
     description?: string | null;
     type: DocumentType;
     priority: IssueSeverity;
+    technicalSpecs?: any | null;
 }
 
 export interface DocumentFilterDto extends pagination {

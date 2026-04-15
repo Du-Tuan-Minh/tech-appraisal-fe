@@ -10,6 +10,12 @@ export const API_ENDPOINTS = {
         logout: `/auth/logout`,
     },
 
+    attachments: {
+        upload: `/attachments/upload`,
+        delete: (id: string) => `/attachments/${id}`,
+        getFile: (id: string) => `/attachments/attachment-file-detail/${id}`,
+    },
+
     users: {
         profile: `/users/my-profile`,
         updateProfile: `/users/update-profile`,
@@ -20,15 +26,17 @@ export const API_ENDPOINTS = {
     },
 
     documents: {
-        create: `/documents/create-document`,
-        submitInternal: (id: string) => `/documents/${id}/submit-internal`,
-        handleFeedback: (id: string) => `/documents/${id}/create-version-appraisal`,
-        createFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
+        list: "/documents/list-document",
+        create: "/documents/create-document",
         getDetail: (id: string) => `/documents/${id}/document-detail`,
         updateDraft: (id: string) => `/documents/${id}/update-draft`,
-        list: `/documents/list-document`,
-        versions: (documentId: string) => `/documents/${documentId}/versions`,
-        myTasks: `/documents/my-tasks`,
+        handleFeedback: (id: string) => `/documents/${id}/create-version-appraisal`,
+        submitInternal: (id: string) => `/documents/${id}/submit-internal`,
+        getVersions: (docId: string) => `/documents/${docId}/versions`,
+        getVersionDetail: (versionId: string) => `/documents/versions/${versionId}`,
+        updateVersion: (versionId: string) => `/documents/versions/${versionId}`,
+        myTasks: "/documents/my-tasks",
+        createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
     },
 
     ai: {
@@ -50,17 +58,11 @@ export const API_ENDPOINTS = {
         getRejections: (historyId: string) => `/appraisal-history/${historyId}/rejections`,
     },
 
-    attachments: {
-        upload: `/attachments/upload`,
-        getByEntity: (entityId: string) => `/attachments/attachment-detail/${entityId}`,
-        delete: (id: string) => `/attachments/${id}`,
-        fileDetail: (id: string) => `/attachments/attachment-file-detail/${id}`,
-    },
-
     feedback: {
         getByDocument: (documentId: string) => `/feedback/document/${documentId}`,
         getDetail: (id: string) => `/feedback/issues/${id}`,
         report: `/feedback/report`,
+        addReviewIssue: `/feedback/add-issue`,
         updateStatus: (id: string) => `/feedback/issues/${id}/status`,
         finalize: (id: string) => `/feedback/issues/${id}/finalize`,
     },
@@ -87,8 +89,10 @@ export const API_ENDPOINTS = {
         create: `/departments/create-department`,
         update: (id: string) => `/departments/${id}/update-department`,
         delete: (id: string) => `/departments/${id}/delete-department`,
-        getAll: ({ page, pageSize }: pagination, searchTerm?: string) =>
-            `/departments/get-all-department?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${searchTerm}` : ""}`,
+        getCenters: ({ page, pageSize }: pagination, searchTerm?: string) =>
+            `/departments/centers?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        getSubDepartments: (parentId: string, { page, pageSize }: pagination, searchTerm?: string) =>
+            `/departments/${parentId}/sub-departments?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
     },
 };
 
