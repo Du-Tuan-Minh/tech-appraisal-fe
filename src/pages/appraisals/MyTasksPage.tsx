@@ -71,7 +71,7 @@ const MyTasksPage = () => {
             if (hasAssignment) {
                 navigate(`/appraisals/internal/${docId}/${assignmentId}`);
             } else {
-                toast.error("Hồ sơ này chưa được phân công cho bạn.");
+                navigate(`/appraisals/${docId}/review/${verId}`)
             }
         }
     };
@@ -145,7 +145,7 @@ const MyTasksPage = () => {
                                     tasks.map(task => (
                                         <tr key={task.id} className="hover:bg-primary-500/5 transition-all cursor-pointer group" onClick={() => handleTaskClick(task)}>
                                             <td className="p-4">
-                                                <div className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors uppercase">{task.documentCode}</div>
+                                                <div className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors uppercase">{task.requesterName}</div>
                                                 <div className="text-xs text-gray-300 mt-0.5 line-clamp-1">{task.title}</div>
                                                 <div className="text-[10px] text-gray-500 mt-1 flex gap-2 items-center">
                                                     <span className="bg-dark-800 px-1.5 py-0.5 rounded text-primary-300">{task.departmentName}</span>
@@ -177,7 +177,7 @@ const MyTasksPage = () => {
                                                     }}
                                                 >
                                                     {isManager
-                                                        ? (task.currentAssignmentId ? "Quản lý" : "Duyệt nhanh")
+                                                        ? (task.currentAssignmentId ? "Quản lý" : "Thẩm định")
                                                         : "Thực hiện"
                                                     }
                                                 </Button>

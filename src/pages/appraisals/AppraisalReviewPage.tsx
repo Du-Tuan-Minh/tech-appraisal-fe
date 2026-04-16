@@ -13,6 +13,9 @@ import { IssueCategory, ISSUE_CATEGORY_LABELS } from "@/constants/enum/IssueCate
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
 import { documentService } from "../../services/documentService";
 import { signingService } from "../../services/signingService";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/constants/enum/UserRole";
+
 
 interface FeedbackFormState {
     indicatorPath: string;
@@ -37,7 +40,6 @@ const IssueRow: React.FC<{ item: PendingIssue; onDelete: () => void; disabled?: 
             <div className="flex gap-2 items-center flex-wrap">
                 {item.indicatorPath && <code className="text-[10px] text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">📍 {item.indicatorPath}</code>}
                 <Badge className="text-orange-400 bg-orange-900/20">{ISSUE_SEVERITY_LABELS[item.severity]}</Badge>
-                <Badge className="text-blue-400 bg-blue-900/20">Dự thảo</Badge>
             </div>
             <p className="text-slate-300 text-sm">{item.description}</p>
         </div>
@@ -47,6 +49,7 @@ const IssueRow: React.FC<{ item: PendingIssue; onDelete: () => void; disabled?: 
 
 const AppraisalReviewPage = () => {
     const navigate = useNavigate();
+    const { role } = useAuth();
     const { documentId, versionId } = useParams<{ documentId: string; versionId: string }>();
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,6 +57,7 @@ const AppraisalReviewPage = () => {
     const [pendingIssues, setPendingIssues] = useState<PendingIssue[]>([]);
     const [loading, setLoading] = useState({ page: true, submit: false });
 
+    const isDirector = role === UserRole.Director;
     const [newFeedback, setNewFeedback] = useState<FeedbackFormState>({
         indicatorPath: "",
         description: "",
@@ -66,22 +70,51 @@ const AppraisalReviewPage = () => {
         severities: Object.entries(ISSUE_SEVERITY_LABELS).map(([v, l]) => ({ value: v, label: l }))
     }), []);
 
+    const safeParseJson = (data: any) => {
+        if (!data) return {};
+        if (typeof data === "object") return data;
+
+        try {
+            return JSON.parse(data);
+        } catch {
+            return {};
+        }
+    };
+
     const loadData = useCallback(async () => {
         if (!documentId) return;
+
         setLoading(p => ({ ...p, page: true }));
+
         try {
             const docDetail = await documentService.getDocumentById(documentId);
-            const rawSpecs = docDetail.currentVersion?.technicalSpecsJson;
-            const specsObj = typeof rawSpecs === "string" ? JSON.parse(rawSpecs) : (rawSpecs || {});
 
-            setData({ document: docDetail, version: { ...docDetail.currentVersion, technicalSpecsJson: specsObj } });
+            let version = null;
+
+            if (versionId) {
+                version = await documentService.getVersionDetail(versionId);
+            } else if (docDetail.currentVersionId) {
+                version = await documentService.getVersionDetail(docDetail.currentVersionId);
+            }
+
+            const parsedSpecs = safeParseJson(version?.technicalSpecsJson);
+
+            setData({
+                document: docDetail,
+                version: {
+                    ...version,
+                    technicalSpecsJson: parsedSpecs
+                }
+            });
+
         } catch (e) {
+            console.error(e);
             toast.error("Lỗi tải dữ liệu");
             navigate("/my-tasks");
         } finally {
             setLoading(p => ({ ...p, page: false }));
         }
-    }, [documentId, navigate]);
+    }, [documentId, versionId, navigate]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
@@ -107,14 +140,26 @@ const AppraisalReviewPage = () => {
     };
 
     const handleApprove = async () => {
-        if (!window.confirm("Xác nhận thông qua thẩm định tài liệu này?")) return;
+        const confirmMsg = isDirector
+            ? "Xác nhận ký duyệt và gửi sang các trung tâm thẩm định phối hợp?"
+            : "Xác nhận thông qua thẩm định nội bộ cho tài liệu này?";
+
+        if (!window.confirm(confirmMsg)) return;
         setLoading(p => ({ ...p, submit: true }));
         try {
-            await documentService.submitForAppraisal(documentId!);
-            toast.success("Phê duyệt thành công");
-            navigate("/my-tasks");
-        } catch (e) {
-            toast.error("Thao tác thất bại");
+            if (isDirector) {
+                await signingService.approveSign({
+                    documentId: documentId!,
+                    comment: "Director đã ký duyệt. Chuyển tiếp thẩm định đơn vị phối hợp."
+                });
+                toast.success("Đã ký duyệt và gửi yêu cầu thẩm định thành công");
+            } else {
+                await documentService.submitForAppraisal(documentId!);
+                toast.success("Phê duyệt nội bộ thành công");
+            }
+            navigate("/appraisals/my-tasks", { replace: true });
+        } catch (e: any) {
+            toast.error(e.response?.data?.message);
         } finally {
             setLoading(p => ({ ...p, submit: false }));
         }
@@ -148,7 +193,7 @@ const AppraisalReviewPage = () => {
             <div className="max-w-[1600px] mx-auto p-6 space-y-8">
                 <div className="flex justify-between items-center border-b border-slate-800 pb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Thẩm Định Kỹ Thuật</h1>
+                        <h1 className="text-2xl font-bold text-white tracking-tight">{isDirector ? "Ký Phê Duyệt Tài Liệu" : "Thẩm Định Kỹ Thuật"}</h1>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-primary-400 font-mono text-xs bg-primary-500/10 px-2 py-0.5 rounded">
                                 {data.document?.documentCode}
@@ -158,10 +203,15 @@ const AppraisalReviewPage = () => {
                     </div>
                     <div className="flex gap-3">
                         <Button variant="ghost" className="text-red-400 border-red-500/20 hover:bg-red-500/10" onClick={handleReject} isLoading={loading.submit}>
-                            ✕ Từ chối (Reject)
+                            ✕ Từ chối
                         </Button>
-                        <Button variant="primary" onClick={handleApprove} isLoading={loading.submit} disabled={pendingIssues.length > 0}>
-                            ✓ Thông qua (Approve)
+                        <Button
+                            variant="primary"
+                            onClick={handleApprove}
+                            isLoading={loading.submit}
+                            disabled={pendingIssues.length > 0}
+                        >
+                            {isDirector ? "✓ Ký & Gửi thẩm định" : "✓ Thông qua"}
                         </Button>
                         <div className="w-px h-8 bg-slate-800 mx-2" />
                         <Button variant="ghost" onClick={() => navigate(-1)}>Hủy bỏ</Button>
@@ -172,9 +222,9 @@ const AppraisalReviewPage = () => {
                     <div className="lg:col-span-5 lg:sticky lg:top-6">
                         <Card title="Cấu trúc chỉ tiêu kỹ thuật" className="shadow-2xl shadow-black/50">
                             <NestedTechnicalSpecsEditor
-                                value={JSON.stringify(data.version?.technicalSpecsJson || {})}
+                                value={data.version?.technicalSpecsJson || {}}
                                 onSelectPath={handleSelectPath}
-                                readOnly={true}
+                                readOnly
                             />
                         </Card>
                     </div>

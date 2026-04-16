@@ -12,7 +12,7 @@ import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
 import DocumentEditorPage from "../pages/documents/DocumentEditorPage";
 import DocumentVersionsPage from "../pages/documents/DocumentVersionsPage";
 import AppraisalDashboardPage from "../pages/appraisals/AppraisalDashboardPage";
-import AppraisalAssignmentPage from "../pages/appraisals/AppraisalAssignmentPage";
+import AppraisalAssignmentPage from "../pages/appraisals/AssignmentCreatePage";
 import AppraisalReviewPage from "../pages/appraisals/AppraisalReviewPage";
 import ConsolidatedFeedbackPage from "../pages/appraisals/ConsolidatedFeedbackPage";
 import SigningDashboardPage from "../pages/signatures/SigningDashboardPage";
@@ -27,7 +27,10 @@ import NotificationsPage from "../pages/notifications/NotificationsPage";
 import AppraisalInternalPage from "../pages/appraisals/AppraisalInternalPage";
 import MyTasksPage from "../pages/appraisals/MyTasksPage";
 import UserListPage from "../pages/users/UserListPage";
-
+import DocumentVersionDetailPage from "../pages/documents/DocumentVersionDetailPage";
+import AssignmentListPage from "../pages/appraisals/AssignmentListPage";
+import AssignmentDetailPage from "../pages/appraisals/AssignmentDetailPage";
+import AssignmentCreatePage from "../pages/appraisals/AssignmentCreatePage";
 
 const AppRoutes = () => {
     return (
@@ -56,13 +59,17 @@ const AppRoutes = () => {
                 <Route path="/documents/:id/editor" element={<DocumentEditorPage />} />
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
                 <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
+                <Route path="/documents/:id/version/:versionId" element={<DocumentVersionDetailPage />} />
 
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:id/assign" element={<AppraisalAssignmentPage />} />
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
+                <Route path="/appraisals/listAssignments" element={<AssignmentListPage />} />
                 <Route path="/appraisals/internal/:documentId/:assignmentId?" element={<AppraisalInternalPage />} />
+                <Route path="/appraisals/assignment/:assignmentId" element={<AssignmentDetailPage />} />
+                <Route path="/appraisals/assignment/create" element={<AssignmentCreatePage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

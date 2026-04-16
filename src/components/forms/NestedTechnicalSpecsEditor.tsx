@@ -17,8 +17,8 @@ interface Topic {
 }
 
 interface Props {
-    value: string;
-    onChange?: (value: string) => void;
+    value: Record<string, any>;
+    onChange?: (value: Record<string, any>) => void;
     onSelectPath?: (path: string) => void;
     className?: string;
     readOnly?: boolean;
@@ -35,8 +35,7 @@ const NestedTechnicalSpecsEditor = ({ value, onChange, onSelectPath, className =
             return;
         }
         try {
-            const parsed = value ? JSON.parse(value) : {};
-            const topicsArray: Topic[] = Object.entries(parsed).map(([title, data]) => ({
+            const topicsArray: Topic[] = Object.entries(value || {}).map(([title, data]) => ({
                 id: crypto.randomUUID(),
                 title,
                 subItems: typeof data === 'object' && data !== null
@@ -73,17 +72,17 @@ const NestedTechnicalSpecsEditor = ({ value, onChange, onSelectPath, className =
                         try {
                             jsonObj[cleanTitle][cleanKey] = JSON.parse(val);
                         } catch {
-                            jsonObj[cleanTitle][cleanKey] = s.value;
+                            jsonObj[cleanTitle][cleanKey] = val;
                         }
                     } else {
-                        jsonObj[cleanTitle][cleanKey] = s.value;
+                        jsonObj[cleanTitle][cleanKey] = val;
                     }
                 });
             });
 
             isInternalUpdate.current = true;
-            onChange(JSON.stringify(jsonObj, null, 2));
-        }, 500);
+            onChange(jsonObj);
+        }, 400);
     }, [onChange, readOnly]);
 
     const handleUpdate = (updater: (old: Topic[]) => Topic[]) => {
@@ -188,7 +187,7 @@ const NestedTechnicalSpecsEditor = ({ value, onChange, onSelectPath, className =
                     View Raw Specifications JSON
                 </summary>
                 <pre className="mt-2 p-3 bg-black/60 rounded border border-dark-800 text-[10px] text-green-500 overflow-x-auto font-mono custom-scrollbar">
-                    {value || "{}"}
+                    {JSON.stringify(value, null, 2)}
                 </pre>
             </details>
         </div>

@@ -6,14 +6,24 @@ export interface UserResponseDto {
     employeeCode: string;
     role: UserRole;
     isActive: boolean;
-    lastLoginAt?: string;
+    createdAt: string;
+    firstName?: string;
+    lastName?: string;
+    departmentName?: string;
+}
+
+export interface UserDetailResponseDto {
+    id: string;
+    employeeCode: string;
+    role: UserRole;
+    isActive: boolean;
     createdAt: string;
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
-    departmentId?: string;
     phoneNumber?: string;
-    departmentName?: string
+    departmentId?: string;
+    departmentName?: string;
 }
 
 export interface UserCreateDto {

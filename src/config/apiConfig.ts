@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
         requestPromotion: `/users/request-promotion`,
         updateAccountStatus: (id: string) => `/users/${id}/account-status`,
         filter: `/users/user-filter`,
+        changePassword: `/users/change-password`,
+        detail: (id: string) => `/users/detail/${id}`,
     },
 
     documents: {
@@ -33,10 +35,9 @@ export const API_ENDPOINTS = {
         handleFeedback: (id: string) => `/documents/${id}/create-version-appraisal`,
         submitInternal: (id: string) => `/documents/${id}/submit-internal`,
         getVersions: (docId: string) => `/documents/${docId}/versions`,
-        getVersionDetail: (versionId: string) => `/documents/versions/${versionId}`,
-        updateVersion: (versionId: string) => `/documents/versions/${versionId}`,
         myTasks: "/documents/my-tasks",
         createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
+        getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
     },
 
     ai: {
@@ -51,6 +52,7 @@ export const API_ENDPOINTS = {
         submitReview: (reviewerId: string) => `/appraisal/staff-submit-review/${reviewerId}`,
         finalize: `/appraisal/complete-appraisal`,
         getDetail: (id: string) => `/appraisal/${id}`,
+        listAssignments: `/appraisal/list-assignments`,
     },
 
     appraisalHistory: {

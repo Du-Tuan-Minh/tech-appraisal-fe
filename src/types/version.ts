@@ -1,21 +1,15 @@
-import type { FeedbackIssueResponseDto } from "@/types/feedback";
-import type { AttachmentResponseDto } from "@/types/attachment";
-
 export interface DocumentVersionDto {
     id: string;
     requestId: string;
     versionNumber: number;
-    changeReason?: string | null;
-    isCurrent: boolean;
-    createdAt: string;
     technicalSpecsJson?: any | null;
-    sourceIssueId?: string | null;
 }
 
 export interface DocumentVersionDetailDto extends DocumentVersionDto {
-    issuesReported: FeedbackIssueResponseDto[];
-    issuesResolved: FeedbackIssueResponseDto[];
-    attachments: AttachmentResponseDto[];
+    changeReason?: string | null;
+    isCurrent: boolean;
+    createdAt: string;
+    sourceIssueId?: string | null;
 }
 
 export interface DocumentVersionCreateDto {

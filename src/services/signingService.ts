@@ -2,10 +2,10 @@ import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
 import type { AppraisalHistoryCreateDto } from "../types/history";
+import type { SendParallelAssignmentsRequest } from "@/types/assignment";
 
 export const signingService = {
-
-    approveSign: async (data: AppraisalHistoryCreateDto): Promise<boolean> => {
+    approveSign: async (data: SendParallelAssignmentsRequest): Promise<boolean> => {
         const response = await axiosClient.post<ApiResponse<boolean>>(
             API_ENDPOINTS.signing.approve,
             data

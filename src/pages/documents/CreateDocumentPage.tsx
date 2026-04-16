@@ -4,11 +4,12 @@ import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { documentService } from "@/services/documentService";
-import type { TechnicalDocumentCreateDto } from "@/types/document";
+import { departmentService } from "@/services/departmentService";
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
 import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
-import { departmentService } from "@/services/departmentService";
+
+import type { TechnicalDocumentCreateDto } from "@/types/document";
 import type { DepartmentResponseDto } from "@/types/department";
 
 const CreateDocumentPage = () => {
@@ -16,7 +17,7 @@ const CreateDocumentPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [centers, setCenters] = useState<DepartmentResponseDto[]>([]);
 
-    const [formData, setFormData] = useState<TechnicalDocumentCreateDto & { departmentIds: string[] }>({
+    const [formData, setFormData] = useState<TechnicalDocumentCreateDto>({
         title: "",
         documentCode: "",
         description: "",
@@ -24,7 +25,7 @@ const CreateDocumentPage = () => {
         priority: IssueSeverity.Minor,
         attachmentIds: [],
         technicalSpecs: {},
-        departmentIds: []
+        externalDepartmentIds: []
     });
 
     useEffect(() => {
@@ -40,12 +41,16 @@ const CreateDocumentPage = () => {
     }, []);
 
     const toggleCenter = (id: string) => {
-        setFormData(prev => ({
-            ...prev,
-            departmentIds: prev.departmentIds.includes(id)
-                ? prev.departmentIds.filter(itemId => itemId !== id)
-                : [...prev.departmentIds, id]
-        }));
+        setFormData(prev => {
+            const currentIds = prev.externalDepartmentIds || [];
+            const isExist = currentIds.includes(id);
+            return {
+                ...prev,
+                externalDepartmentIds: isExist
+                    ? currentIds.filter(itemId => itemId !== id)
+                    : [...currentIds, id]
+            };
+        });
     };
 
     const typeOptions = useMemo(() =>
@@ -66,28 +71,16 @@ const CreateDocumentPage = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!formData.title.trim()) return toast.error("Tiêu đề không được để trống.");
-        if (!formData.documentCode.trim()) return toast.error("Mã tài liệu không được để trống.");
+        if (!formData.title.trim() || !formData.documentCode.trim()) {
+            return toast.error("Vui lòng điền đầy đủ Tiêu đề và Mã tài liệu.");
+        }
 
         setIsLoading(true);
         try {
-            const payload: TechnicalDocumentCreateDto = {
-                title: formData.title,
-                documentCode: formData.documentCode,
-                description: formData.description,
-                type: formData.type,
-                priority: formData.priority,
-                attachmentIds: formData.attachmentIds,
-                technicalSpecs: formData.technicalSpecs
-            };
-
-            const newDoc = await documentService.createDocument(payload);
+            const newDoc = await documentService.createDocument(formData);
             toast.success("Khởi tạo tài liệu thành công");
-
             navigate(`/documents/${newDoc.id}/editor`);
         } catch (err: any) {
-            console.error(err);
             toast.error(err.response?.data?.message || "Lỗi khi tạo tài liệu mới.");
         } finally {
             setIsLoading(false);
@@ -104,7 +97,7 @@ const CreateDocumentPage = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
-                        <Card className="p-6 space-y-5 border-t-2 border-primary-500 bg-dark-900/40">
+                        <Card className="p-6 space-y-5 border-t-2 border-primary-500 bg-dark-900/40 shadow-2xl">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="md:col-span-2">
                                     <Input
@@ -142,54 +135,52 @@ const CreateDocumentPage = () => {
                             <div className="space-y-2">
                                 <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">Mô tả mục tiêu</label>
                                 <textarea
-                                    className="w-full bg-dark-950/50 border border-dark-700 rounded-lg p-3 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[100px] transition-all"
+                                    className="w-full bg-dark-950/50 border border-dark-700 rounded-lg p-3 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[80px] transition-all"
                                     placeholder="Nội dung tóm tắt phạm vi kỹ thuật..."
                                     value={formData.description || ""}
                                     onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                                 />
                             </div>
 
-                            <div className="pt-4">
-                                <NestedTechnicalSpecsEditor
-                                    value={JSON.stringify(formData.technicalSpecs || {})}
-                                    onChange={(jsonValue) => setFormData(p => ({ ...p, technicalSpecs: JSON.parse(jsonValue) }))}
-                                />
-                            </div>
+                            <NestedTechnicalSpecsEditor
+                                value={formData.technicalSpecs || {}}
+                                onChange={(val) => setFormData(p => ({ ...p, technicalSpecs: val }))}
+                            />
 
                             <div className="space-y-3">
                                 <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">
-                                    Đơn vị thẩm định phối hợp ({formData.departmentIds.length})
+                                    Đơn vị thẩm định phối hợp ({(formData.externalDepartmentIds || []).length})
                                 </label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto p-2 bg-dark-950/80 rounded-lg border border-dark-700 custom-scrollbar">
                                     {centers.map((center) => {
-                                        const isSelected = formData.departmentIds.includes(center.id);
+                                        const isSelected = formData.externalDepartmentIds?.includes(center.id);
                                         return (
-                                            <button
+                                            <div
                                                 key={center.id}
-                                                type="button"
                                                 onClick={() => toggleCenter(center.id)}
-                                                className={`p-3 rounded-lg border text-left transition-all ${isSelected
-                                                    ? "border-primary-500 bg-primary-500/10 text-white shadow-[0_0_10px_rgba(var(--color-primary-500),0.1)]"
-                                                    : "border-dark-700 bg-dark-950/30 text-gray-400 hover:border-dark-600"
-                                                    }`}
+                                                className={`
+                                                    cursor-pointer p-2 rounded border transition-all flex items-center justify-between
+                                                    ${isSelected
+                                                        ? 'bg-primary-500/20 border-primary-500 text-white shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]'
+                                                        : 'bg-dark-800/50 border-dark-700 text-gray-400 hover:border-dark-500'}
+                                                `}
                                             >
-                                                <div className="text-[10px] font-mono opacity-60">{center.codeDepartment}</div>
-                                                <div className="text-xs font-bold truncate">{center.nameDepartment}</div>
-                                            </button>
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className="text-[11px] font-bold truncate">{center.codeDepartment}</span>
+                                                    <span className="text-[9px] opacity-60 truncate">{center.nameDepartment}</span>
+                                                </div>
+                                                {isSelected && <span className="text-primary-400 text-xs">✓</span>}
+                                            </div>
                                         );
                                     })}
                                 </div>
                             </div>
-
                         </Card>
 
                         <div className="flex justify-end gap-3 pt-4">
-                            <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>
-                                Hủy bỏ
-                            </Button>
-                            <Button variant="primary" type="submit" isLoading={isLoading} className="px-8 shadow-lg shadow-primary-900/20">
-                                Khởi tạo hệ thống
-                            </Button>
+                            <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>Hủy bỏ</Button>
+                            <Button variant="primary" type="submit" isLoading={isLoading} className="px-10">Khởi tạo hệ thống</Button>
                         </div>
                     </form>
 
@@ -209,12 +200,12 @@ const GuidelineCard = () => (
         </h3>
         <ul className="space-y-4">
             <li className="text-[11px] text-gray-400 leading-relaxed">
-                <strong className="text-primary-300 block mb-1">MÃ TÀI LIỆU</strong>
-                Sử dụng mã định danh duy nhất của dự án để AI và Manager có thể truy xuất lịch sử thẩm định.
+                <strong className="text-primary-300 block mb-1 uppercase">Mã tài liệu</strong>
+                Dùng mã duy nhất (VD: Project_Year_No) để đồng bộ với hệ thống quản lý văn bản tập đoàn.
             </li>
             <li className="text-[11px] text-gray-400 leading-relaxed">
-                <strong className="text-primary-300 block mb-1">THÔNG SỐ CẤU TRÚC</strong>
-                Các thông số kỹ thuật (Specs) nên được chia theo cụm (Ví dụ: Infrastructure, Database) để hệ thống phân tích rủi ro chính xác.
+                <strong className="text-primary-300 block mb-1 uppercase">Phối hợp đơn vị</strong>
+                Việc chọn đơn vị phối hợp sẽ tự động gửi thông báo đến Manager của đơn vị đó khi hồ sơ được gửi đi.
             </li>
         </ul>
     </Card>

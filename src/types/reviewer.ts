@@ -1,13 +1,16 @@
 import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
-import type { FeedbackIssueCreateDto } from "@/types/feedback-issue";
+import type { FeedbackIssueCreateDto } from "@/types/feedback";
 
 export interface AppraisalReviewerDto {
     id: string;
+    staffName: string;
+    status: ReviewerStatus;
+}
+
+export interface AppraisalReviewerDetailDto extends AppraisalReviewerDto {
     assignmentId: string;
     staffId: string;
-    staffName: string;
     departmentName: string;
-    status: ReviewerStatus;
     taskDescription?: string | null;
     comment?: string | null;
     deadline?: string | null;

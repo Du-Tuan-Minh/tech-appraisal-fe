@@ -4,18 +4,21 @@ import type { AppraisalReviewerDto } from "@/types/reviewer";
 
 export interface AppraisalAssignmentDto {
     id: string;
+    documentTitle: string;
+    versionNumber: number;
+    departmentName: string;
+    status: AssignmentStatus;
+}
+
+export interface AppraisalAssignmentDetailDto extends AppraisalAssignmentDto {
     documentId: string;
     documentCode: string;
-    documentTitle: string;
     requestVersionId: string;
-    versionNumber: number;
     departmentId: string;
-    departmentName: string;
     assignedById: string;
     assignedByName: string;
     responsibleManagerId: string;
     responsibleManagerName: string;
-    status: AssignmentStatus;
     deadline?: string | null;
     managerComment?: string | null;
     createdAt: string;
@@ -69,4 +72,9 @@ export interface DepartmentAssignmentInfo {
     departmentId: string;
     deadline?: string | null;
     managerComment?: string | null;
+}
+
+export interface SendParallelAssignmentsRequest {
+    documentId: string;
+    comment: string | null;
 }
