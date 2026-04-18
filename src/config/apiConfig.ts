@@ -40,19 +40,17 @@ export const API_ENDPOINTS = {
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
     },
 
-    ai: {
-        suggestions: `/appraisal/suggestions`,
-        aiCheck: (docId: string) => `/appraisal/${docId}/ai-check`,
-    },
-
     appraisal: {
         createParallel: `/appraisal/create-parallel-assignments`,
         assignStaff: `/appraisal/assign-internal-staff`,
         confirmDepartment: (docId: string) => `/appraisal/department-confirm?documentId=${docId}`,
         submitReview: (reviewerId: string) => `/appraisal/staff-submit-review/${reviewerId}`,
         finalize: `/appraisal/complete-appraisal`,
-        getDetail: (id: string) => `/appraisal/${id}`,
-        listAssignments: `/appraisal/list-assignments`,
+        getDetail: (id: string) => `/appraisal/assignment-detail/${id}`,
+        listDirectorAssignments: `/appraisal/director-assignments`,
+        listManagerAssignments: (versionId?: string) => `/appraisal/manager-assignments${versionId ? `/${versionId}` : ""}`,
+        listReviewer: `/appraisal/list-reviewer`,
+        getReviewerDetail: (reviewerId: string) => `/appraisal/reviewer-detail/${reviewerId}`,
     },
 
     appraisalHistory: {

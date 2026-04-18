@@ -4,17 +4,17 @@ import type { AppraisalReviewerDto } from "@/types/reviewer";
 
 export interface AppraisalAssignmentDto {
     id: string;
+    documentId: string;
     documentTitle: string;
     versionNumber: number;
     departmentName: string;
+    departmentId: string;
+    requestVersionId: string;
     status: AssignmentStatus;
+    documentCode: string;
 }
 
 export interface AppraisalAssignmentDetailDto extends AppraisalAssignmentDto {
-    documentId: string;
-    documentCode: string;
-    requestVersionId: string;
-    departmentId: string;
     assignedById: string;
     assignedByName: string;
     responsibleManagerId: string;

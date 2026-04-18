@@ -1,68 +1,80 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
+
 import { Layout } from "../../components/layout";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
+
 import { appraisalService } from "../../services/appraisalService";
 import { departmentService } from "../../services/departmentService";
 import type { DepartmentResponseDto } from "../../types/department";
 
 const AssignmentCreatePage = () => {
     const navigate = useNavigate();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { versionId } = useParams<{ versionId: string }>();
+    const [searchParams] = useSearchParams();
 
-    // Data States
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
     const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    const [deadline, setDeadline] = useState("");
+    const [globalComment, setGlobalComment] = useState("");
 
-    const [form, setForm] = useState({
-        documentTitle: "",
-        documentCode: "",
-        versionNumber: 1,
-        deadline: "",
-        globalComment: ""
-    });
+    const context = useMemo(() => ({
+        documentId: searchParams.get("documentId") || "",
+        title: searchParams.get("title") || "N/A",
+        code: searchParams.get("code") || "N/A",
+        version: searchParams.get("v") || "0",
+        parentId: searchParams.get("parentId") || "",
+    }), [searchParams]);
 
-    // Load Departments
     useEffect(() => {
-        const fetchDepts = async () => {
+        const fetchDepartments = async () => {
             try {
-                const res = await departmentService.getDepartments(pagination.page, 10, searchTerm);
+                const res = await departmentService.getDepartments(
+                    1,
+                    100,
+                    searchTerm,
+                    context.parentId || undefined
+                );
                 setDepartments(res.items);
-                setPagination(prev => ({ ...prev, totalPages: res.totalPages }));
-            } catch {
-                toast.error("Không thể tải danh sách trung tâm.");
+            } catch (err) {
+                toast.error("Không thể tải danh sách đơn vị thực hiện.");
             }
         };
-        fetchDepts();
-    }, [pagination.page, searchTerm]);
+
+        const debounceTimer = setTimeout(fetchDepartments, 300);
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm, context.parentId]);
 
     const handleSubmit = async () => {
-        if (!form.documentTitle || !form.documentCode || selectedDepartments.length === 0) {
-            return toast.error("Vui lòng nhập đầy đủ thông tin và chọn ít nhất 1 trung tâm.");
-        }
+        if (!versionId) return toast.error("Thiếu thông tin tài liệu.");
+        if (selectedDepartments.length === 0) return toast.error("Vui lòng chọn ít nhất 1 phòng ban.");
+        if (!deadline) return toast.error("Vui lòng chọn hạn chót thẩm định.");
+
+        const utcDeadline = new Date(deadline).toISOString();
 
         setIsSubmitting(true);
         try {
             await appraisalService.createParallelAssignments({
-                documentId: "", // Logic Backend handle
-                requestVersionId: "",
-                globalDeadline: form.deadline || null,
-                globalComment: form.globalComment || null,
+                documentId: context.documentId,
+                requestVersionId: versionId,
+                globalDeadline: utcDeadline,
+                globalComment: globalComment || null,
                 departmentAssignments: selectedDepartments.map(id => ({
                     departmentId: id,
-                    deadline: form.deadline || null,
-                    managerComment: form.globalComment || null
+                    deadline: utcDeadline,
+                    managerComment: globalComment || null
                 }))
             });
-            toast.success("Tạo phân công thành công!");
-            navigate("/appraisals/assignments");
-        } catch {
-            toast.error("Tạo phân công thất bại.");
+
+            toast.success("Đã phát hành phân công thẩm định song song.");
+            navigate("/appraisals/director-assignments");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Lỗi khi tạo phân công.");
         } finally {
             setIsSubmitting(false);
         }
@@ -70,54 +82,107 @@ const AssignmentCreatePage = () => {
 
     return (
         <Layout>
-            <div className="max-w-4xl mx-auto p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-white">Tạo Phân Công Thẩm Định Mới</h1>
-                    <Button variant="ghost" onClick={() => navigate(-1)}>Hủy</Button>
+            <div className="max-w-4xl mx-auto p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white">Phân Công Thẩm Định</h1>
+                        <p className="text-gray-400 text-sm">Thiết lập luồng thẩm định cho các phòng ban trực thuộc</p>
+                    </div>
+                    <Button variant="ghost" onClick={() => navigate(-1)}>Quay lại</Button>
                 </div>
 
-                <div className="grid gap-6">
-                    <Card className="p-6 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Tên tài liệu" value={form.documentTitle} onChange={v => setForm({ ...form, documentTitle: v })} />
-                            <Input label="Mã tài liệu" value={form.documentCode} onChange={v => setForm({ ...form, documentCode: v })} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Phiên bản" type="number" value={form.versionNumber.toString()} onChange={v => setForm({ ...form, versionNumber: Number(v) })} />
-                            <Input label="Deadline" type="datetime-local" value={form.deadline} onChange={v => setForm({ ...form, deadline: v })} />
+                <Card className="p-6 space-y-8 bg-dark-900/50 border-dark-700">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-dark-800/40 rounded-xl border border-dark-700/50">
+                        <Input label="Tài liệu" value={context.title} readOnly className="opacity-70" />
+                        <Input label="Mã số" value={context.code} readOnly className="opacity-70" />
+                        <Input label="Phiên bản" value={`v${context.version}`} readOnly className="opacity-70" />
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="w-full md:w-1/2">
+                            <Input
+                                label="Hạn chót thẩm định (Toàn bộ)"
+                                type="datetime-local"
+                                value={deadline}
+                                onChange={setDeadline}
+                                required
+                            />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-primary-400 mb-2">Chọn Trung Tâm Tiếp Nhận</label>
-                            <Input placeholder="Tìm kiếm..." value={searchTerm} onChange={v => { setSearchTerm(v); setPagination(p => ({ ...p, page: 1 })) }} className="mb-3" />
-                            <div className="max-h-60 overflow-y-auto border border-dark-700 rounded-lg p-2 grid grid-cols-2 gap-2">
-                                {departments.map(dept => (
-                                    <label key={dept.id} className="flex items-center gap-3 p-2 hover:bg-dark-800 rounded cursor-pointer border border-transparent has-[:checked]:border-primary-500">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedDepartments.includes(dept.id)}
-                                            onChange={() => setSelectedDepartments(prev => prev.includes(dept.id) ? prev.filter(i => i !== dept.id) : [...prev, dept.id])}
-                                            className="w-4 h-4 accent-primary-500"
-                                        />
-                                        <span className="text-sm text-white">{dept.nameDepartment}</span>
-                                    </label>
-                                ))}
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-end">
+                                <label className="text-sm font-semibold text-primary-400 uppercase">
+                                    {context.parentId ? "Danh sách Phòng Ban trực thuộc" : "Danh sách Trung tâm"}
+                                </label>
+                                <span className="text-xs text-gray-500">Đã chọn: {selectedDepartments.length}</span>
+                            </div>
+
+                            <Input
+                                placeholder="Tên phòng ban..."
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                            />
+
+                            <div className="max-h-64 overflow-y-auto border border-dark-700 rounded-xl p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-dark-950/50 shadow-inner">
+                                {departments.length > 0 ? (
+                                    departments.map(dept => {
+                                        const isChecked = selectedDepartments.includes(dept.id);
+                                        return (
+                                            <label
+                                                key={dept.id}
+                                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border transition-all ${isChecked
+                                                    ? "bg-primary-500/10 border-primary-500/50 shadow-sm"
+                                                    : "bg-dark-800/50 border-transparent hover:border-dark-600"
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => setSelectedDepartments(prev =>
+                                                        isChecked ? prev.filter(i => i !== dept.id) : [...prev, dept.id]
+                                                    )}
+                                                    className="w-4 h-4 rounded accent-primary-500"
+                                                />
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className={`text-sm truncate ${isChecked ? "text-primary-400 font-bold" : "text-gray-300"}`}>
+                                                        {dept.nameDepartment}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500 uppercase tracking-tighter">
+                                                        {dept.codeDepartment}
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="col-span-full py-10 text-center text-gray-500 italic text-sm">
+                                        Không tìm thấy phòng ban nào khả dụng.
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        <textarea
-                            className="w-full p-3 bg-dark-800 border border-dark-700 rounded-lg text-white"
-                            rows={3}
-                            placeholder="Ghi chú quản lý..."
-                            value={form.globalComment}
-                            onChange={e => setForm({ ...form, globalComment: e.target.value })}
-                        />
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-primary-400 uppercase">Ghi chú từ Quản lý</label>
+                            <textarea
+                                className="w-full p-4 bg-dark-800 border border-dark-700 rounded-xl text-white focus:ring-1 focus:ring-primary-500 outline-none transition-all resize-none shadow-inner"
+                                rows={3}
+                                placeholder="Nhập hướng dẫn cho các đơn vị thẩm định..."
+                                value={globalComment}
+                                onChange={e => setGlobalComment(e.target.value)}
+                            />
+                        </div>
+                    </div>
 
-                        <Button variant="primary" className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting ? "Đang xử lý..." : "Xác nhận Phân Công"}
-                        </Button>
-                    </Card>
-                </div>
+                    <Button
+                        variant="primary"
+                        className="w-full py-4 text-lg font-bold shadow-lg shadow-primary-500/10"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Đang xử lý..." : "Xác nhận và Phát hành"}
+                    </Button>
+                </Card>
             </div>
         </Layout>
     );

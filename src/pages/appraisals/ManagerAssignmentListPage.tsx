@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-// UI Components
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
@@ -10,20 +9,24 @@ import Select from "../../components/ui/Select";
 import Pagination from "../../components/ui/Pagination";
 import { Layout } from "../../components/layout";
 
-// Services & Types
+import { UserRole } from "@/constants/enum/UserRole";
+import { useAuth } from "@/hooks/useAuth";
 import { appraisalService } from "../../services/appraisalService";
 import type { AppraisalAssignmentDetailDto } from "../../types/assignment";
-import { AssignmentStatus } from "../../constants/enum/AssignmentStatus";
+import { AssignmentStatus } from "@/constants/enum/AssignmentStatus";
 
-const AssignmentListPage = () => {
+const ManagerAssignmentListPage = () => {
     const navigate = useNavigate();
+    const { versionId } = useParams<{ versionId: string }>();
+    const { isAdmin } = useAuth();
+    const { role } = useAuth();
 
-    // --- Configuration Constants ---
     const STATUS_MAP = useMemo(() => ({
-        [0]: { label: "Pending", color: "text-yellow-400 bg-yellow-900/20" },
-        [1]: { label: "In Progress", color: "text-blue-400 bg-blue-900/20" },
-        [2]: { label: "Completed", color: "text-green-400 bg-green-900/20" },
-        [3]: { label: "Cancelled", color: "text-red-400 bg-red-900/20" },
+        [AssignmentStatus.Pending]: { label: "Pending", color: "text-yellow-400 bg-yellow-900/20" },
+        [AssignmentStatus.InReview]: { label: "In Review", color: "text-blue-400 bg-blue-900/20" },
+        [AssignmentStatus.Completed]: { label: "Completed", color: "text-green-400 bg-green-900/20" },
+        [AssignmentStatus.Overdue]: { label: "Overdue", color: "text-red-400 bg-red-900/20" },
+        [AssignmentStatus.AwaitingClarification]: { label: "Awaiting Clarification", color: "text-orange-400 bg-orange-900/20" },
     }), []);
 
     const INITIAL_FILTERS = {
@@ -33,7 +36,6 @@ const AssignmentListPage = () => {
         sortOrder: "desc" as "asc" | "desc"
     };
 
-    // --- States ---
     const [assignments, setAssignments] = useState<AppraisalAssignmentDetailDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [pagination, setPagination] = useState({
@@ -45,10 +47,11 @@ const AssignmentListPage = () => {
 
     const [filters, setFilters] = useState(INITIAL_FILTERS);
 
-    // --- Logic Fetch Data ---
     const loadData = useCallback(async (page: number = 1) => {
         setIsLoading(true);
         try {
+            const targetVersionId = isAdmin ? versionId : undefined;
+
             const params = {
                 page,
                 pageSize: pagination.pageSize,
@@ -58,7 +61,7 @@ const AssignmentListPage = () => {
                 sortOrder: filters.sortOrder
             };
 
-            const response = await appraisalService.getAssignments(params as any);
+            const response = await appraisalService.getManagerAssignments(targetVersionId, params);
 
             setAssignments(response.items);
             setPagination(prev => ({
@@ -67,20 +70,18 @@ const AssignmentListPage = () => {
                 totalCount: response.totalCount,
                 totalPages: response.totalPages
             }));
-        } catch (err) {
-            toast.error("Không thể tải danh sách phân công.");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message);
         } finally {
             setIsLoading(false);
         }
-    }, [filters, pagination.pageSize]);
+    }, [filters, pagination.pageSize, isAdmin, versionId]);
 
-    // Trigger load khi filter thay đổi (có debounce cho search)
     useEffect(() => {
         const handler = setTimeout(() => loadData(1), 300);
         return () => clearTimeout(handler);
     }, [filters.searchTerm, filters.status, filters.sortBy, filters.sortOrder, loadData]);
 
-    // --- Actions ---
     const clearFilters = () => setFilters(INITIAL_FILTERS);
 
     const getDeadlineStyle = (deadline?: string | null) => {
@@ -96,12 +97,11 @@ const AssignmentListPage = () => {
             <div className="max-w-7xl mx-auto p-6 space-y-6">
                 <div className="flex justify-between items-end">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Danh Sách Phân Công</h1>
+                        <h1 className="text-3xl font-bold text-white">
+                            {isAdmin ? "Phân Công Của Tôi" : "Tất Cả Phân Công"}
+                        </h1>
                         <p className="text-gray-400 mt-1">Quản lý và theo dõi tiến độ thẩm định tài liệu kỹ thuật</p>
                     </div>
-                    <Button variant="primary" onClick={() => navigate('/appraisals/assignment/create')}>
-                        Tạo Phân Công Mới
-                    </Button>
                 </div>
 
                 <Card className="p-5 border-dark-700 bg-dark-900/50 backdrop-blur-sm">
@@ -135,13 +135,6 @@ const AssignmentListPage = () => {
                             onChange={(val) => setFilters(f => ({ ...f, sortBy: val }))}
                         />
                         <div className="flex items-end gap-2">
-                            <Button
-                                variant="ghost"
-                                className="flex-1"
-                                onClick={() => setFilters(f => ({ ...f, sortOrder: f.sortOrder === 'asc' ? 'desc' : 'asc' }))}
-                            >
-                                {filters.sortOrder === 'asc' ? "Tang dan" : "Giam dan"}
-                            </Button>
                             <Button variant="ghost" onClick={clearFilters} className="text-red-400 hover:text-red-300">
                                 Xóa bộ lọc
                             </Button>
@@ -204,11 +197,40 @@ const AssignmentListPage = () => {
                                                     size="sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/appraisals/assignments/${item.id}`);
+                                                        navigate(`/appraisals/assignment/${item.id}`);
                                                     }}
                                                 >
-                                                    Xem chi tiet
+                                                    Xem chi tiết
                                                 </Button>
+
+                                                {role === UserRole.Manager && (
+                                                    <>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            title="Danh sách phân công"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/appraisals/list-reviewer-assignments`);
+                                                            }}
+                                                        >
+                                                            📑 Danh sách
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            title="Phân công mới"
+                                                            className="bg-accent-green hover:bg-accent-green/80"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/appraisals/assignment/staff/${item.requestVersionId}`);
+                                                            }}
+                                                        >
+                                                            ➕ Phân công
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -238,4 +260,4 @@ const AssignmentListPage = () => {
     );
 };
 
-export default AssignmentListPage;
+export default ManagerAssignmentListPage;

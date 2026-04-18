@@ -38,7 +38,13 @@ const Header = () => {
             { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },
         ];
 
-        if (role === UserRole.Manager || role === UserRole.Director) {
+        if (role === UserRole.Director) {
+            baseNav.push({
+                name: "Quản Lý Phân Công",
+                path: "/appraisals/director-assignments",
+                icon: "📑"
+            });
+        } else if (role === UserRole.Manager) {
             baseNav.push({
                 name: "Quản Lý Phân Công",
                 path: "/appraisals/listAssignments",

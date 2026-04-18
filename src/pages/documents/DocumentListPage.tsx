@@ -120,10 +120,10 @@ const DocumentListPage = () => {
                                             <div className="text-[12px] text-gray-400 font-medium">
                                                 {DOCUMENT_TYPE_LABELS[doc.type as DocumentType]}
                                             </div>
-                                            <Badge label={ISSUE_SEVERITY_LABELS[doc.priority as IssueSeverity]} />
+                                            <Badge label={ISSUE_SEVERITY_LABELS[Number(doc.priority) as IssueSeverity]} />
                                         </td>
                                         <td className="p-4">
-                                            <Badge label={DOCUMENT_STATUS_LABELS[doc.status as DocumentStatus]} />
+                                            <Badge label={DOCUMENT_STATUS_LABELS[Number(doc.status) as DocumentStatus]} />
                                         </td>
                                         <td className="p-4">
                                             <div className="text-[13px]">{doc.requesterName}</div>

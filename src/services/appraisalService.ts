@@ -17,60 +17,97 @@ import type {
 import type { PagedResult } from "../types/paginationResult";
 import type { pagination } from "../types/pagination";
 
+const handleResponse = <T>(res: { data: ApiResponse<T> }) => {
+    if (!res.data.isSuccess) {
+        throw new Error(res.data.message || "API Error");
+    }
+    return res.data.data;
+};
+
 export const appraisalService = {
-    getAssignments: async (
+
+    getDirectorAssignments: async (
         params: pagination
     ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
         const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>>(
-            API_ENDPOINTS.appraisal.listAssignments,
+            API_ENDPOINTS.appraisal.listDirectorAssignments,
             { params }
         );
-        return res.data.data;
+        return handleResponse(res);
+    },
+
+    getManagerAssignments: async (
+        versionId: string | undefined,
+        params: pagination
+    ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>
+        >(
+            API_ENDPOINTS.appraisal.listManagerAssignments(versionId),
+            { params }
+        );
+
+        return handleResponse(res);
+    },
+
+    getReviewerAssignments: async (
+        params: pagination
+    ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
+        const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>>(
+            API_ENDPOINTS.appraisal.listReviewer,
+            { params }
+        );
+        return handleResponse(res);
     },
 
     createParallelAssignments: async (
         data: CreateParallelAssignmentsRequest
     ): Promise<void> => {
-        await axiosClient.post<ApiResponse<any>>(
+        const res = await axiosClient.post<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.createParallel,
             data
         );
+        handleResponse(res);
     },
 
     assignStaff: async (data: AssignStaffRequest): Promise<void> => {
-        await axiosClient.post<ApiResponse<any>>(
+        const res = await axiosClient.post<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.assignStaff,
             data
         );
+        handleResponse(res);
     },
 
     confirmDepartment: async (
         documentId: string,
         data: CompleteAssignmentRequest
     ): Promise<void> => {
-        await axiosClient.post<ApiResponse<any>>(
+        const res = await axiosClient.post<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.confirmDepartment(documentId),
             data
         );
+        handleResponse(res);
     },
 
     submitReview: async (
         reviewerId: string,
         data: UpdateReviewerProgressRequest
     ): Promise<void> => {
-        await axiosClient.put<ApiResponse<any>>(
+        const res = await axiosClient.put<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.submitReview(reviewerId),
             data
         );
+        handleResponse(res);
     },
 
     finalize: async (
         data: ConsolidateAppraisalRequest
     ): Promise<void> => {
-        await axiosClient.post<ApiResponse<any>>(
+        const res = await axiosClient.post<ApiResponse<any>>(
             API_ENDPOINTS.appraisal.finalize,
             data
         );
+        handleResponse(res);
     },
 
     getAssignmentById: async (
@@ -79,6 +116,6 @@ export const appraisalService = {
         const res = await axiosClient.get<ApiResponse<AppraisalAssignmentDetailDto>>(
             API_ENDPOINTS.appraisal.getDetail(id)
         );
-        return res.data.data;
+        return handleResponse(res);
     },
 };
