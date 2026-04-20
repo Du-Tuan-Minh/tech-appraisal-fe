@@ -11,13 +11,19 @@ export const attachmentService = {
         category: AttachmentCategory
     ): Promise<AttachmentResponseDto> => {
         const formData = new FormData();
-        formData.append("file", file);
-        formData.append("technicalDocumentId", entityId);
-        formData.append("contentCategory", category.toString());
+
+        formData.append("File", file);
+        formData.append("TechnicalDocumentId", entityId);
+        formData.append("ContentCategory", String(Number(category)));
 
         const response = await axiosClient.post<ApiResponse<AttachmentResponseDto>>(
             API_ENDPOINTS.attachments.upload,
-            formData
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            }
         );
 
         return response.data.data;

@@ -15,7 +15,6 @@ import type { AttachmentResponseDto } from "@/types/attachment";
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
 import { DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
 
 import { History, Save, ArrowLeft, Eye } from "lucide-react";
 
@@ -136,7 +135,6 @@ const DocumentEditorPage = () => {
                                 <div className="pt-4 border-t border-dark-800">
                                     <FileUploadComponent
                                         technicalDocumentId={doc.id}
-                                        category={AttachmentCategory.IssueEvidence}
                                         initialAttachments={formData.attachments}
                                         onChange={(updatedFiles) => {
                                             setFormData(prev => prev ? ({ ...prev, attachments: updatedFiles }) : null);
