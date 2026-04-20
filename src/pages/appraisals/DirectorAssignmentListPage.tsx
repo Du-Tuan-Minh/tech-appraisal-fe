@@ -11,16 +11,11 @@ import { Layout } from "../../components/layout";
 
 import { appraisalService } from "../../services/appraisalService";
 import type { AppraisalAssignmentDetailDto } from "../../types/assignment";
+import { AssignmentStatus, ASSIGNMENT_STATUS_LABELS } from "../../constants/enum/AssignmentStatus";
+import { ASSIGNMENT_STATUS_MAP } from "../../constants/mapping/ui-mapping";
 
 const DirectorAssignmentListPage = () => {
     const navigate = useNavigate();
-
-    const STATUS_MAP = useMemo(() => ({
-        0: { label: "Đang chờ", color: "text-yellow-400 bg-yellow-900/20" },
-        1: { label: "Đang thực hiện", color: "text-blue-400 bg-blue-900/20" },
-        2: { label: "Đã hoàn thành", color: "text-green-400 bg-green-900/20" },
-        3: { label: "Đã hủy", color: "text-red-400 bg-red-900/20" },
-    }), []);
 
     const INITIAL_FILTERS = {
         searchTerm: "",
@@ -28,6 +23,18 @@ const DirectorAssignmentListPage = () => {
         sortBy: "createdAt",
         sortOrder: "desc" as "asc" | "desc"
     };
+
+    const statusOptions = useMemo(() => {
+        const options = [
+            { value: "", label: "Tất cả trạng thái" }
+        ];
+
+        Object.entries(ASSIGNMENT_STATUS_LABELS).forEach(([value, label]) => {
+            options.push({ value: value.toString(), label });
+        });
+
+        return options;
+    }, []);
 
     const [assignments, setAssignments] = useState<AppraisalAssignmentDetailDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -39,16 +46,6 @@ const DirectorAssignmentListPage = () => {
     });
 
     const [filters, setFilters] = useState(INITIAL_FILTERS);
-    const handleCreateWithData = useCallback((item: AppraisalAssignmentDetailDto) => {
-        const params = new URLSearchParams({
-            documentId: item.documentId || "",
-            parentId: item.departmentId || "",
-            title: item.documentTitle || "",
-            code: item.documentCode || "",
-            v: (item.versionNumber || 0).toString()
-        });
-        navigate(`/appraisals/assignment/create/${item.requestVersionId}?${params.toString()}`);
-    }, [navigate]);
 
     const loadData = useCallback(async (page: number = 1) => {
         setIsLoading(true);
@@ -72,7 +69,7 @@ const DirectorAssignmentListPage = () => {
                 totalPages: response.totalPages
             }));
         } catch (err) {
-            toast.error("Không thể tải danh sách phân công của Giám đốc.");
+            toast.error("Không thể tải danh sách phân công.");
         } finally {
             setIsLoading(false);
         }
@@ -83,23 +80,13 @@ const DirectorAssignmentListPage = () => {
         return () => clearTimeout(handler);
     }, [filters.searchTerm, filters.status, filters.sortBy, filters.sortOrder, loadData]);
 
-    const getDeadlineStyle = (deadline?: string | null) => {
-        if (!deadline) return "text-gray-400";
-        const diffDays = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000);
-        if (diffDays < 0) return "text-red-400 font-bold";
-        if (diffDays <= 3) return "text-orange-400";
-        return "text-green-400";
-    };
-
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-6">
-                <div className="flex justify-between items-end">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Giám Sát Thẩm Định</h1>
-                        <p className="text-primary-400 mt-1">Ban Giám đốc theo dõi luồng tài liệu liên Trung tâm</p>
-                    </div>
-                </div>
+                <header>
+                    <h1 className="text-3xl font-bold text-white tracking-tight uppercase">Giám Sát Thẩm Định</h1>
+                    <p className="text-primary-400 mt-1 font-medium">Ban Giám đốc theo dõi luồng tài liệu liên Trung tâm</p>
+                </header>
 
                 <Card className="p-5 border-dark-700 bg-dark-900/40 backdrop-blur-md">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -112,13 +99,7 @@ const DirectorAssignmentListPage = () => {
                         <Select
                             label="Trạng thái tài liệu"
                             value={filters.status}
-                            options={[
-                                { value: "", label: "Tất cả trạng thái" },
-                                { value: "0", label: "Đang chờ (Pending)" },
-                                { value: "1", label: "Đang xử lý (In Progress)" },
-                                { value: "2", label: "Hoàn thành (Completed)" },
-                                { value: "3", label: "Từ chối/Hủy (Cancelled)" }
-                            ]}
+                            options={statusOptions}
                             onChange={(val) => setFilters(f => ({ ...f, status: val }))}
                         />
                         <Select
@@ -131,8 +112,8 @@ const DirectorAssignmentListPage = () => {
                             ]}
                             onChange={(val) => setFilters(f => ({ ...f, sortBy: val }))}
                         />
-                        <div className="flex items-end gap-2">
-                            <Button variant="ghost" onClick={() => setFilters(INITIAL_FILTERS)} className="text-red-400">
+                        <div className="flex items-end">
+                            <Button variant="ghost" onClick={() => setFilters(INITIAL_FILTERS)} className="text-red-400 hover:bg-red-500/10 h-10 w-full md:w-auto">
                                 Xóa lọc
                             </Button>
                         </div>
@@ -143,106 +124,43 @@ const DirectorAssignmentListPage = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-dark-800/70 border-b border-dark-700">
-                                    <th className="p-4 text-primary-300 font-semibold">Hồ Sơ / Tài Liệu</th>
-                                    <th className="p-4 text-primary-300 font-semibold text-center">Phiên Bản</th>
-                                    <th className="p-4 text-primary-300 font-semibold">Đơn Vị Chịu Trách Nhiệm</th>
-                                    <th className="p-4 text-primary-300 font-semibold text-center">Reviewers</th>
-                                    <th className="p-4 text-primary-300 font-semibold">Trạng Thái</th>
-                                    <th className="p-4 text-primary-300 font-semibold">Hạn Thẩm Định</th>
-                                    <th className="p-4 text-center text-primary-300 font-semibold w-44">Thao tác</th>
+                                <tr className="bg-dark-800/70 border-b border-dark-700 text-[13px]">
+                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider">Hồ Sơ / Tài Liệu</th>
+                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Phiên Bản</th>
+                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Reviewers</th>
+                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider">Trạng Thái</th>
+                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-dark-800">
                                 {isLoading ? (
-                                    <tr>
-                                        <td colSpan={7} className="p-20 text-center">
-                                            <div className="animate-spin inline-block w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full"></div>
-                                        </td>
-                                    </tr>
+                                    <TableLoader colSpan={5} />
                                 ) : assignments.length > 0 ? (
                                     assignments.map((item) => (
-                                        <tr
-                                            key={item.id}
-                                            className="hover:bg-primary-500/5 transition-colors cursor-pointer"
-                                            onClick={() => navigate(`/appraisals/assignments/${item.id}`)}
-                                        >
+                                        <tr key={item.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => navigate(`/appraisals/assignments/${item.id}`)}>
                                             <td className="p-4">
-                                                <div className="font-semibold text-white">{item.documentTitle}</div>
-                                                <div className="text-xs text-gray-500 font-mono mt-1">{item.documentCode}</div>
-                                            </td>
-                                            <td className="p-4 text-center text-gray-300">
-                                                <span className="bg-dark-700 px-2 py-0.5 rounded text-xs">v{item.versionNumber}</span>
-                                            </td>
-                                            <td className="p-4 text-gray-300">
-                                                <div className="text-sm">{item.departmentName}</div>
-                                                <div className="text-[10px] text-primary-500/70 uppercase">Quản lý: {item.responsibleManagerName}</div>
+                                                <div className="font-semibold text-white group-hover:text-primary-400 transition-colors">{item.documentTitle}</div>
+                                                <div className="text-[11px] text-gray-500 font-mono mt-1 uppercase tracking-widest">{item.documentCode}</div>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <span className="text-white font-medium">{item.reviewerCount}</span>
+                                                <span className="bg-dark-700 px-2 py-0.5 rounded text-xs text-gray-300">v{item.versionNumber}</span>
+                                            </td>
+                                            <td className="p-4 text-center text-white font-medium">
+                                                {item.reviewerCount}
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${STATUS_MAP[item.status as keyof typeof STATUS_MAP]?.color}`}>
-                                                    {STATUS_MAP[item.status as keyof typeof STATUS_MAP]?.label}
-                                                </span>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className={`text-sm ${getDeadlineStyle(item.deadline)}`}>
-                                                    {item.deadline ? new Date(item.deadline).toLocaleDateString("vi-VN") : "---"}
-                                                </div>
+                                                <StatusBadge status={item.status as AssignmentStatus} />
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex items-center justify-center gap-2">
-                                                    {/* Nút 1: Đi tới Danh sách Phân công (AssignmentListPage) */}
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="hover:bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                                                        title="Quản lý danh sách phân công"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/appraisals/listAssignments/${item.requestVersionId}`);
-                                                        }}
-                                                    >
-                                                        📋
-                                                    </Button>
-
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="hover:bg-green-500/20 text-green-400 border border-green-500/30"
-                                                        title="Xem chi tiết hồ sơ"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/appraisals/assignment/${item.id}`);
-                                                        }}
-                                                    >
-                                                        👁️
-                                                    </Button>
-
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        className="shadow-lg shadow-primary-500/20"
-                                                        title="Tạo phân công mới"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleCreateWithData(item);
-                                                        }}
-                                                    >
-                                                        Tạo Phân Công
-                                                    </Button>
-
+                                                    <ActionIconBtn icon="📋" title="Quản lý phân công" onClick={() => navigate(`/appraisals/listAssignments/${item.requestVersionId}`)} colorClass="hover:bg-blue-500/20 text-blue-400 border-blue-500/30" />
+                                                    <ActionIconBtn icon="👁️" title="Xem chi tiết" onClick={() => navigate(`/appraisals/assignments/${item.id}`)} colorClass="hover:bg-green-500/20 text-green-400 border-green-500/30" />
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
-                                    <tr>
-                                        <td colSpan={7} className="p-20 text-center text-gray-500">
-                                            Hiện chưa có yêu cầu thẩm định nào cần giám sát.
-                                        </td>
-                                    </tr>
+                                    <EmptyRow colSpan={5} />
                                 )}
                             </tbody>
                         </table>
@@ -262,5 +180,41 @@ const DirectorAssignmentListPage = () => {
         </Layout>
     );
 };
+
+
+const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
+    const config = ASSIGNMENT_STATUS_MAP[status] || { label: "N/A", color: "text-gray-400 bg-gray-900/20" };
+    return (
+        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm ${config.color}`}>
+            {config.label}
+        </span>
+    );
+};
+
+const ActionIconBtn = ({ icon, title, onClick, colorClass }: any) => (
+    <button
+        title={title}
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        className={`w-8 h-8 rounded flex items-center justify-center border transition-all ${colorClass}`}
+    >
+        {icon}
+    </button>
+);
+
+const TableLoader = ({ colSpan }: { colSpan: number }) => (
+    <tr>
+        <td colSpan={colSpan} className="p-20 text-center">
+            <div className="animate-spin inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+        </td>
+    </tr>
+);
+
+const EmptyRow = ({ colSpan }: { colSpan: number }) => (
+    <tr>
+        <td colSpan={colSpan} className="p-20 text-center text-gray-500 italic">
+            Hiện chưa có yêu cầu thẩm định nào cần giám sát.
+        </td>
+    </tr>
+);
 
 export default DirectorAssignmentListPage;

@@ -49,7 +49,7 @@ export const API_ENDPOINTS = {
         getDetail: (id: string) => `/appraisal/assignment-detail/${id}`,
         listDirectorAssignments: `/appraisal/director-assignments`,
         listManagerAssignments: (versionId?: string) => `/appraisal/manager-assignments${versionId ? `/${versionId}` : ""}`,
-        listReviewer: `/appraisal/list-reviewer`,
+        listReviewer: (assignmentId?: string) => `/appraisal/list-reviewer${assignmentId ? `/${assignmentId}` : ""}`,
         getReviewerDetail: (reviewerId: string) => `/appraisal/reviewer-detail/${reviewerId}`,
     },
 

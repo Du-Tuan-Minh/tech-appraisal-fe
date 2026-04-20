@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -7,19 +7,21 @@ import { Button, Card, Input, Pagination } from "../../components/ui";
 import FormField from "../../components/ui/FormField";
 
 import { appraisalService } from "../../services/appraisalService";
-import { departmentService } from "../../services/departmentService";
+import { getUsers } from "../../services/userService"; // Giả định service chứa hàm getUsers
 import type { AppraisalAssignmentDetailDto, AssignStaffRequest } from "../../types/assignment";
-import type { DepartmentResponseDto } from "../../types/department";
+import type { UserResponseDto, UserFilterDto } from "../../types/user";
 
 const StaffAssignmentPage = () => {
     const navigate = useNavigate();
-    const { assignmentId } = useParams<{ assignmentId: string }>();
+    const { departmentId, assignmentId } = useParams<{ departmentId: string; assignmentId: string }>();
 
     const [assignment, setAssignment] = useState<AppraisalAssignmentDetailDto | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+    const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
-    const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
+
+    const [users, setUsers] = useState<UserResponseDto[]>([]);
+    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [managerNote, setManagerNote] = useState("");
 
@@ -36,84 +38,100 @@ const StaffAssignmentPage = () => {
             const data = await appraisalService.getAssignmentById(assignmentId);
             setAssignment(data);
         } catch (err) {
-            toast.error("Không thể tải thông tin phân công.");
+            toast.error("Không thể tải thông tin hồ sơ.");
             navigate("/appraisals/staff-reviewer-list");
         }
     }, [assignmentId, navigate]);
 
-    const fetchData = useCallback(async () => {
-        setIsLoading(true);
+    const fetchStaffList = useCallback(async (page: number, search: string) => {
+        if (!departmentId) return;
+
+        setIsLoadingUsers(true);
         try {
-            const deptRes = await departmentService.getDepartments(
-                pagination.page,
-                pagination.pageSize,
-                searchTerm
-            );
-            setDepartments(deptRes.items);
+            const filters: UserFilterDto = {
+                page,
+                pageSize: pagination.pageSize,
+                departmentId: departmentId,
+                searchTerm: search || null,
+                isActive: true,
+                role: null
+            };
+
+            const res = await getUsers(filters);
+            setUsers(res.items);
             setPagination(prev => ({
                 ...prev,
-                totalCount: deptRes.totalCount,
-                totalPages: deptRes.totalPages
+                page,
+                totalCount: res.totalCount,
+                totalPages: res.totalPages
             }));
-
-            await fetchAssignmentDetail();
         } catch (err) {
-            toast.error("Lỗi khi tải dữ liệu hệ thống.");
+            toast.error("Lỗi khi tải danh sách nhân sự.");
         } finally {
-            setIsLoading(false);
+            setIsLoadingUsers(false);
         }
-    }, [pagination.page, pagination.pageSize, searchTerm, fetchAssignmentDetail]);
+    }, [departmentId, pagination.pageSize]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        const init = async () => {
+            setIsLoadingInitial(true);
+            await fetchAssignmentDetail();
+            await fetchStaffList(1, "");
+            setIsLoadingInitial(false);
+        };
+        init();
+    }, [fetchAssignmentDetail, fetchStaffList]);
 
-    const handleStaffSelect = (staffId: string) => {
-        setSelectedStaff(prev =>
-            prev.includes(staffId) ? prev.filter(id => id !== staffId) : [...prev, staffId]
+    useEffect(() => {
+        if (isLoadingInitial) return;
+        const delayDebounce = setTimeout(() => {
+            fetchStaffList(1, searchTerm);
+        }, 500);
+        return () => clearTimeout(delayDebounce);
+    }, [searchTerm, fetchStaffList, isLoadingInitial]);
+
+    const handleToggleUser = (userId: string) => {
+        setSelectedStaffIds(prev =>
+            prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
         );
     };
 
-    // Hành động Submit dựa trên appraisalService.assignStaff
     const handleSubmit = async () => {
-        if (!assignmentId || selectedStaff.length === 0) {
-            return toast.error("Vui lòng chọn ít nhất một nhân viên.");
+        if (!assignmentId || selectedStaffIds.length === 0) {
+            return toast.error("Vui lòng chọn ít nhất một nhân sự thẩm định.");
         }
 
         setIsSubmitting(true);
         try {
             const request: AssignStaffRequest = {
                 assignmentId,
-                staffIds: selectedStaff,
+                staffIds: selectedStaffIds,
                 managerNote: managerNote.trim() || null
             };
 
             await appraisalService.assignStaff(request);
-            toast.success("Phân công nhân sự thành công!");
-            navigate("/appraisals/staff-reviewer-list");
+            toast.success("Đã phân công nhân sự thành công!");
+            navigate("/appraisals/listAssignments");
         } catch (err: any) {
-            toast.error(err.message || "Lỗi xử lý phân công.");
+            toast.error(err.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (isLoading) return (
+    if (isLoadingInitial) return (
         <Layout>
             <div className="flex items-center justify-center h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary-500"></div>
             </div>
         </Layout>
     );
 
     return (
         <Layout>
-            <div className="max-w-6xl mx-auto p-6 space-y-6">
-                <div className="flex justify-between items-end border-b border-dark-700 pb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white uppercase">Phân Công Nhân Sự</h1>
-                        <p className="text-gray-400 text-sm">Quản lý và điều phối nhân viên tham gia thẩm định</p>
-                    </div>
+            <div className="max-w-7xl mx-auto p-6 space-y-6">
+                <div className="flex justify-between items-center border-b border-dark-700 pb-4">
+                    <h1 className="text-2xl font-black text-white uppercase">Phân công Reviewers</h1>
                     <Button variant="ghost" onClick={() => navigate(-1)}>Quay lại</Button>
                 </div>
 
@@ -123,87 +141,90 @@ const StaffAssignmentPage = () => {
                             <FormField label="Tài liệu"><Input value={assignment.documentTitle} readOnly disabled /></FormField>
                             <FormField label="Mã hiệu"><Input value={assignment.documentCode} readOnly disabled /></FormField>
                             <FormField label="Phiên bản"><Input value={`v${assignment.versionNumber}`} readOnly disabled /></FormField>
-                            <FormField label="Người quản lý"><Input value={assignment.responsibleManagerName} readOnly disabled /></FormField>
+                            <FormField label="Phòng ban phụ trách"><Input value={assignment.departmentName || "N/A"} readOnly disabled /></FormField>
                         </div>
                     </Card>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-4">
-                        <Card title="Danh sách nhân sự theo phòng ban">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-8 space-y-4">
+                        <Card title="Danh sách nhân sự khả dụng">
                             <div className="mb-4">
                                 <Input
-                                    placeholder="Tìm kiếm phòng ban hoặc nhân viên..."
+                                    placeholder="Tìm theo tên hoặc mã nhân viên..."
                                     value={searchTerm}
                                     onChange={setSearchTerm}
                                 />
                             </div>
 
-                            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                {departments.map(dept => (
-                                    <div key={dept.id} className="border border-dark-700 rounded-lg p-4 bg-dark-800/30">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <span className="text-primary-400 font-bold uppercase text-xs tracking-widest">
-                                                {dept.nameDepartment}
-                                            </span>
-                                            <span className="text-[10px] text-gray-500">{dept.codeDepartment}</span>
+                            <div className="space-y-2 min-h-[400px]">
+                                {isLoadingUsers ? (
+                                    <div className="text-center py-20 text-primary-500 animate-pulse">Đang tải dữ liệu nhân sự...</div>
+                                ) : users.length > 0 ? (
+                                    users.map(user => (
+                                        <div
+                                            key={user.id}
+                                            onClick={() => handleToggleUser(user.id)}
+                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${selectedStaffIds.includes(user.id)
+                                                ? "bg-primary-500/10 border-primary-500"
+                                                : "bg-dark-800/40 border-dark-700 hover:border-gray-500"
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedStaffIds.includes(user.id) ? "bg-primary-500 border-primary-500" : "border-gray-600"
+                                                    }`}>
+                                                    {selectedStaffIds.includes(user.id) && <span className="text-white text-xs">✓</span>}
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-bold">{user.firstName} {user.lastName}</p>
+                                                    <p className="text-xs text-gray-500 font-mono">{user.employeeCode} • {user.departmentName}</p>
+                                                </div>
+                                            </div>
+                                            <span className="text-[10px] bg-dark-700 px-2 py-1 rounded text-gray-400 font-bold">{user.role}</span>
                                         </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            <p className="text-gray-500 text-xs italic italic">Tính năng liệt kê nhân viên theo phòng ban...</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <div className="text-center py-20 text-gray-500 italic">Không tìm thấy nhân sự nào trong đơn vị này.</div>
+                                )}
                             </div>
 
-                            <div className="mt-4">
+                            <div className="mt-4 border-t border-dark-700 pt-4">
                                 <Pagination
                                     currentPage={pagination.page}
                                     totalPages={pagination.totalPages}
-                                    onPageChange={(p) => setPagination(prev => ({ ...prev, page: p }))}
+                                    onPageChange={(p) => fetchStaffList(p, searchTerm)}
                                 />
                             </div>
                         </Card>
                     </div>
 
-                    <div className="space-y-4">
-                        <Card title="Thông tin phân công" className="sticky top-6">
-                            <div className="space-y-4">
-                                <div className="p-3 bg-primary-500/5 border border-primary-500/20 rounded-lg">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-gray-300">Nhân sự đã chọn:</span>
-                                        <span className="text-xl font-bold text-primary-500">{selectedStaff.length}</span>
-                                    </div>
+                    <div className="lg:col-span-4">
+                        <Card className="sticky top-6 border-primary-500/30">
+                            <div className="space-y-6">
+                                <div className="text-center p-4 bg-primary-500/5 rounded-2xl border border-primary-500/10">
+                                    <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Đã chọn</p>
+                                    <p className="text-4xl font-black text-primary-500">{selectedStaffIds.length}</p>
+                                    <p className="text-[10px] text-gray-500 uppercase mt-1">Nhân sự thực hiện</p>
                                 </div>
 
-                                <FormField label="Ghi chú điều phối">
+                                <FormField label="Ghi chú phân công">
                                     <textarea
-                                        className="w-full p-3 bg-dark-800 border border-dark-700 rounded-lg text-sm text-white focus:ring-1 focus:ring-primary-500 outline-none min-h-[120px] resize-none"
-                                        placeholder="Nhập hướng dẫn cụ thể cho nhóm thẩm định..."
+                                        className="w-full bg-dark-950 border-dark-700 rounded-xl p-4 text-sm text-white outline-none focus:ring-1 focus:ring-primary-500 min-h-[150px] resize-none"
+                                        placeholder="Nhập yêu cầu cụ thể..."
                                         value={managerNote}
-                                        onChange={e => setManagerNote(e.target.value)}
+                                        onChange={(e) => setManagerNote(e.target.value)}
                                     />
                                 </FormField>
 
-                                <div className="pt-4 space-y-2">
-                                    <Button
-                                        variant="primary"
-                                        className="w-full py-4 font-bold"
-                                        onClick={handleSubmit}
-                                        isLoading={isSubmitting}
-                                        disabled={selectedStaff.length === 0}
-                                    >
-                                        XÁC NHẬN PHÂN CÔNG
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full"
-                                        onClick={() => navigate(-1)}
-                                        disabled={isSubmitting}
-                                    >
-                                        Hủy bỏ
-                                    </Button>
-                                </div>
+                                <Button
+                                    variant="primary"
+                                    className="w-full py-4 font-black uppercase tracking-widest"
+                                    onClick={handleSubmit}
+                                    isLoading={isSubmitting}
+                                    disabled={selectedStaffIds.length === 0}
+                                >
+                                    Xác nhận giao việc
+                                </Button>
                             </div>
                         </Card>
                     </div>

@@ -72,7 +72,7 @@ const DocumentVersionDetailPage = () => {
         try {
             await documentService.submitForAppraisal(documentId);
             toast.success("Hồ sơ đã được gửi đi thẩm định");
-            navigate("/documents");
+            navigate("/documents/list");
         } catch (err: any) {
             toast.error(err.response?.data?.message);
         } finally {

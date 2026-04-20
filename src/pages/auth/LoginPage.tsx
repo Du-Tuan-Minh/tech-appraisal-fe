@@ -23,7 +23,7 @@ const LoginPage = () => {
         try {
             const res = await login({ employeeCode, password });
             setAuth(res.accessToken, res.refreshToken);
-            navigate("/documents");
+            navigate("/documents/list");
         } catch (err) {
             setError("Mã nhân viên hoặc mật khẩu không đúng. Vui lòng thử lại.");
         } finally {

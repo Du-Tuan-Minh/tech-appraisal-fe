@@ -1,34 +1,23 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
+import type { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
 import type { ApiResponse } from "@/types/apiResponse";
-
-export interface AttachmentUploadResponseDto {
-    id: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-    url?: string;
-}
+import type { AttachmentResponseDto } from "@/types/attachment";
 
 export const attachmentService = {
     upload: async (
         file: File,
         entityId: string,
-        category: number
-    ): Promise<AttachmentUploadResponseDto> => {
+        category: AttachmentCategory
+    ): Promise<AttachmentResponseDto> => {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("entityId", entityId);
-        formData.append("category", category.toString());
+        formData.append("technicalDocumentId", entityId);
+        formData.append("contentCategory", category.toString());
 
-        const response = await axiosClient.post<ApiResponse<AttachmentUploadResponseDto>>(
+        const response = await axiosClient.post<ApiResponse<AttachmentResponseDto>>(
             API_ENDPOINTS.attachments.upload,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            }
+            formData
         );
 
         return response.data.data;

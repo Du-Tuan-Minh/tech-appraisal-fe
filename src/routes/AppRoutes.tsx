@@ -24,7 +24,6 @@ import IssueDetailPage from "../pages/issues/IssueDetailPage";
 import CreateImprovementVersionPage from "../pages/issues/CreateImprovementVersionPage";
 import KnowledgeBasePage from "../pages/knowledge/KnowledgeBasePage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
-import AppraisalInternalPage from "../pages/appraisals/AppraisalInternalPage";
 import MyTasksPage from "../pages/appraisals/MyTasksPage";
 import UserListPage from "../pages/users/UserListPage";
 import DocumentVersionDetailPage from "../pages/documents/DocumentVersionDetailPage";
@@ -57,7 +56,7 @@ const AppRoutes = () => {
                 <Route path="/centers/:parentId/departments" element={<DepartmentListPage />} />
 
                 {/* DOCUMENTS */}
-                <Route path="/documents" element={<DocumentListPage />} />
+                <Route path="/documents/list" element={<DocumentListPage />} />
                 <Route path="/documents/create" element={<CreateDocumentPage />} />
                 <Route path="/documents/:id/editor" element={<DocumentEditorPage />} />
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
@@ -70,12 +69,11 @@ const AppRoutes = () => {
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
                 <Route path="/appraisals/listAssignments/:versionId?" element={<ManagerAssignmentListPage />} />
-                <Route path="/appraisals/internal/:documentId/:assignmentId?" element={<AppraisalInternalPage />} />
                 <Route path="/appraisals/assignment/:assignmentId" element={<AssignmentDetailPage />} />
                 <Route path="/appraisals/assignment/create/:versionId?" element={<AssignmentCreatePage />} />
                 <Route path="/appraisals/director-assignments" element={<DirectorAssignmentListPage />} />
-                <Route path="/appraisals/list-reviewer-assignments" element={<StaffReviewerListPage />} />
-                <Route path="/appraisals/assignment/staff/:assignmentId" element={<StaffAssignmentPage />} />
+                <Route path="/appraisals/list-reviewer-assignments/:assignmentId" element={<StaffReviewerListPage />} />
+                <Route path="/appraisals/department/:departmentId/assignment/staff/:assignmentId" element={<StaffAssignmentPage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

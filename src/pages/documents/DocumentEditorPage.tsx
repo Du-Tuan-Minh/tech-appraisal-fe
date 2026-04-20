@@ -2,88 +2,73 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select } from "@/components/ui";
-import Pagination from "@/components/ui/Pagination"; // Tái sử dụng component của bạn
+import Pagination from "@/components/ui/Pagination";
+import FileUploadComponent from "@/components/forms/FileUploadComponent";
+
 import { toast } from "react-hot-toast";
 import { documentService } from "@/services/documentService";
+
 import type { TechnicalDocumentDetailDto, TechnicalDocumentUpdateDto } from "@/types/document";
 import type { DocumentVersionDto } from "@/types/version";
+import type { AttachmentResponseDto } from "@/types/attachment";
+
 import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
-import { DocumentStatus, DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
+import { DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import { History, Save, Send, Eye } from "lucide-react";
+import { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
+
+import { History, Save, ArrowLeft, Eye } from "lucide-react";
 
 const DocumentEditorPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // States cho Document
     const [doc, setDoc] = useState<TechnicalDocumentDetailDto | null>(null);
-    const [formData, setFormData] = useState<TechnicalDocumentUpdateDto | null>(null);
+    const [formData, setFormData] = useState<(TechnicalDocumentUpdateDto & { attachments: AttachmentResponseDto[] }) | null>(null);
+    const [versions, setVersions] = useState<DocumentVersionDto[]>([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-
-    // States cho Versions & Pagination
-    const [versions, setVersions] = useState<DocumentVersionDto[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5; // Bạn có thể điều chỉnh hoặc lấy từ API nếu BE hỗ trợ phân trang version
+    const itemsPerPage = 5;
 
     const typeOptions = useMemo(() =>
-        Object.values(DocumentType).filter(v => typeof v === 'number').map(v => ({
-            value: String(v),
-            label: DOCUMENT_TYPE_LABELS[v as DocumentType]
+        Object.values(DocumentType).filter(v => typeof v === "number").map(v => ({
+            value: String(v), label: DOCUMENT_TYPE_LABELS[v as DocumentType]
         })), []);
 
     const priorityOptions = useMemo(() =>
-        Object.values(IssueSeverity).filter(v => typeof v === 'number').map(v => ({
-            value: String(v),
-            label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
+        Object.values(IssueSeverity).filter(v => typeof v === "number").map(v => ({
+            value: String(v), label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
         })), []);
 
-    // 1. Fetch thông tin Document
-    const fetchDoc = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         if (!id) return;
         try {
-            const res = await documentService.getDocumentById(id);
-            setDoc(res);
+            const [document, versionList] = await Promise.all([
+                documentService.getDocumentById(id),
+                documentService.getDocumentVersions(id)
+            ]);
+
+            setDoc(document);
+            setVersions(versionList);
             setFormData({
-                title: res.title,
-                description: res.description,
-                type: res.type,
-                priority: res.priority,
+                title: document.title,
+                description: document.description,
+                type: document.type,
+                priority: document.priority,
                 technicalSpecs: null,
+                attachments: (document as any).attachments || []
             });
-        } catch (err) {
-            toast.error("Không thể tải tài liệu");
-            navigate("/documents");
+        } catch {
+            toast.error("Không thể tải dữ liệu tài liệu");
+            navigate("/documents/list");
+        } finally {
+            setIsLoading(false);
         }
     }, [id, navigate]);
 
-    // 2. Fetch danh sách Versions
-    const fetchVersions = useCallback(async () => {
-        if (!id) return;
-        try {
-            const res = await documentService.getDocumentVersions(id);
-            setVersions(res);
-        } catch (err) {
-            console.error("Lỗi tải danh sách phiên bản", err);
-        }
-    }, [id]);
-
-    useEffect(() => {
-        const init = async () => {
-            setIsLoading(true);
-            await Promise.all([fetchDoc(), fetchVersions()]);
-            setIsLoading(false);
-        };
-        init();
-    }, [fetchDoc, fetchVersions]);
-
-    // Logic phân trang cho danh sách version (Client-side pagination dựa trên component bạn cung cấp)
-    const totalPages = Math.ceil(versions.length / itemsPerPage);
-    const currentVersions = useMemo(() => {
-        const start = (currentPage - 1) * itemsPerPage;
-        return versions.slice(start, start + itemsPerPage);
-    }, [versions, currentPage]);
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -91,143 +76,124 @@ const DocumentEditorPage = () => {
         setIsSaving(true);
         try {
             await documentService.updateDocument(id, formData);
-            toast.success("Đã cập nhật thông tin hồ sơ");
-            await fetchDoc();
+            toast.success("Đã lưu thay đổi");
+            await fetchData();
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Cập nhật thất bại");
-        } finally { setIsSaving(false); }
+            toast.error(err.response?.data?.message || "Lỗi cập nhật");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    // const handleSendToAppraisal = async () => {
-    //     if (!id || !window.confirm("Gửi hồ sơ này đi thẩm định?")) return;
-    //     try {
-    //         await documentService.submitForAppraisal(id);
-    //         toast.success("Đã gửi thẩm định thành công");
-    //         navigate("/documents");
-    //     } catch (err: any) {
-    //      toast.error(err.response?.data?.message || "Thao tác thất bại");
-    //     }
-    // };
-
     if (isLoading) return <LoadingSpinner />;
-    if (!doc || !formData) return <div className="text-white">Không tìm thấy dữ liệu</div>;
+    if (!doc || !formData) return <div className="p-10 text-center text-gray-500">Dữ liệu không tồn tại</div>;
 
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-6">
                 <header className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-white italic">
-                        Biên tập hồ sơ: <span className="text-primary-400 not-italic">{doc.documentCode}</span>
+                    <h1 className="text-xl font-bold text-white">
+                        Biên tập: <span className="text-primary-400 font-mono">{doc.documentCode}</span>
                     </h1>
-                    <Button variant="ghost" onClick={() => navigate("/documents")}>← Quay lại</Button>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/documents/list")}>
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
+                    </Button>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-3 space-y-6">
-                        <Card className="p-6 bg-dark-900/40 border-l-4 border-primary-500">
+                        <Card className="p-6 bg-dark-900/40 border-l-2 border-primary-500">
                             <form onSubmit={handleUpdate} className="space-y-4">
                                 <Input
-                                    label="Tiêu đề tài liệu"
+                                    label="Tiêu đề"
                                     value={formData.title}
                                     onChange={(v) => setFormData(p => p ? ({ ...p, title: v }) : null)}
                                 />
                                 <div className="grid grid-cols-2 gap-4">
                                     <Select
-                                        label="Phân loại"
+                                        label="Loại"
                                         options={typeOptions}
                                         value={String(formData.type)}
                                         onChange={(v) => setFormData(p => p ? ({ ...p, type: Number(v) as DocumentType }) : null)}
                                     />
                                     <Select
-                                        label="Mức độ ưu tiên"
+                                        label="Ưu tiên"
                                         options={priorityOptions}
                                         value={String(formData.priority)}
                                         onChange={(v) => setFormData(p => p ? ({ ...p, priority: Number(v) as IssueSeverity }) : null)}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-primary-400 uppercase tracking-widest">Mô tả</label>
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-bold text-gray-500 uppercase">Mô tả</label>
                                     <textarea
-                                        className="w-full bg-dark-800 border border-dark-700 rounded-lg p-3 text-white text-sm min-h-[80px] outline-none focus:ring-1 focus:ring-primary-500"
+                                        className="w-full bg-dark-800 border border-dark-700 rounded-lg p-3 text-sm text-white"
+                                        rows={4}
                                         value={formData.description || ""}
                                         onChange={(e) => setFormData(p => p ? ({ ...p, description: e.target.value }) : null)}
                                     />
                                 </div>
+
+                                <div className="pt-4 border-t border-dark-800">
+                                    <FileUploadComponent
+                                        technicalDocumentId={doc.id}
+                                        category={AttachmentCategory.IssueEvidence}
+                                        initialAttachments={formData.attachments}
+                                        onChange={(updatedFiles) => {
+                                            setFormData(prev => prev ? ({ ...prev, attachments: updatedFiles }) : null);
+                                        }}
+                                    />
+                                </div>
+
                                 <div className="flex justify-end">
-                                    <Button type="submit" variant="primary" isLoading={isSaving} className="h-9">
-                                        <Save className="w-4 h-4 mr-2" /> Cập nhật thông tin
+                                    <Button type="submit" isLoading={isSaving}>
+                                        <Save className="w-4 h-4 mr-2" /> Lưu
                                     </Button>
                                 </div>
                             </form>
                         </Card>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-accent-green">
-                                <History className="w-5 h-5" />
-                                <h2 className="text-sm font-bold uppercase tracking-widest">Lịch sử các phiên bản kỹ thuật</h2>
-                            </div>
-
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <History className="w-4 h-4 text-gray-500" /> Lịch sử
+                            </h3>
                             <Card className="overflow-hidden bg-dark-950/20 border-dark-800">
-                                <table className="w-full text-left text-xs text-gray-400">
-                                    <thead className="bg-dark-900/50 text-primary-400 uppercase text-[10px] font-bold">
+                                <table className="w-full text-left text-xs">
+                                    <thead className="bg-dark-900 text-gray-500 uppercase font-bold">
                                         <tr>
-                                            <th className="px-4 py-3">Phiên bản</th>
-                                            <th className="px-4 py-3 text-center">Mã yêu cầu</th>
-                                            <th className="px-4 py-3 text-right">Hành động</th>
+                                            <th className="px-4 py-3">Version</th>
+                                            <th className="px-4 py-3">Request ID</th>
+                                            <th className="px-4 py-3 text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-dark-800">
-                                        {currentVersions.length > 0 ? (
-                                            currentVersions.map((v) => (
-                                                <tr key={v.id} className="hover:bg-dark-800/30 transition-colors">
-                                                    <td className="px-4 py-3">
-                                                        <span className="text-white font-bold">v{v.versionNumber}</span>
-                                                        {v.id === doc.currentVersionId &&
-                                                            <span className="ml-2 text-[9px] bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-full border border-primary-500/30">Hiện tại</span>
-                                                        }
-                                                    </td>
-                                                    <td className="px-4 py-3 text-center font-mono">{v.requestId}</td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => navigate(`/documents/${doc.id}/version/${v.id}`)}
-                                                            className="h-7 hover:text-primary-400"
-                                                        >
-                                                            <Eye className="w-3.5 h-3.5 mr-1" /> Chi tiết
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr><td colSpan={3} className="px-4 py-10 text-center italic">Chưa có phiên bản nào được ghi lại</td></tr>
-                                        )}
+                                    <tbody className="divide-y divide-dark-800 text-gray-300">
+                                        {versions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(v => (
+                                            <tr key={v.id} className="hover:bg-white/[0.02]">
+                                                <td className="px-4 py-3 text-white">v{v.versionNumber}</td>
+                                                <td className="px-4 py-3 font-mono">{v.requestId}</td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/version/${v.id}`)}>
+                                                        <Eye className="w-4 h-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </Card>
-
                             <Pagination
                                 currentPage={currentPage}
-                                totalPages={totalPages}
+                                totalPages={Math.ceil(versions.length / itemsPerPage)}
                                 onPageChange={setCurrentPage}
-                                className="pt-2"
                             />
                         </div>
                     </div>
 
-                    <aside className="space-y-6">
-                        <Card className="p-5 space-y-4 bg-dark-900/60 border-none shadow-xl">
-                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest border-b border-dark-700 pb-2">Hồ sơ hệ thống</h3>
-                            <MetaRow label="Trạng thái" value={DOCUMENT_STATUS_LABELS[doc.status]} badgeClass="text-primary-400" />
+                    <aside className="space-y-4">
+                        <Card className="p-4 bg-dark-900 border-dark-800 space-y-3">
+                            <MetaRow label="Trạng thái" value={DOCUMENT_STATUS_LABELS[doc.status]} />
                             <MetaRow label="Phòng ban" value={doc.departmentName} />
                             <MetaRow label="Người tạo" value={doc.requesterName} />
-                            <MetaRow label="Người xử lý" value={doc.currentHandlerName || "N/A"} />
                         </Card>
-
-                        {/* <Button variant="primary" className="w-full py-6" onClick={handleSendToAppraisal}>
-                            <Send className="w-4 h-4" />
-                            <span>Gửi Thẩm Định</span>
-                        </Button> */}
                     </aside>
                 </div>
             </div>
@@ -235,16 +201,16 @@ const DocumentEditorPage = () => {
     );
 };
 
-const MetaRow = ({ label, value, badgeClass }: { label: string; value: string; badgeClass?: string }) => (
-    <div className="flex justify-between items-center text-[11px]">
-        <span className="text-gray-500">{label}:</span>
-        <span className={badgeClass ? `font-bold ${badgeClass}` : "text-gray-300"}>{value}</span>
+const MetaRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex flex-col gap-0.5">
+        <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">{label}</span>
+        <span className="text-xs text-white font-medium">{value}</span>
     </div>
 );
 
 const LoadingSpinner = () => (
     <div className="h-screen flex items-center justify-center bg-dark-950">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary-500"></div>
+        <div className="animate-spin w-8 h-8 border-t-2 border-primary-500 rounded-full"></div>
     </div>
 );
 

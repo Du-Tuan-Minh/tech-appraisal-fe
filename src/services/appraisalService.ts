@@ -11,6 +11,8 @@ import type {
 } from "../types/assignment";
 
 import type {
+    AppraisalReviewerDetailDto,
+    AppraisalReviewerDto,
     UpdateReviewerProgressRequest
 } from "../types/reviewer";
 
@@ -51,11 +53,21 @@ export const appraisalService = {
     },
 
     getReviewerAssignments: async (
+        assignmentId: string | undefined,
         params: pagination
-    ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
-        const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>>(
-            API_ENDPOINTS.appraisal.listReviewer,
+    ): Promise<PagedResult<AppraisalReviewerDto>> => {
+        const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalReviewerDto>>>(
+            API_ENDPOINTS.appraisal.listReviewer(assignmentId),
             { params }
+        );
+        return handleResponse(res);
+    },
+
+    getReviewerDetail: async (
+        reviewerId: string
+    ): Promise<AppraisalReviewerDetailDto> => {
+        const res = await axiosClient.get<ApiResponse<AppraisalReviewerDetailDto>>(
+            API_ENDPOINTS.appraisal.getReviewerDetail(reviewerId)
         );
         return handleResponse(res);
     },

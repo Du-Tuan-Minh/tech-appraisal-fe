@@ -34,7 +34,7 @@ const Header = () => {
         const baseNav = [
             { name: "Dashboard", path: "/dashboard", icon: "🏠" },
             { name: "Phòng Ban", path: "/centers", icon: "🏢" },
-            { name: "Tài Liệu", path: "/documents", icon: "📄" },
+            { name: "Tài Liệu", path: "/documents/list", icon: "📄" },
             { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },
         ];
 
@@ -65,7 +65,7 @@ const Header = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center">
-                        <Link to="/documents" className="flex items-center space-x-3">
+                        <Link to="/documents/list" className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-green rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-sm">TA</span>
                             </div>

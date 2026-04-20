@@ -3,7 +3,8 @@ export const LinkedEntityType = {
     RequestVersion: 2,
     FeedbackIssue: 3,
     TechnicalKnowledgeBase: 4,
-    AppraisalHistory: 5
+    AppraisalHistory: 5,
+    FeedbackComment: 6
 } as const;
 
 export type LinkedEntityType = (typeof LinkedEntityType)[keyof typeof LinkedEntityType];
@@ -13,5 +14,6 @@ export const LINKED_ENTITY_TYPE_LABELS: Record<LinkedEntityType, string> = {
     [LinkedEntityType.RequestVersion]: "Phiên bản yêu cầu",
     [LinkedEntityType.FeedbackIssue]: "Vấn đề phản hồi",
     [LinkedEntityType.TechnicalKnowledgeBase]: "Cơ sở tri thức kỹ thuật",
-    [LinkedEntityType.AppraisalHistory]: "Lịch sử thẩm định"
+    [LinkedEntityType.AppraisalHistory]: "Lịch sử thẩm định",
+    [LinkedEntityType.FeedbackComment]: "Bình luận phản hồi"
 };

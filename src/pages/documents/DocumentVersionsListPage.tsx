@@ -64,7 +64,7 @@ const DocumentVersionsListPage = () => {
                 });
             } catch (err) {
                 toast.error("Khong the tai thong tin phien ban.");
-                navigate("/documents");
+                navigate("/documents/list");
             } finally {
                 setIsLoading(false);
             }
@@ -93,7 +93,7 @@ const DocumentVersionsListPage = () => {
 
         filteredVersions.sort((a, b) => {
             let compareValue = 0;
-            
+
             if (filters.sortBy === "versionNumber") {
                 compareValue = a.versionNumber - b.versionNumber;
             } else {
@@ -136,8 +136,8 @@ const DocumentVersionsListPage = () => {
     };
 
     const getStatusColor = (isCurrent: boolean) => {
-        return isCurrent 
-            ? "text-green-400 bg-green-900/20" 
+        return isCurrent
+            ? "text-green-400 bg-green-900/20"
             : "text-gray-400 bg-gray-900/20";
     };
 
@@ -165,7 +165,7 @@ const DocumentVersionsListPage = () => {
                         <p className="text-primary-400">Khong tim thay thong tin tai lieu.</p>
                         <Button
                             variant="primary"
-                            onClick={() => navigate("/documents")}
+                            onClick={() => navigate("/documents/list")}
                             className="mt-4"
                         >
                             Quay lai danh sach
@@ -282,8 +282,8 @@ const DocumentVersionsListPage = () => {
                                 </thead>
                                 <tbody>
                                     {versions.map((version) => (
-                                        <tr 
-                                            key={version.id} 
+                                        <tr
+                                            key={version.id}
                                             className="border-b border-dark-800 hover:bg-dark-800/50 cursor-pointer"
                                             onClick={() => handleVersionClick(version.id)}
                                         >

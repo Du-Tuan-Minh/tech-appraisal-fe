@@ -1,8 +1,9 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
-import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto } from "../types/user";
+import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto, UserFilterDto } from "../types/user";
 import type { UserRole } from "../constants/enum/UserRole";
+import type { PagedResult } from "@/types/paginationResult";
 
 export const getProfile = async (): Promise<UserResponseDto> => {
     const res = await axiosClient.get<ApiResponse<UserResponseDto>>(
@@ -27,8 +28,8 @@ export const changePassword = async (data: ChangePasswordDto): Promise<any> => {
     return res.data.data;
 };
 
-export const getUsers = async (filters: any) => {
-    const res = await axiosClient.get<ApiResponse<any>>(
+export const getUsers = async (filters: UserFilterDto): Promise<PagedResult<UserResponseDto>> => {
+    const res = await axiosClient.get<ApiResponse<PagedResult<UserResponseDto>>>(
         API_ENDPOINTS.users.filter,
         { params: filters }
     );

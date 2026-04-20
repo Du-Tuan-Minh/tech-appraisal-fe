@@ -13,5 +13,5 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
     [UserRole.Staff]: "Chuyên viên",
     [UserRole.Manager]: "Lãnh đạo cấp phòng",
     [UserRole.Director]: "Ban Giám đốc",
-    [UserRole.Inspector]: "Người kiểm soát/Tra cứu"
+    [UserRole.Inspector]: "Người kiểm soát"
 };
