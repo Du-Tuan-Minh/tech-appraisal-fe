@@ -7,6 +7,7 @@ import Form from "@/components/ui/Form";
 import { login } from "@/services/authService";
 import { setAuth } from "@/utils/authStorage";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -23,9 +24,12 @@ const LoginPage = () => {
         try {
             const res = await login({ employeeCode, password });
             setAuth(res.accessToken, res.refreshToken);
+            toast.success("Đăng nhập thành công");
             navigate("/documents/list");
-        } catch (err) {
-            setError("Mã nhân viên hoặc mật khẩu không đúng. Vui lòng thử lại.");
+        } catch (err: any) {
+            const message = err.response?.data?.message || "Đăng nhập thất bại";
+            setError(message);
+            toast.error(message);
         } finally {
             setIsLoading(false);
         }

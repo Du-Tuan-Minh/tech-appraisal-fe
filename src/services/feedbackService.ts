@@ -4,54 +4,49 @@ import type { ApiResponse } from "@/types/apiResponse";
 import type { PagedResult } from "../types/paginationResult";
 import type {
     FeedbackIssueResponseDto,
-    FeedbackIssueCreateDto,
-    FeedbackIssueUpdateDto,
-    FeedbackActionRequestDto
+    FeedbackIssueDetailDto,
+    FeedbackIssueCreateDto
 } from "@/types/feedback";
 
 export const feedbackService = {
-    getByDocument: async (documentId: string, pageIndex = 1, pageSize = 10): Promise<PagedResult<FeedbackIssueResponseDto>> => {
-        const response = await axiosClient.get<ApiResponse<PagedResult<FeedbackIssueResponseDto>>>(
+    getByDocument: async (
+        documentId: string,
+        page = 1,
+        pageSize = 10
+    ): Promise<PagedResult<FeedbackIssueResponseDto>> => {
+        const res = await axiosClient.get<ApiResponse<PagedResult<FeedbackIssueResponseDto>>>(
             API_ENDPOINTS.feedback.getByDocument(documentId),
-            { params: { pageIndex, pageSize } }
+            { params: { page, pageSize } }
         );
-        return response.data.data;
+        return res.data.data;
     },
 
-    getDetail: async (id: string): Promise<FeedbackIssueResponseDto> => {
-        const response = await axiosClient.get<ApiResponse<FeedbackIssueResponseDto>>(
+    getByVersion: async (
+        versionId: string,
+        page = 1,
+        pageSize = 10
+    ): Promise<PagedResult<FeedbackIssueResponseDto>> => {
+        const res = await axiosClient.get<ApiResponse<PagedResult<FeedbackIssueResponseDto>>>(
+            API_ENDPOINTS.feedback.getByVersion(versionId),
+            { params: { page, pageSize } }
+        );
+        return res.data.data;
+    },
+
+    getDetail: async (id: string): Promise<FeedbackIssueDetailDto> => {
+        const res = await axiosClient.get<ApiResponse<FeedbackIssueDetailDto>>(
             API_ENDPOINTS.feedback.getDetail(id)
         );
-        return response.data.data;
+        return res.data.data;
     },
 
-    reportIssue: async (data: FeedbackIssueCreateDto): Promise<FeedbackIssueResponseDto> => {
-        const response = await axiosClient.post<ApiResponse<FeedbackIssueResponseDto>>(
-            API_ENDPOINTS.feedback.report,
-            data
-        );
-        return response.data.data;
-    },
-
-    addReviewIssue: async (data: FeedbackIssueCreateDto): Promise<FeedbackIssueResponseDto> => {
-        const response = await axiosClient.post<ApiResponse<FeedbackIssueResponseDto>>(
+    addReviewIssue: async (
+        data: FeedbackIssueCreateDto
+    ): Promise<FeedbackIssueResponseDto> => {
+        const res = await axiosClient.post<ApiResponse<FeedbackIssueResponseDto>>(
             API_ENDPOINTS.feedback.addReviewIssue,
             data
         );
-        return response.data.data;
-    },
-
-    updateStatus: async (id: string, data: FeedbackIssueUpdateDto): Promise<void> => {
-        await axiosClient.put<ApiResponse<any>>(
-            API_ENDPOINTS.feedback.updateStatus(id),
-            data
-        );
-    },
-
-    submitAction: async (data: FeedbackActionRequestDto): Promise<void> => {
-        await axiosClient.post<ApiResponse<any>>(
-            API_ENDPOINTS.feedback.finalize(data.issueId),
-            data
-        );
+        return res.data.data;
     }
 };

@@ -12,13 +12,16 @@ export interface FeedbackIssueResponseDto {
     versionNumber: number;
     reporterId: string;
     reporterName: string;
-    indicatorPath: string;
-    description: string;
     issueCategory: IssueCategory;
     severity: IssueSeverity;
     status: IssueStatus;
     assignedDepartmentId?: string | null;
     assignedDepartmentName?: string | null;
+}
+
+export interface FeedbackIssueDetailDto extends FeedbackIssueResponseDto {
+    indicatorPath: string;
+    description: string;
     technicalKnowledgeBaseId?: string | null;
     knowledgeBaseTitle?: string | null;
     resolvedInVersionId?: string | null;
@@ -51,7 +54,8 @@ export interface FeedbackActionRequestDto {
     issueId: string;
     action: FeedbackAction;
     content: string;
-    attachmentIds: string[];
+    attachmentIds?: string[] | null;
+    newTechnicalSpecs?: any;
 }
 
 export interface FeedbackResponseDto {

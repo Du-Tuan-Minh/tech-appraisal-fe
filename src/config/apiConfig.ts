@@ -60,11 +60,17 @@ export const API_ENDPOINTS = {
 
     feedback: {
         getByDocument: (documentId: string) => `/feedback/document/${documentId}`,
-        getDetail: (id: string) => `/feedback/issues/${id}`,
-        report: `/feedback/report`,
+        getByVersion: (versionId: string) => `/feedback/version/${versionId}`,
+        getDetail: (id: string) => `/feedback/detail/${id}`,
         addReviewIssue: `/feedback/add-issue`,
         updateStatus: (id: string) => `/feedback/issues/${id}/status`,
         finalize: (id: string) => `/feedback/issues/${id}/finalize`,
+    },
+
+    feedbackComments: {
+        create: "/api/feedback-comments/create",
+        getByIssue: (issueId: string, pagination: { page: number; pageSize: number }) =>
+            `/api/feedback-comments/issue/${issueId}?page=${pagination.page}&pageSize=${pagination.pageSize}`
     },
 
     signing: {

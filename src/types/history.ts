@@ -1,5 +1,7 @@
 import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
-import type { FeedbackIssueResponseDto, FeedbackIssueCreateDto } from "@/types/feedback";
+import type { IssueCategory } from "@/constants/enum/IssueCategory";
+import type { IssueSeverity } from "@/constants/enum/IssueSeverity";
+import type { FeedbackIssueResponseDto } from "@/types/feedback";
 
 export interface AppraisalHistoryResponseDto {
     id: string;
@@ -21,6 +23,14 @@ export interface AppraisalHistoryCreateDto {
     documentId: string;
     appraisalAssignmentId?: string | null;
     comment?: string | null;
-    newIssues: FeedbackIssueCreateDto[];
-    attachmentIds: string[];
+    newIssues: FeedbackIssueBaseDto[];
+    attachmentIds: (string | null)[];
+}
+
+export interface FeedbackIssueBaseDto {
+    indicatorPath: string;
+    description: string;
+    issueCategory: IssueCategory;
+    severity: IssueSeverity;
+    technicalKnowledgeBaseId?: string | null;
 }
