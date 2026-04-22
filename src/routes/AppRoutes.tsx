@@ -33,6 +33,7 @@ import AssignmentCreatePage from "../pages/appraisals/AssignmentCreatePage";
 import DirectorAssignmentListPage from "../pages/appraisals/DirectorAssignmentListPage";
 import StaffReviewerListPage from "../pages/appraisals/StaffReviewerListPage";
 import StaffAssignmentPage from "../pages/appraisals/StaffAssignmentPage";
+import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
 
 const AppRoutes = () => {
     return (
@@ -70,10 +71,11 @@ const AppRoutes = () => {
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
                 <Route path="/appraisals/listAssignments/:versionId?" element={<ManagerAssignmentListPage />} />
                 <Route path="/appraisals/assignment/:assignmentId" element={<AssignmentDetailPage />} />
-                <Route path="/appraisals/assignment/create/:versionId?" element={<AssignmentCreatePage />} />
+                <Route path="/appraisals/assignment/create/:versionIsd?" element={<AssignmentCreatePage />} />
                 <Route path="/appraisals/director-assignments" element={<DirectorAssignmentListPage />} />
-                <Route path="/appraisals/list-reviewer-assignments/:assignmentId" element={<StaffReviewerListPage />} />
+                <Route path="/appraisals/list-reviewerssignments/:assignmentId" element={<StaffReviewerListPage />} />
                 <Route path="/appraisals/department/:departmentId/assignment/staff/:assignmentId" element={<StaffAssignmentPage />} />
+                <Route path="/appraisals/feedback-detail/:issueId" element={<FeedbackDetailPage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

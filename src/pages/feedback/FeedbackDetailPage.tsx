@@ -1,409 +1,158 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
+import Button from "../../components/ui/Button";
 import { Layout } from "../../components/layout";
 import CommentSection from "../../components/forms/CommentSection";
 
 import { feedbackService } from "../../services/feedbackService";
-import type { FeedbackIssueDetailDto } from "../../types/feedback";
-import type { IssueCategory } from "../../constants/enum/IssueCategory";
-import type { IssueSeverity } from "../../constants/enum/IssueSeverity";
-import type { IssueStatus } from "../../constants/enum/IssueStatus";
+import type { FeedbackIssueDetailDto } from "@/types/feedback";
+
+import {
+    ISSUE_SEVERITY_MAP,
+    DOCUMENT_STATUS_MAP
+} from "../../constants/mapping/ui-mapping";
 
 const FeedbackDetailPage = () => {
     const navigate = useNavigate();
-    const { feedbackId } = useParams<{ feedbackId: string }>();
+    const { issueId } = useParams<{ issueId: string }>();
 
     const [feedback, setFeedback] = useState<FeedbackIssueDetailDto | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Form states for updating feedback
-    const [updateForm, setUpdateForm] = useState({
-        status: "" as string,
-        assignedDepartmentId: "" as string,
-        resolutionNote: ""
-    });
-
-    // Mock data for demonstration
-    const mockFeedback: FeedbackIssueDetailDto = {
-        id: "1",
-        documentId: "doc-1",
-        documentTitle: "Tai lieu ky thuat ABC",
-        requestVersionId: "version-1",
-        versionNumber: 1,
-        reporterId: "user-1",
-        reporterName: "Nguyen Van A",
-        indicatorPath: "Section 3.2.1 - Technical Specifications",
-        description: "Phan technical specifications chua duoc cap nhat theo phien ban moi nhat. Can kiem tra lai va cap nhat cac thong so ky thuat tuong ung.",
-        issueCategory: 1, // Technical
-        severity: 2, // Medium
-        status: 0, // Pending
-        assignedDepartmentId: "dept-1",
-        assignedDepartmentName: "Phong CNTT",
-        technicalKnowledgeBaseId: "kb-1",
-        knowledgeBaseTitle: "Technical Specifications Guide",
-        resolvedInVersionId: null,
-        createdAt: "2024-01-15T10:30:00Z",
-        attachmentCount: 2,
-        attachments: [
-            {
-                id: "att-1",
-                fileName: "technical_specs.pdf",
-                fileSize: "2.5 MB",
-                filePath: "/files/technical_specs.pdf"
-            },
-            {
-                id: "att-2", 
-                fileName: "screenshot.png",
-                fileSize: "1.2 MB",
-                filePath: "/files/screenshot.png"
-            }
-        ]
-    };
+    const fetchFeedbackDetail = useCallback(async () => {
+        if (!issueId) return;
+        try {
+            setIsLoading(true);
+            const data = await feedbackService.getDetail(issueId);
+            setFeedback(data);
+        } catch (err) {
+            toast.error("Không thể tải thông tin chi tiết feedback.");
+            navigate("/feedback");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [issueId, navigate]);
 
     useEffect(() => {
-        const fetchFeedback = async () => {
-            if (!feedbackId) return;
+        fetchFeedbackDetail();
+    }, [fetchFeedbackDetail]);
 
-            setIsLoading(true);
-            try {
-                // For now using mock data - replace with actual API call
-                // const feedbackData = await feedbackService.getDetail(feedbackId);
-                
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                setFeedback(mockFeedback);
-                setUpdateForm({
-                    status: mockFeedback.status.toString(),
-                    assignedDepartmentId: mockFeedback.assignedDepartmentId || "",
-                    resolutionNote: ""
-                });
-            } catch (err) {
-                toast.error("Không thể tải thông tin feedback.");
-                navigate("/feedback");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchFeedback();
-    }, [feedbackId, navigate]);
-
-    const handleUpdateFeedback = async () => {
-        if (!feedbackId) return;
-
-        setIsUpdating(true);
-        try {
-            // Replace with actual API call
-            // await feedbackService.updateStatus(feedbackId, {
-            //     status: Number(updateForm.status),
-            //     assignedDepartmentId: updateForm.assignedDepartmentId || null,
-            //     resolutionNote: updateForm.resolutionNote || null
-            // });
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            toast.success("Cập nhật feedback thành công!");
-            
-            // Update local state
-            if (feedback) {
-                setFeedback({
-                    ...feedback,
-                    status: Number(updateForm.status),
-                    assignedDepartmentId: updateForm.assignedDepartmentId || null
-                });
-            }
-        } catch (err) {
-            toast.error("Cập nhật feedback thất bại.");
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const getCategoryLabel = (category: IssueCategory) => {
-        const labels: Record<number, string> = {
-            [0]: "General",
-            [1]: "Technical",
-            [2]: "Process",
-            [3]: "Documentation",
-            [4]: "Performance"
-        };
-        return labels[category] || "Unknown";
-    };
-
-    const getSeverityLabel = (severity: IssueSeverity) => {
-        const labels: Record<number, string> = {
-            [0]: "Critical",
-            [1]: "High",
-            [2]: "Medium",
-            [3]: "Low"
-        };
-        return labels[severity] || "Unknown";
-    };
-
-    const getSeverityColor = (severity: IssueSeverity) => {
-        const colors: Record<number, string> = {
-            [0]: "text-red-400 bg-red-900/20",
-            [1]: "text-orange-400 bg-orange-900/20",
-            [2]: "text-yellow-400 bg-yellow-900/20",
-            [3]: "text-green-400 bg-green-900/20"
-        };
-        return colors[severity] || "text-gray-400 bg-gray-900/20";
-    };
-
-    const getStatusLabel = (status: IssueStatus) => {
-        const labels: Record<number, string> = {
-            [0]: "Pending",
-            [1]: "In Progress",
-            [2]: "Resolved",
-            [3]: "Rejected"
-        };
-        return labels[status] || "Unknown";
-    };
-
-    const getStatusColor = (status: IssueStatus) => {
-        const colors: Record<number, string> = {
-            [0]: "text-yellow-400 bg-yellow-900/20",
-            [1]: "text-blue-400 bg-blue-900/20",
-            [2]: "text-green-400 bg-green-900/20",
-            [3]: "text-red-400 bg-red-900/20"
-        };
-        return colors[status] || "text-gray-400 bg-gray-900/20";
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        });
-    };
-
-    const handleDownloadAttachment = (attachment: any) => {
-        // Simulate download
-        toast.success(`Đang tải xuống ${attachment.fileName}...`);
-    };
-
-    if (isLoading) {
-        return (
-            <Layout>
-                <div className="max-w-6xl mx-auto p-6">
-                    <div className="flex items-center justify-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
-    if (!feedback) {
-        return (
-            <Layout>
-                <div className="max-w-6xl mx-auto p-6">
-                    <div className="text-center">
-                        <p className="text-primary-400">Không tìm thấy thông tin feedback.</p>
-                        <Button
-                            variant="primary"
-                            onClick={() => navigate("/feedback")}
-                            className="mt-4"
-                        >
-                            Quay lại danh sách
-                        </Button>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
+    if (isLoading) return <LoadingSpinner />;
+    if (!feedback) return null;
 
     return (
         <Layout>
-            <div className="max-w-6xl mx-auto p-6 space-y-6">
-                {/* Header */}
-                <div className="flex justify-between items-center">
+            <div className="max-w-7xl mx-auto p-6">
+                <header className="flex justify-between items-end border-b border-white/10 pb-6 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Chi Tiết Feedback</h1>
-                        <p className="text-primary-400 mt-1">
-                            {feedback.documentTitle} - v{feedback.versionNumber}
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="text-xs font-mono px-2 py-1 bg-primary-500/10 text-primary-400 rounded border border-primary-500/20">
+                                ISSUE-{feedback.id.slice(0, 8).toUpperCase()}
+                            </span>
+                            <h1 className="text-3xl font-bold text-white tracking-tight">Chi Tiết Phản Hồi</h1>
+                        </div>
+                        <p className="text-gray-400 font-medium">
+                            Tài liệu: <span className="text-white">{feedback.documentTitle}</span>
+                            <span className="mx-2 text-white/20">|</span>
+                            Phiên bản: <span className="text-primary-400">v{feedback.versionNumber}</span>
                         </p>
                     </div>
-                    <div className="flex gap-3">
-                        <Button
-                            variant="ghost"
-                            onClick={() => navigate("/feedback")}
-                        >
-                            Quay lại
-                        </Button>
-                        <Button
-                            variant="primary"
-                            onClick={handleUpdateFeedback}
-                            disabled={isUpdating}
-                        >
-                            {isUpdating ? "Đang cập nhật..." : "Cập nhật"}
-                        </Button>
-                    </div>
-                </div>
+                    <Button variant="ghost" onClick={() => navigate("/feedback")} className="hover:bg-white/5">
+                        ← Quay lại danh sách
+                    </Button>
+                </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Feedback Details */}
-                        <Card className="p-6 bg-dark-900/50 border-dark-700">
-                            <h2 className="text-xl font-semibold text-white mb-4">Thông Tin Feedback</h2>
-                            
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <span className="text-sm text-primary-400">Người báo cáo:</span>
-                                        <p className="text-white font-medium">{feedback.reporterName}</p>
-                                    </div>
-                                    <div>
-                                        <span className="text-sm text-primary-400">Thời gian:</span>
-                                        <p className="text-white">{formatDate(feedback.createdAt)}</p>
-                                    </div>
-                                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-4 space-y-6">
+                        <section className="sticky top-6 space-y-6">
+                            <Card className="p-6 bg-dark-900/40 border-white/5 backdrop-blur-md shadow-xl">
+                                <h3 className="text-white font-semibold mb-6 flex items-center gap-2 border-b border-white/5 pb-4">
+                                    <div className="w-1 h-4 bg-primary-500 rounded-full" />
+                                    Thông tin định danh
+                                </h3>
 
-                                <div>
-                                    <span className="text-sm text-primary-400">Đường dẫn chỉ báo:</span>
-                                    <p className="text-white bg-dark-800 p-3 rounded-lg font-mono text-sm">
-                                        {feedback.indicatorPath}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <span className="text-sm text-primary-400">Mô tả chi tiết:</span>
-                                    <div className="text-gray-300 bg-dark-800 p-4 rounded-lg leading-relaxed">
-                                        {feedback.description}
-                                    </div>
-                                </div>
-
-                                {feedback.technicalKnowledgeBaseId && (
-                                    <div>
-                                        <span className="text-sm text-primary-400">Cơ sở kiến thức kỹ thuật:</span>
-                                        <p className="text-primary-300">
-                                            {feedback.knowledgeBaseTitle || "Không có tiêu đề"}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
-
-                        {/* Attachments */}
-                        {feedback.attachments && feedback.attachments.length > 0 && (
-                            <Card className="p-6 bg-dark-900/50 border-dark-700">
-                                <h2 className="text-xl font-semibold text-white mb-4">Tệp Đính Kèm ({feedback.attachmentCount})</h2>
-                                <div className="space-y-3">
-                                    {feedback.attachments.map((attachment) => (
-                                        <div
-                                            key={attachment.id}
-                                            className="flex items-center justify-between p-3 bg-dark-800 rounded-lg border border-dark-600 hover:border-primary-500/50 transition-colors"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-                                                    <span className="text-primary-400 text-sm">📄</span>
-                                                </div>
-                                                <div>
-                                                    <p className="text-white font-medium">{attachment.fileName}</p>
-                                                    <p className="text-xs text-gray-400">{attachment.fileSize}</p>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDownloadAttachment(attachment)}
-                                            >
-                                                Tải xuống
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        )}
-
-                        {/* Comments Section */}
-                        <CommentSection feedbackIssueId={feedback.id} />
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Status & Category */}
-                        <Card className="p-6 bg-dark-900/50 border-dark-700">
-                            <h2 className="text-lg font-semibold text-white mb-4">Trạng Thái</h2>
-                            
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm text-primary-400 block mb-2">Danh mục</label>
-                                    <div className={`px-3 py-2 rounded-lg text-sm font-medium ${getSeverityColor(feedback.severity)}`}>
-                                        {getCategoryLabel(feedback.issueCategory)}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-primary-400 block mb-2">Mức độ</label>
-                                    <div className={`px-3 py-2 rounded-lg text-sm font-medium ${getSeverityColor(feedback.severity)}`}>
-                                        {getSeverityLabel(feedback.severity)}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-primary-400 block mb-2">Trạng thái hiện tại</label>
-                                    <div className={`px-3 py-2 rounded-lg text-sm font-medium ${getStatusColor(feedback.status)}`}>
-                                        {getStatusLabel(feedback.status)}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Update Form */}
-                        <Card className="p-6 bg-dark-900/50 border-dark-700">
-                            <h2 className="text-lg font-semibold text-white mb-4">Cập Nhật Feedback</h2>
-                            
-                            <div className="space-y-4">
-                                <Select
-                                    label="Trạng thái mới"
-                                    value={updateForm.status}
-                                    options={[
-                                        { value: "0", label: "Pending" },
-                                        { value: "1", label: "In Progress" },
-                                        { value: "2", label: "Resolved" },
-                                        { value: "3", label: "Rejected" }
-                                    ]}
-                                    onChange={(value) => setUpdateForm(prev => ({ ...prev, status: value }))}
-                                />
-
-                                <Input
-                                    label="Phòng ban xử lý"
-                                    placeholder="Nhập ID phòng ban..."
-                                    value={updateForm.assignedDepartmentId}
-                                    onChange={(value) => setUpdateForm(prev => ({ ...prev, assignedDepartmentId: value }))}
-                                />
-
-                                <div>
-                                    <label className="text-sm text-primary-400 block mb-2">Ghi chú giải quyết</label>
-                                    <textarea
-                                        className="w-full p-3 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none resize-none"
-                                        rows={4}
-                                        placeholder="Nhập ghi chú về cách giải quyết feedback..."
-                                        value={updateForm.resolutionNote}
-                                        onChange={(e) => setUpdateForm(prev => ({ ...prev, resolutionNote: e.target.value }))}
+                                <div className="space-y-5">
+                                    <BadgeField
+                                        label="Mức độ"
+                                        config={ISSUE_SEVERITY_MAP[feedback.severity]}
+                                    />
+                                    <BadgeField
+                                        label="Trạng thái"
+                                        config={DOCUMENT_STATUS_MAP[feedback.status]}
+                                    />
+                                    <DetailItem label="Người báo cáo" value={feedback.reporterName} />
+                                    <DetailItem
+                                        label="Ngày tạo"
+                                        value={new Date(feedback.createdAt).toLocaleDateString("vi-VN")}
+                                    />
+                                    <DetailItem
+                                        label="Phòng ban phụ trách"
+                                        value={feedback.assignedDepartmentName || "Chưa điều phối"}
                                     />
                                 </div>
-                            </div>
+                            </Card>
+
+                            <Card className="p-6 bg-primary-500/5 border-primary-500/10">
+                                <label className="text-[10px] text-primary-400 font-bold uppercase tracking-widest block mb-2">
+                                    Vị trí lỗi (Indicator Path)
+                                </label>
+                                <code className="text-xs text-primary-200 break-all leading-relaxed font-mono">
+                                    {feedback.indicatorPath}
+                                </code>
+                            </Card>
+                        </section>
+                    </div>
+
+                    <div className="lg:col-span-8 space-y-8">
+                        <Card className="p-8 bg-dark-900/40 border-white/5">
+                            <h2 className="text-[10px] text-primary-400 font-bold uppercase tracking-widest mb-4">
+                                Nội dung phản hồi
+                            </h2>
+                            <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap">
+                                {feedback.description}
+                            </p>
                         </Card>
+
+                        <div className="border-t border-white/10 pt-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <h2 className="text-xl font-bold text-white">Thảo luận hệ thống</h2>
+                                <span className="px-2 py-0.5 bg-white/5 rounded-full text-xs text-gray-500">Live</span>
+                            </div>
+                            <CommentSection feedbackIssueId={feedback.id} />
+                        </div>
                     </div>
                 </div>
             </div>
         </Layout>
     );
 };
+
+const DetailItem = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex flex-col gap-1">
+        <span className="text-[10px] text-gray-500 uppercase tracking-widest">{label}</span>
+        <span className="text-white font-medium">{value}</span>
+    </div>
+);
+
+const BadgeField = ({ label, config }: { label: string; config: any }) => (
+    <div className="flex justify-between items-center">
+        <span className="text-sm text-gray-400">{label}</span>
+        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${config?.color || 'bg-gray-500 text-white'}`}>
+            {config?.label || 'N/A'}
+        </span>
+    </div>
+);
+
+const LoadingSpinner = () => (
+    <Layout>
+        <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 border-2 border-primary-500/10 border-t-primary-500 rounded-full animate-spin" />
+            <p className="text-primary-400 font-mono text-xs tracking-[0.2em]">LOADING FEEDBACK...</p>
+        </div>
+    </Layout>
+);
 
 export default FeedbackDetailPage;

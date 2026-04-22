@@ -1,36 +1,26 @@
 import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
-import type { IssueCategory } from "@/constants/enum/IssueCategory";
-import type { IssueSeverity } from "@/constants/enum/IssueSeverity";
 import type { FeedbackIssueResponseDto } from "@/types/feedback";
 
 export interface AppraisalHistoryResponseDto {
-    id: string;
-    documentId: string;
+    id: string; // Guid
+    documentId: string; // Guid
     documentTitle: string;
-    requestVersionId: string;
+    requestVersionId: string; // Guid
     versionNumber: number;
-    handlerId: string;
+    handlerId: string; // Guid
     handlerName: string;
     oldStatus: DocumentStatus;
     newStatus: DocumentStatus;
-    appraisalAssignmentId?: string | null;
+    appraisalAssignmentId?: string | null; // Guid?
     comment?: string | null;
-    createdAt: string;
-    linkedIssues: FeedbackIssueResponseDto[];
+    createdAt: string; // DateTime
+    linkedIssues: FeedbackIssueResponseDto[]; // List<>
 }
 
-export interface AppraisalHistoryCreateDto {
-    documentId: string;
-    appraisalAssignmentId?: string | null;
-    comment?: string | null;
-    newIssues: FeedbackIssueBaseDto[];
-    attachmentIds: (string | null)[];
-}
-
-export interface FeedbackIssueBaseDto {
-    indicatorPath: string;
-    description: string;
-    issueCategory: IssueCategory;
-    severity: IssueSeverity;
-    technicalKnowledgeBaseId?: string | null;
+export interface AppraisalRejectDto {
+    documentId: string; // [Required] Guid
+    appraisalAssignmentId?: string | null; // Guid?
+    comment?: string | null; // MaxLength(2000)
+    newIssues: FeedbackIssueResponseDto[]; // List<>
+    attachmentIds: (string | null)[]; // List<Guid?> - Giữ mảng string để FE dễ handle
 }

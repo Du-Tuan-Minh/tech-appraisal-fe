@@ -68,12 +68,14 @@ export const API_ENDPOINTS = {
     },
 
     feedbackComments: {
-        create: "/api/feedback-comments/create",
+        create: "/feedback-comments/create",
         getByIssue: (issueId: string, pagination: { page: number; pageSize: number }) =>
-            `/api/feedback-comments/issue/${issueId}?page=${pagination.page}&pageSize=${pagination.pageSize}`
+            `/feedback-comments/issue/${issueId}?page=${pagination.page}&pageSize=${pagination.pageSize}`
     },
 
     signing: {
+        getProgress: (docId: string, versionId: string) =>
+            `/signing/${docId}/progress?versionId=${versionId}`,
         approve: `/signing/approve-sign`,
         reject: `/signing/reject`,
         issue: (docId: string) => `/signing/${docId}/issue`,

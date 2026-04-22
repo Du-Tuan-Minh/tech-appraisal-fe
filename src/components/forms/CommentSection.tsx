@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import FormField from "../ui/FormField";
 import { toast } from "react-hot-toast";
+import { signalRService } from "../../services/signalRService";
 
 import { feedbackCommentService } from "../../services/feedbackCommentService";
 import type {
@@ -25,21 +26,52 @@ const CommentSection = ({ feedbackIssueId, className = "" }: CommentSectionProps
 
     const endRef = useRef<HTMLDivElement>(null);
 
-    const fetchComments = async () => {
-        setLoading(true);
+    const fetchComments = useCallback(async () => {
         try {
+            setLoading(true);
             const res = await feedbackCommentService.getByIssue(feedbackIssueId, 1, 50);
-            setComments(res.items);
-        } catch {
+            setComments(res.items.reverse());
+        } catch (err) {
+            console.error(err);
             toast.error("Không tải được bình luận");
         } finally {
             setLoading(false);
         }
-    };
-
-    useEffect(() => {
-        fetchComments();
     }, [feedbackIssueId]);
+    useEffect(() => {
+        const initChat = async () => {
+            await fetchComments(); // Lấy data cũ trước
+
+            // Kết nối SignalR
+            await signalRService.startConnection();
+            await signalRService.joinIssueGroup(feedbackIssueId);
+
+            // Đăng ký nhận tin nhắn mới
+            signalRService.onReceiveComment((newComment: FeedbackCommentDto) => {
+                setComments(prev => {
+                    // Tránh duplicate nếu chính mình vừa gửi xong (vì API cũng trả về)
+                    if (prev.some(c => c.id === newComment.id)) return prev;
+                    // Nếu là tin nhắn con (reply)
+                    if (newComment.parentCommentId) {
+                        return prev.map(c =>
+                            c.id === newComment.parentCommentId
+                                ? { ...c, replies: [...(c.replies || []), newComment] }
+                                : c
+                        );
+                    }
+                    return [...prev, newComment]; // Thêm vào cuối danh sách
+                });
+            });
+        };
+
+        initChat();
+
+        // Cleanup: Rời group khi đóng component hoặc đổi Issue
+        return () => {
+            signalRService.leaveIssueGroup(feedbackIssueId);
+            signalRService.offReceiveComment();
+        };
+    }, [feedbackIssueId, fetchComments]);
 
     useEffect(() => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,11 +89,8 @@ const CommentSection = ({ feedbackIssueId, className = "" }: CommentSectionProps
                 attachmentIds: undefined
             };
 
-            const res = await feedbackCommentService.create(payload);
-
-            setComments(prev => [res, ...prev]);
+            await feedbackCommentService.create(payload);
             setContent("");
-            toast.success("Đã gửi bình luận");
         } finally {
             setSubmitting(false);
         }
@@ -78,19 +107,12 @@ const CommentSection = ({ feedbackIssueId, className = "" }: CommentSectionProps
                 parentCommentId: parentId
             };
 
-            const res = await feedbackCommentService.create(payload);
-
-            setComments(prev =>
-                prev.map(c =>
-                    c.id === parentId
-                        ? { ...c, replies: [...c.replies, res] }
-                        : c
-                )
-            );
-
+            await feedbackCommentService.create(payload);
             setReplyContent("");
             setReplyingTo(null);
             toast.success("Đã trả lời");
+        } catch {
+            toast.error("Gửi trả lời thất bại");
         } finally {
             setSubmitting(false);
         }

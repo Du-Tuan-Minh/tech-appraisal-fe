@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
-import type { AppraisalHistoryCreateDto } from "../types/history";
+import type { AppraisalRejectDto } from "../types/history";
 import type { SendParallelAssignmentsRequest } from "@/types/assignment";
 
 export const signingService = {
@@ -13,7 +13,7 @@ export const signingService = {
         return response.data.data;
     },
 
-    reject: async (data: AppraisalHistoryCreateDto): Promise<boolean> => {
+    reject: async (data: AppraisalRejectDto): Promise<boolean> => {
         const response = await axiosClient.post<ApiResponse<boolean>>(
             API_ENDPOINTS.signing.reject,
             data
@@ -21,10 +21,9 @@ export const signingService = {
         return response.data.data;
     },
 
-    submitIssue: async (docId: string, issueData: any): Promise<any> => {
-        const response = await axiosClient.post<ApiResponse<any>>(
-            API_ENDPOINTS.signing.issue(docId),
-            issueData
+    submitIssue: async (docId: string): Promise<boolean> => {
+        const response = await axiosClient.post<ApiResponse<boolean>>(
+            API_ENDPOINTS.signing.issue(docId)
         );
         return response.data.data;
     },

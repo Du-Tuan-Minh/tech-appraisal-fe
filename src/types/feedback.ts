@@ -7,21 +7,21 @@ import type { AttachmentResponseDto } from "@/types/attachment";
 export interface FeedbackIssueResponseDto {
     id: string;
     documentId: string;
-    documentTitle: string;
     requestVersionId: string;
     versionNumber: number;
-    reporterId: string;
-    reporterName: string;
     issueCategory: IssueCategory;
     severity: IssueSeverity;
     status: IssueStatus;
     assignedDepartmentId?: string | null;
+    indicatorPath: string;
+    description: string;
     assignedDepartmentName?: string | null;
+    documentTitle: string;
 }
 
 export interface FeedbackIssueDetailDto extends FeedbackIssueResponseDto {
-    indicatorPath: string;
-    description: string;
+    reporterId: string;
+    reporterName: string;
     technicalKnowledgeBaseId?: string | null;
     knowledgeBaseTitle?: string | null;
     resolvedInVersionId?: string | null;
@@ -32,7 +32,6 @@ export interface FeedbackIssueDetailDto extends FeedbackIssueResponseDto {
 
 export interface FeedbackIssueCreateDto {
     documentId: string;
-    requestVersionId: string;
     indicatorPath: string;
     description: string;
     issueCategory: IssueCategory;

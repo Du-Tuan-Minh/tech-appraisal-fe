@@ -7,7 +7,6 @@ import { documentService } from "@/services/documentService";
 
 import { DocumentStatus, DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-
 import { DOCUMENT_STATUS_MAP, ISSUE_SEVERITY_MAP } from "@/constants/mapping/ui-mapping";
 
 import type { TechnicalDocumentResponseDto, DocumentFilterDto } from "@/types/document";
@@ -59,22 +58,19 @@ const MyTasksPage = () => {
         fetchTasks(filters.page);
     }, [filters.page, fetchTasks]);
 
-    const handleTaskClick = (task: TechnicalDocumentResponseDto) => {
-        const { id: docId, currentVersionId, currentAssignmentId } = task;
-        const verId = currentVersionId || "";
+    const handleDetailClick = useCallback((task: TechnicalDocumentResponseDto) => {
+        const { id: docId, currentVersionId } = task;
+        navigate(`/appraisals/${docId}/review/${currentVersionId}`);
+    }, [navigate]);
 
+    const handleActionClick = useCallback((task: TechnicalDocumentResponseDto) => {
+        const { id: currentAssignmentId } = task;
         const hasAssignment = currentAssignmentId && currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
-        if (isManager) {
-            return hasAssignment
-                ? navigate(`/appraisals/assignment/${currentAssignmentId}`)
-                : navigate(`/appraisals/${docId}/review/${verId}`);
+        if (hasAssignment) {
+            navigate(`/appraisals/assignment/${currentAssignmentId}`);
         }
-
-        return hasAssignment
-            ? navigate(`/appraisals/internal/${docId}/${currentAssignmentId}`)
-            : navigate(`/appraisals/${docId}/review/${verId}`);
-    };
+    }, [navigate]);
 
     return (
         <Layout>
@@ -141,12 +137,13 @@ const MyTasksPage = () => {
                                     tasks.map(task => {
                                         const severity = ISSUE_SEVERITY_MAP[task.priority as IssueSeverity] || { label: "Unknown", color: "text-gray-400" };
                                         const status = DOCUMENT_STATUS_MAP[task.status as DocumentStatus] || { label: "N/A", color: "text-gray-500" };
+                                        const hasAssignment = task.currentAssignmentId && task.currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
                                         return (
                                             <tr
                                                 key={task.id}
                                                 className="hover:bg-primary-500/5 transition-all cursor-pointer group"
-                                                onClick={() => handleTaskClick(task)}
+                                                onClick={() => handleActionClick(task)}
                                             >
                                                 <td className="p-4">
                                                     <div className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors uppercase line-clamp-1">
@@ -173,19 +170,33 @@ const MyTasksPage = () => {
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-center">
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        className="h-8 text-[10px] font-bold uppercase tracking-widest px-4"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleTaskClick(task);
-                                                        }}
-                                                    >
-                                                        {isManager
-                                                            ? (task.currentAssignmentId ? "Quản lý" : "Thẩm định")
-                                                            : "Thực hiện"}
-                                                    </Button>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        {hasAssignment && (
+                                                            <Button
+                                                                variant="primary"
+                                                                size="sm"
+                                                                className="h-8 text-[10px] font-bold uppercase tracking-widest px-4 shadow-lg shadow-primary-900/20"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleActionClick(task);
+                                                                }}
+                                                            >
+                                                                Chi tiết
+                                                            </Button>
+                                                        )}
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-[10px] font-bold uppercase tracking-widest px-3 border-dark-700 hover:bg-dark-800 text-gray-300"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDetailClick(task);
+                                                            }}
+                                                        >
+                                                            Thẩm định
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
