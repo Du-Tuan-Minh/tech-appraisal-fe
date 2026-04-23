@@ -7,11 +7,11 @@ import { Button, Card, Input, Pagination } from "../../components/ui";
 import FormField from "../../components/ui/FormField";
 
 import { appraisalService } from "../../services/appraisalService";
-import { getUsers } from "../../services/userService"; // Giả định service chứa hàm getUsers
+import { getUsers } from "../../services/userService";
 import type { AppraisalAssignmentDetailDto, AssignStaffRequest } from "../../types/assignment";
 import type { UserResponseDto, UserFilterDto } from "../../types/user";
 
-const StaffAssignmentPage = () => {
+const CreateStaffAssignmentPage = () => {
     const navigate = useNavigate();
     const { departmentId, assignmentId } = useParams<{ departmentId: string; assignmentId: string }>();
 
@@ -234,4 +234,4 @@ const StaffAssignmentPage = () => {
     );
 };
 
-export default StaffAssignmentPage;
+export default CreateStaffAssignmentPage;

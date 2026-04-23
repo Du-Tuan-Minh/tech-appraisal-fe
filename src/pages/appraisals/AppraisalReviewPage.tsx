@@ -22,6 +22,8 @@ import { UserRole } from "@/constants/enum/UserRole";
 import type { FeedbackIssueResponseDto } from "../../types/feedback";
 import type { PagedResult } from "../../types/paginationResult";
 import FeedbackList from "@/components/forms/FeedbackList";
+import { appraisalService } from "@/services/appraisalService";
+import { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 
 interface FeedbackFormState {
     indicatorPath: string;
@@ -65,7 +67,12 @@ const IssueRow: React.FC<{ item: any; onDelete?: () => void; isHistory?: boolean
 const AppraisalReviewPage = () => {
     const navigate = useNavigate();
     const { role } = useAuth();
-    const { documentId, versionId } = useParams<{ documentId: string; versionId: string }>();
+    const { documentId, versionId, reviewerId } = useParams<{
+        documentId: string;
+        versionId: string;
+        reviewerId?: string;
+    }>();
+
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const [data, setData] = useState<any>({ document: null, version: null });
@@ -137,16 +144,39 @@ const AppraisalReviewPage = () => {
         toast.success("Đã thêm vào danh sách tạm");
     };
 
+    const handleReview = async () => {
+        if (!reviewerId) return;
+
+        setLoading(p => ({ ...p, submit: true }));
+        try {
+            await appraisalService.submitReview(reviewerId, {
+                reviewerId,
+                status: ReviewerStatus.Completed,
+                comment: "Đã hoàn thành thẩm định",
+                newIssues: pendingIssues.map(({ id, ...rest }) => rest),
+                attachmentIds: []
+            });
+
+            toast.success("Đã gửi kết quả thẩm định");
+            navigate("/appraisals/my-tasks");
+        } catch (e: any) {
+            toast.error(e.response?.data?.message || "Lỗi hệ thống");
+        } finally {
+            setLoading(p => ({ ...p, submit: false }));
+        }
+    };
+
     const handleApprove = async () => {
         if (!window.confirm("Xác nhận thông qua?")) return;
         setLoading(p => ({ ...p, submit: true }));
         try {
             if (isDirector) {
                 await signingService.approveSign({ documentId: documentId!, comment: "Director Approved" });
+                toast.success("Đã ký duyệt");
             } else {
                 await documentService.submitForAppraisal(documentId!);
+                toast.success("Đã gửi thẩm định");
             }
-            toast.success("Thành công");
             navigate("/appraisals/my-tasks");
         } catch (e: any) {
             toast.error(e.response?.data?.message || "Lỗi hệ thống");
@@ -170,6 +200,7 @@ const AppraisalReviewPage = () => {
                 attachmentIds: []
             });
             toast.success("Đã từ chối và yêu cầu sửa");
+            navigate("/appraisals/my-tasks");
         } catch (e) { toast.error("Thất bại"); }
         finally { setLoading(p => ({ ...p, submit: false })); }
     };
@@ -192,10 +223,44 @@ const AppraisalReviewPage = () => {
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="ghost" className="text-red-400 border-red-500/20 hover:bg-red-500/10" onClick={handleReject} isLoading={loading.submit}>✕ Từ chối</Button>
-                        <Button variant="primary" onClick={handleApprove} isLoading={loading.submit} >✓ Thông qua</Button>
+
+                        {reviewerId ? (
+                            // STAFF
+                            <Button
+                                variant="primary"
+                                onClick={handleReview}
+                                isLoading={loading.submit}
+                            >
+                                ✓ Hoàn thành review
+                            </Button>
+                        ) : (
+                            // DIRECTOR / MANAGER
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    className="text-red-400 border-red-500/20 hover:bg-red-500/10"
+                                    onClick={handleReject}
+                                    isLoading={loading.submit}
+                                >
+                                    ✕ Từ chối
+                                </Button>
+
+                                <Button
+                                    variant="primary"
+                                    onClick={handleApprove}
+                                    isLoading={loading.submit}
+                                >
+                                    ✓ Thông qua
+                                </Button>
+                            </>
+                        )}
+
                         <div className="w-px h-8 bg-slate-800 mx-2" />
-                        <Button variant="ghost" onClick={() => navigate(-1)}>Hủy</Button>
+
+                        <Button variant="ghost" onClick={() => navigate(-1)}>
+                            Hủy
+                        </Button>
+
                     </div>
                 </div>
 

@@ -74,6 +74,9 @@ const CreateDocumentPage = () => {
         if (!formData.title.trim() || !formData.documentCode.trim()) {
             return toast.error("Vui lòng điền đầy đủ Tiêu đề và Mã tài liệu.");
         }
+        if (!formData.description?.trim()) {
+            return toast.error("Vui lòng nhập Mô tả mục tiêu.");
+        }
 
         setIsLoading(true);
         try {
@@ -180,7 +183,20 @@ const CreateDocumentPage = () => {
 
                         <div className="flex justify-end gap-3 pt-4">
                             <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>Hủy bỏ</Button>
-                            <Button variant="primary" type="submit" isLoading={isLoading} className="px-10">Khởi tạo hệ thống</Button>
+                            <Button
+                                variant="primary"
+                                type="submit"
+                                isLoading={isLoading}
+                                className="px-10"
+                                disabled={
+                                    isLoading ||
+                                    !formData.title.trim() ||
+                                    !formData.documentCode.trim() ||
+                                    !formData.description?.trim()
+                                }
+                            >
+                                Khởi tạo hệ thống
+                            </Button>
                         </div>
                     </form>
 

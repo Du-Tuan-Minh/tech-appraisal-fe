@@ -18,7 +18,7 @@ const REVIEWER_STATUS_STYLES: Record<number, string> = {
     [ReviewerStatus.Completed]: "text-green-400 bg-green-900/20 border-green-500/30",
 };
 
-const StaffReviewerListPage = () => {
+const StaffAssignmentListPage = () => {
     const navigate = useNavigate();
     const { assignmentId } = useParams<{ assignmentId: string }>();
 
@@ -165,4 +165,4 @@ const LoadingState = ({ colSpan }: { colSpan: number }) => (
     </tr>
 );
 
-export default StaffReviewerListPage;
+export default StaffAssignmentListPage;

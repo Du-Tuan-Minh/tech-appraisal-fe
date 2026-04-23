@@ -11,7 +11,7 @@ import { appraisalService } from "../../services/appraisalService";
 import { departmentService } from "../../services/departmentService";
 import type { DepartmentResponseDto } from "../../types/department";
 
-const AssignmentCreatePage = () => {
+const CreateManagerAssignmentPage = () => {
     const navigate = useNavigate();
     const { versionId } = useParams<{ versionId: string }>();
     const [searchParams] = useSearchParams();
@@ -188,4 +188,4 @@ const AssignmentCreatePage = () => {
     );
 };
 
-export default AssignmentCreatePage;
+export default CreateManagerAssignmentPage;

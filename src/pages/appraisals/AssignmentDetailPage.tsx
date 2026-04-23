@@ -25,7 +25,7 @@ const AssignmentDetailPage = () => {
             setAssignment(data);
         } catch (err) {
             toast.error("Không thể tải thông tin phân công.");
-            navigate("/appraisals/assignments");
+            //navigate("/appraisals/my-tasks");
         } finally {
             setIsLoading(false);
         }
@@ -65,7 +65,7 @@ const AssignmentDetailPage = () => {
                             {assignment.documentTitle} <span className="text-gray-600 mx-2">|</span> v{assignment.versionNumber}
                         </p>
                     </div>
-                    <Button variant="ghost" onClick={() => navigate("/appraisals/assignments")}>
+                    <Button variant="ghost" onClick={() => navigate(-1)}>
                         Quay lại danh sách
                     </Button>
                 </div>
@@ -151,8 +151,6 @@ const AssignmentDetailPage = () => {
         </Layout>
     );
 };
-
-/** --- Sub-components for Cleanliness --- **/
 
 const InfoItem = ({ label, value, isBold, className = "" }: { label: string; value: string; isBold?: boolean; className?: string }) => (
     <div className={className}>

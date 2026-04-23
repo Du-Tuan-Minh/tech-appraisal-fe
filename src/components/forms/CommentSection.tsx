@@ -30,7 +30,7 @@ const CommentSection = ({ feedbackIssueId, className = "" }: CommentSectionProps
         try {
             setLoading(true);
             const res = await feedbackCommentService.getByIssue(feedbackIssueId, 1, 50);
-            setComments(res.items.reverse());
+            setComments(res.items);
         } catch (err) {
             console.error(err);
             toast.error("Không tải được bình luận");

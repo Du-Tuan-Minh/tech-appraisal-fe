@@ -15,7 +15,7 @@ export const useAuth = () => {
     return {
         role,
         isAdmin: role === UserRole.Admin,
-        isManager: ([UserRole.Admin, UserRole.Manager, UserRole.Manager] as number[]).includes(role),
+        isManager: ([UserRole.Admin, UserRole.Manager, UserRole.Director] as number[]).includes(role),
         isStaff: ([UserRole.Staff, UserRole.Staff, UserRole.Inspector] as number[]).includes(role),
         isOnlyManager: role === UserRole.Manager
     };

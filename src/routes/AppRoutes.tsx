@@ -12,7 +12,6 @@ import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
 import DocumentEditorPage from "../pages/documents/DocumentEditorPage";
 import DocumentVersionsPage from "../pages/documents/DocumentVersionsPage";
 import AppraisalDashboardPage from "../pages/appraisals/AppraisalDashboardPage";
-import AppraisalAssignmentPage from "../pages/appraisals/AssignmentCreatePage";
 import AppraisalReviewPage from "../pages/appraisals/AppraisalReviewPage";
 import ConsolidatedFeedbackPage from "../pages/appraisals/ConsolidatedFeedbackPage";
 import SigningDashboardPage from "../pages/signatures/SigningDashboardPage";
@@ -29,10 +28,10 @@ import UserListPage from "../pages/users/UserListPage";
 import DocumentVersionDetailPage from "../pages/documents/DocumentVersionDetailPage";
 import ManagerAssignmentListPage from "../pages/appraisals/ManagerAssignmentListPage";
 import AssignmentDetailPage from "../pages/appraisals/AssignmentDetailPage";
-import AssignmentCreatePage from "../pages/appraisals/AssignmentCreatePage";
+import CreateManagerAssignmentPage from "../pages/appraisals/CreateManagerAssignmentPage";
 import DirectorAssignmentListPage from "../pages/appraisals/DirectorAssignmentListPage";
-import StaffReviewerListPage from "../pages/appraisals/StaffReviewerListPage";
-import StaffAssignmentPage from "../pages/appraisals/StaffAssignmentPage";
+import StaffAssignmentListPage from "../pages/appraisals/StaffAssignmentListPage";
+import CreateStaffAssignmentPage from "../pages/appraisals/CreateStaffAssignmentPage";
 import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
 
 const AppRoutes = () => {
@@ -66,15 +65,14 @@ const AppRoutes = () => {
 
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
-                <Route path="/appraisals/:id/assign" element={<AppraisalAssignmentPage />} />
-                <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
+                <Route path="/appraisals/:documentId/review/:versionId/:reviewerId?" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
                 <Route path="/appraisals/listAssignments/:versionId?" element={<ManagerAssignmentListPage />} />
                 <Route path="/appraisals/assignment/:assignmentId" element={<AssignmentDetailPage />} />
-                <Route path="/appraisals/assignment/create/:versionIsd?" element={<AssignmentCreatePage />} />
+                <Route path="/appraisals/assignment/create/:versionId?" element={<CreateManagerAssignmentPage />} />
                 <Route path="/appraisals/director-assignments" element={<DirectorAssignmentListPage />} />
-                <Route path="/appraisals/list-reviewerssignments/:assignmentId" element={<StaffReviewerListPage />} />
-                <Route path="/appraisals/department/:departmentId/assignment/staff/:assignmentId" element={<StaffAssignmentPage />} />
+                <Route path="/appraisals/list-reviewer-assignments/:assignmentId" element={<StaffAssignmentListPage />} />
+                <Route path="/appraisals/department/:departmentId/assignment/staff/:assignmentId" element={<CreateStaffAssignmentPage />} />
                 <Route path="/appraisals/feedback-detail/:issueId" element={<FeedbackDetailPage />} />
 
                 {/* SIGNATURES */}

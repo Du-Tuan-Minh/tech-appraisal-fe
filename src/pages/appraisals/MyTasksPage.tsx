@@ -47,7 +47,7 @@ const MyTasksPage = () => {
             });
             setTasks(response.items);
             setPagination({ page: response.page, totalPages: response.totalPages });
-        } catch (err) {
+        } catch (err: any) {
             toast.error("Không thể tải danh sách nhiệm vụ.");
         } finally {
             setIsLoading(false);
@@ -59,12 +59,16 @@ const MyTasksPage = () => {
     }, [filters.page, fetchTasks]);
 
     const handleDetailClick = useCallback((task: TechnicalDocumentResponseDto) => {
-        const { id: docId, currentVersionId } = task;
-        navigate(`/appraisals/${docId}/review/${currentVersionId}`);
+        const { id: docId, currentVersionId, currentReviewerId } = task;
+        if (currentReviewerId) {
+            navigate(`/appraisals/${docId}/review/${currentVersionId}/${currentReviewerId}`);
+        } else {
+            navigate(`/appraisals/${docId}/review/${currentVersionId}`);
+        }
     }, [navigate]);
 
     const handleActionClick = useCallback((task: TechnicalDocumentResponseDto) => {
-        const { id: currentAssignmentId } = task;
+        const { currentAssignmentId: currentAssignmentId } = task;
         const hasAssignment = currentAssignmentId && currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
         if (hasAssignment) {

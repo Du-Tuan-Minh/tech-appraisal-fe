@@ -39,11 +39,10 @@ const ManagerAssignmentListPage = () => {
 
     const [filters, setFilters] = useState(INITIAL_FILTERS);
 
-    // FIX: Tách tham số ra khỏi useCallback dependency để tránh re-render loop
     const loadData = useCallback(async (page: number = 1, currentFilters = filters) => {
         setIsLoading(true);
         try {
-            const targetVersionId = isAdmin ? versionId : undefined;
+            const targetVersionId = versionId;
             const params = {
                 page,
                 pageSize: pagination.pageSize,
@@ -148,11 +147,7 @@ const ManagerAssignmentListPage = () => {
                                     <TableSkeleton colSpan={6} />
                                 ) : assignments.length > 0 ? (
                                     assignments.map((item) => (
-                                        <tr
-                                            key={item.id}
-                                            className="hover:bg-primary-500/5 transition-all cursor-pointer group"
-                                            onClick={() => navigate(`/appraisals/assignment/${item.id}`)}
-                                        >
+                                        <tr>
                                             <td className="p-4">
                                                 <div className="font-semibold text-white group-hover:text-primary-400 transition-colors">
                                                     {item.documentTitle}
@@ -185,13 +180,22 @@ const ManagerAssignmentListPage = () => {
                                                             + Gán việc
                                                         </Button>
                                                     )}
+
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
+                                                        onClick={() => navigate(`/appraisals/assignment/${item.id}`)}
+                                                    >
+                                                        Chi tiết
+                                                    </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
                                                         onClick={() => navigate(`/appraisals/list-reviewer-assignments/${item.id}`)}
                                                     >
-                                                        Chi tiết
+                                                        Danh sách phân công
                                                     </Button>
                                                 </div>
                                             </td>

@@ -47,6 +47,17 @@ const DirectorAssignmentListPage = () => {
 
     const [filters, setFilters] = useState(INITIAL_FILTERS);
 
+    const handleCreateWithData = useCallback((item: AppraisalAssignmentDetailDto) => {
+        const params = new URLSearchParams({
+            documentId: item.documentId || "",
+            parentId: item.departmentId || "",
+            title: item.documentTitle || "",
+            code: item.documentCode || "",
+            v: (item.versionNumber || 0).toString()
+        });
+        navigate(`/appraisals/assignment/create/${item.requestVersionId}?${params.toString()}`);
+    }, [navigate]);
+
     const loadData = useCallback(async (page: number = 1) => {
         setIsLoading(true);
         try {
@@ -137,7 +148,7 @@ const DirectorAssignmentListPage = () => {
                                     <TableLoader colSpan={5} />
                                 ) : assignments.length > 0 ? (
                                     assignments.map((item) => (
-                                        <tr key={item.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => navigate(`/appraisals/assignments/${item.id}`)}>
+                                        <tr key={item.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => navigate(`/appraisals/assignment/${item.id}`)}>
                                             <td className="p-4">
                                                 <div className="font-semibold text-white group-hover:text-primary-400 transition-colors">{item.documentTitle}</div>
                                                 <div className="text-[11px] text-gray-500 font-mono mt-1 uppercase tracking-widest">{item.documentCode}</div>
@@ -154,7 +165,19 @@ const DirectorAssignmentListPage = () => {
                                             <td className="p-4">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <ActionIconBtn icon="📋" title="Quản lý phân công" onClick={() => navigate(`/appraisals/listAssignments/${item.requestVersionId}`)} colorClass="hover:bg-blue-500/20 text-blue-400 border-blue-500/30" />
-                                                    <ActionIconBtn icon="👁️" title="Xem chi tiết" onClick={() => navigate(`/appraisals/assignments/${item.id}`)} colorClass="hover:bg-green-500/20 text-green-400 border-green-500/30" />
+                                                    <ActionIconBtn icon="👁️" title="Xem chi tiết" onClick={() => navigate(`/appraisals/assignment/${item.id}`)} colorClass="hover:bg-green-500/20 text-green-400 border-green-500/30" />
+                                                    <Button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        className="shadow-lg shadow-primary-500/20"
+                                                        title="Tạo phân công mới"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCreateWithData(item);
+                                                        }}
+                                                    >
+                                                        Tạo Phân Công
+                                                    </Button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -180,7 +203,6 @@ const DirectorAssignmentListPage = () => {
         </Layout>
     );
 };
-
 
 const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
     const config = ASSIGNMENT_STATUS_MAP[status] || { label: "N/A", color: "text-gray-400 bg-gray-900/20" };

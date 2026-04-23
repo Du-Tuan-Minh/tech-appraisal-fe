@@ -14,6 +14,7 @@ export interface TechnicalDocumentResponseDto {
     departmentName: string;
     currentAssignmentId?: string | null;
     currentVersionId?: string | null;
+    currentReviewerId?: string | null;
 }
 
 export interface TechnicalDocumentDetailDto extends TechnicalDocumentResponseDto {
