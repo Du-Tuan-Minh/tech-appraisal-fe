@@ -48,7 +48,6 @@ export interface ConsolidateAppraisalRequest {
     requestVersionId: string;   // [Required]
     validatedIssueIds: string[];
     rejectedIssueIds: string[];
-    newEntries: AppraisalEntry[];
     finalComment?: string | null;
     isPass: boolean;
     attachmentIds: string[];

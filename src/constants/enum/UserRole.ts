@@ -3,7 +3,8 @@ export const UserRole = {
     Staff: 2,
     Manager: 3,
     Director: 4,
-    Inspector: 5
+    Inspector: 5,
+    InstituteDirector: 6
 } as const;
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
@@ -13,5 +14,6 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
     [UserRole.Staff]: "Chuyên viên",
     [UserRole.Manager]: "Lãnh đạo cấp phòng",
     [UserRole.Director]: "Ban Giám đốc",
-    [UserRole.Inspector]: "Người kiểm soát"
+    [UserRole.Inspector]: "Người kiểm soát",
+    [UserRole.InstituteDirector]: "Viện trưởng"
 };

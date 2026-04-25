@@ -7,7 +7,8 @@ import type {
     AssignStaffRequest,
     CompleteAssignmentRequest,
     CreateParallelAssignmentsRequest,
-    ConsolidateAppraisalRequest
+    ConsolidateAppraisalRequest,
+    AppraisalAssignmentDto
 } from "../types/assignment";
 
 import type {
@@ -30,8 +31,8 @@ export const appraisalService = {
 
     getDirectorAssignments: async (
         params: pagination
-    ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
-        const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>>(
+    ): Promise<PagedResult<AppraisalAssignmentDto>> => {
+        const res = await axiosClient.get<ApiResponse<PagedResult<AppraisalAssignmentDto>>>(
             API_ENDPOINTS.appraisal.listDirectorAssignments,
             { params }
         );
@@ -41,9 +42,9 @@ export const appraisalService = {
     getManagerAssignments: async (
         versionId: string | undefined,
         params: pagination
-    ): Promise<PagedResult<AppraisalAssignmentDetailDto>> => {
+    ): Promise<PagedResult<AppraisalAssignmentDto>> => {
         const res = await axiosClient.get<
-            ApiResponse<PagedResult<AppraisalAssignmentDetailDto>>
+            ApiResponse<PagedResult<AppraisalAssignmentDto>>
         >(
             API_ENDPOINTS.appraisal.listManagerAssignments(versionId),
             { params }
@@ -112,11 +113,11 @@ export const appraisalService = {
         handleResponse(res);
     },
 
-    finalize: async (
+    confirmCenter: async (
         data: ConsolidateAppraisalRequest
     ): Promise<void> => {
         const res = await axiosClient.post<ApiResponse<any>>(
-            API_ENDPOINTS.appraisal.finalize,
+            API_ENDPOINTS.appraisal.confirmCenter,
             data
         );
         handleResponse(res);
@@ -127,6 +128,14 @@ export const appraisalService = {
     ): Promise<AppraisalAssignmentDetailDto> => {
         const res = await axiosClient.get<ApiResponse<AppraisalAssignmentDetailDto>>(
             API_ENDPOINTS.appraisal.getDetail(id)
+        );
+        return handleResponse(res);
+    },
+
+    recallAssignments: async (documentId: string): Promise<boolean> => {
+        const res = await axiosClient.post<ApiResponse<boolean>>(
+            API_ENDPOINTS.appraisal.recallAssignments,
+            documentId
         );
         return handleResponse(res);
     },

@@ -49,9 +49,6 @@ const FeedbackDetailPage = () => {
                 <header className="flex justify-between items-end border-b border-white/10 pb-6 mb-8">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="text-xs font-mono px-2 py-1 bg-primary-500/10 text-primary-400 rounded border border-primary-500/20">
-                                ISSUE-{feedback.id.slice(0, 8).toUpperCase()}
-                            </span>
                             <h1 className="text-3xl font-bold text-white tracking-tight">Chi Tiết Phản Hồi</h1>
                         </div>
                         <p className="text-gray-400 font-medium">
@@ -60,7 +57,7 @@ const FeedbackDetailPage = () => {
                             Phiên bản: <span className="text-primary-400">v{feedback.versionNumber}</span>
                         </p>
                     </div>
-                    <Button variant="ghost" onClick={() => navigate("/feedback")} className="hover:bg-white/5">
+                    <Button variant="ghost" onClick={() => navigate(-1)} className="hover:bg-white/5">
                         ← Quay lại danh sách
                     </Button>
                 </header>

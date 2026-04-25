@@ -16,6 +16,7 @@ const CreateDocumentPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [centers, setCenters] = useState<DepartmentResponseDto[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [formData, setFormData] = useState<TechnicalDocumentCreateDto>({
         title: "",
@@ -31,14 +32,20 @@ const CreateDocumentPage = () => {
     useEffect(() => {
         const fetchCenters = async () => {
             try {
-                const result = await departmentService.getDepartments(1, 100);
+                const result = await departmentService.getDepartments(
+                    1,
+                    100,
+                    searchTerm || undefined
+                );
                 setCenters(result.items);
             } catch (err) {
                 toast.error("Không thể tải danh sách đơn vị.");
             }
         };
-        fetchCenters();
-    }, []);
+
+        const debounce = setTimeout(fetchCenters, 300);
+        return () => clearTimeout(debounce);
+    }, [searchTerm]);
 
     const toggleCenter = (id: string) => {
         setFormData(prev => {
@@ -154,6 +161,12 @@ const CreateDocumentPage = () => {
                                 <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">
                                     Đơn vị thẩm định phối hợp ({(formData.externalDepartmentIds || []).length})
                                 </label>
+
+                                <Input
+                                    placeholder="Tìm kiếm phòng ban..."
+                                    value={searchTerm}
+                                    onChange={setSearchTerm}
+                                />
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto p-2 bg-dark-950/80 rounded-lg border border-dark-700 custom-scrollbar">
                                     {centers.map((center) => {

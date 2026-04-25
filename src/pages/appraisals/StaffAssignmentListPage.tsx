@@ -85,7 +85,6 @@ const StaffAssignmentListPage = () => {
                                 onChange={(val) => setSearchTerm(val)}
                             />
                         </div>
-                        {/* Manager có thể ấn nút này để điều hướng sang trang chọn thêm staff */}
                         <Button
                             variant="primary"
                             onClick={() => navigate(`/appraisals/staff-assignment/${assignmentId}`)}
@@ -124,7 +123,7 @@ const StaffAssignmentListPage = () => {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/appraisals/reviewer-detail/${reviewer.id}`)}
+                                                    onClick={() => navigate(`/appraisals/assignment/${reviewer.id}`)}
                                                 >
                                                     Chi tiết
                                                 </Button>

@@ -41,9 +41,9 @@ export const feedbackService = {
     },
 
     addReviewIssue: async (
-        data: FeedbackIssueCreateDto
-    ): Promise<FeedbackIssueResponseDto> => {
-        const res = await axiosClient.post<ApiResponse<FeedbackIssueResponseDto>>(
+        data: FeedbackIssueCreateDto[]
+    ): Promise<FeedbackIssueResponseDto[]> => {
+        const res = await axiosClient.post<ApiResponse<FeedbackIssueResponseDto[]>>(
             API_ENDPOINTS.feedback.addReviewIssue,
             data
         );

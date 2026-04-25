@@ -1,7 +1,15 @@
 import type { IssueSeverity } from "@/constants/enum/IssueSeverity";
 import type { pagination } from "@/types/pagination";
 
-export interface TechnicalKnowledgeBaseResponseDto {
+export interface TechnicalKnowledgeBaseListDto {
+    id: string;
+    title: string;
+    severity: IssueSeverity;
+    occurrenceCount: number;
+    isVerified: boolean;
+}
+
+export interface TechnicalKnowledgeBaseDetailDto {
     id: string;
     title: string;
     linkedSpecPattern: any;

@@ -195,7 +195,10 @@ const DirectorAssignmentListPage = () => {
                         <Pagination
                             currentPage={pagination.page}
                             totalPages={pagination.totalPages}
-                            onPageChange={(page) => loadData(page)}
+                            onPageChange={(page) => {
+                                setPagination(p => ({ ...p, page }));
+                                loadData(page);
+                            }}
                         />
                     </div>
                 )}

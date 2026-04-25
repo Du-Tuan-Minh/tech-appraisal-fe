@@ -1,3 +1,4 @@
+import type { KnowledgeBaseFilterDto } from "@/types/knowledge-base";
 import type { pagination } from "@/types/pagination";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -45,12 +46,13 @@ export const API_ENDPOINTS = {
         assignStaff: `/appraisal/assign-internal-staff`,
         confirmDepartment: (docId: string) => `/appraisal/department-confirm?documentId=${docId}`,
         submitReview: (reviewerId: string) => `/appraisal/staff-submit-review/${reviewerId}`,
-        finalize: `/appraisal/complete-appraisal`,
+        confirmCenter: `/appraisal/center-confirm`,
         getDetail: (id: string) => `/appraisal/assignment-detail/${id}`,
         listDirectorAssignments: `/appraisal/director-assignments`,
         listManagerAssignments: (versionId?: string) => `/appraisal/manager-assignments${versionId ? `/${versionId}` : ""}`,
         listReviewer: (assignmentId?: string) => `/appraisal/list-reviewer${assignmentId ? `/${assignmentId}` : ""}`,
         getReviewerDetail: (reviewerId: string) => `/appraisal/reviewer-detail/${reviewerId}`,
+        recallAssignments: `/appraisal/recall-assignments`,
     },
 
     appraisalHistory: {
@@ -62,7 +64,7 @@ export const API_ENDPOINTS = {
         getByDocument: (documentId: string) => `/feedback/document/${documentId}`,
         getByVersion: (versionId: string) => `/feedback/version/${versionId}`,
         getDetail: (id: string) => `/feedback/detail/${id}`,
-        addReviewIssue: `/feedback/add-issue`,
+        addReviewIssue: `/feedback/add-issues`,
         updateStatus: (id: string) => `/feedback/issues/${id}/status`,
         finalize: (id: string) => `/feedback/issues/${id}/finalize`,
     },
@@ -102,6 +104,21 @@ export const API_ENDPOINTS = {
         getSubDepartments: (parentId: string, { page, pageSize }: pagination, searchTerm?: string) =>
             `/departments/${parentId}/sub-departments?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
     },
+
+    knowledgeBase: {
+        create: `/knowledgeBase/create`,
+        getList: (params: KnowledgeBaseFilterDto) =>
+            `/knowledgeBase/getlist?${new URLSearchParams(params as any).toString()}`,
+        getDetail: (id: string, searchTerm?: string) => {
+            const url = `/knowledgeBase/detail/${id}`;
+            return searchTerm
+                ? `${url}?searchTerm=${encodeURIComponent(searchTerm)}`
+                : url;
+        },
+        delete: (id: string) => `/knowledgeBase/delete/${id}`,
+        smartSuggestions: (query: string) => `/knowledgeBase/smart-suggestions?query=${encodeURIComponent(query)}`,
+        download: (id: string) => `/knowledgeBase/download/${id}`,
+    }
 };
 
 export default API_BASE_URL;
