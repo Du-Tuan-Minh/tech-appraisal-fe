@@ -6,8 +6,17 @@ export const FeedbackAction = {
 
 export type FeedbackAction = (typeof FeedbackAction)[keyof typeof FeedbackAction];
 
-export const FEEDBACK_ACTION_LABELS: Record<FeedbackAction, string> = {
-    [FeedbackAction.Pending]: "Chờ phản hồi",
-    [FeedbackAction.AgreeToEdit]: "Đồng ý chỉnh sửa",
-    [FeedbackAction.ExplainAndKeep]: "Giải trình & Giữ nguyên"
+export const FEEDBACK_ACTION_MAP: Record<FeedbackAction, { label: string; color: string }> = {
+    [FeedbackAction.Pending]: {
+        label: "Chờ phản hồi",
+        color: "text-yellow-400 bg-yellow-900/20"
+    },
+    [FeedbackAction.AgreeToEdit]: {
+        label: "Đồng ý chỉnh sửa",
+        color: "text-green-400 bg-green-900/20"
+    },
+    [FeedbackAction.ExplainAndKeep]: {
+        label: "Giải trình & Giữ nguyên",
+        color: "text-blue-400 bg-blue-900/20"
+    }
 };

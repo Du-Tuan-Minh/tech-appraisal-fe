@@ -7,9 +7,21 @@ export const DocumentType = {
 
 export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
 
-export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
-    [DocumentType.TechnicalSpecifications]: "Chỉ tiêu kỹ thuật",
-    [DocumentType.TechnicalRequirements]: "Yêu cầu kỹ thuật",
-    [DocumentType.ContractAppendix]: "Phụ lục chỉ tiêu kỹ thuật hợp đồng",
-    [DocumentType.ProductInspectionGuide]: "Tài liệu kiểm tra sản phẩm"
+export const DOCUMENT_TYPE_MAP: Record<DocumentType, { label: string; color: string }> = {
+    [DocumentType.TechnicalSpecifications]: {
+        label: "Chỉ tiêu kỹ thuật",
+        color: "text-blue-400 bg-blue-900/20"
+    },
+    [DocumentType.TechnicalRequirements]: {
+        label: "Yêu cầu kỹ thuật",
+        color: "text-indigo-400 bg-indigo-900/20"
+    },
+    [DocumentType.ContractAppendix]: {
+        label: "Phụ lục chỉ tiêu kỹ thuật hợp đồng",
+        color: "text-purple-400 bg-purple-900/20"
+    },
+    [DocumentType.ProductInspectionGuide]: {
+        label: "Tài liệu kiểm tra sản phẩm",
+        color: "text-amber-400 bg-amber-900/20"
+    }
 };

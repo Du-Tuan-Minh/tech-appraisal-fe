@@ -5,16 +5,13 @@ import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select, Pagination } from "@/components/ui";
 import { documentService } from "@/services/documentService";
 
-import { DocumentStatus, DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
-import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import { DOCUMENT_STATUS_MAP, ISSUE_SEVERITY_MAP } from "@/constants/mapping/ui-mapping";
+import { DocumentStatus, DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
 
 import type { TechnicalDocumentResponseDto, DocumentFilterDto } from "@/types/document";
-import { useAuth } from "@/hooks/useAuth";
 
 const MyTasksPage = () => {
     const navigate = useNavigate();
-    const { isManager } = useAuth();
 
     const [tasks, setTasks] = useState<TechnicalDocumentResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -30,12 +27,12 @@ const MyTasksPage = () => {
 
     const statusOptions = useMemo(() => [
         { value: "", label: "Tất cả trạng thái" },
-        ...Object.entries(DOCUMENT_STATUS_LABELS).map(([value, label]) => ({ value, label }))
+        ...Object.entries(DOCUMENT_STATUS_MAP).map(([value, { label }]) => ({ value, label }))
     ], []);
 
     const priorityOptions = useMemo(() => [
         { value: "", label: "Tất cả mức độ" },
-        ...Object.entries(ISSUE_SEVERITY_LABELS).map(([value, label]) => ({ value, label }))
+        ...Object.entries(ISSUE_SEVERITY_MAP).map(([value, { label }]) => ({ value, label }))
     ], []);
 
     const fetchTasks = useCallback(async (pageNumber: number = 1) => {
@@ -59,12 +56,22 @@ const MyTasksPage = () => {
     }, [filters.page, fetchTasks]);
 
     const handleDetailClick = useCallback((task: TechnicalDocumentResponseDto) => {
-        const { id: docId, currentVersionId, currentReviewerId } = task;
+        const { id: docId, currentVersionId, currentReviewerId, currentAssignmentId } = task;
+
+        const params = new URLSearchParams();
         if (currentReviewerId) {
-            navigate(`/appraisals/${docId}/review/${currentVersionId}/${currentReviewerId}`);
-        } else {
-            navigate(`/appraisals/${docId}/review/${currentVersionId}`);
+            params.append("reviewerId", currentReviewerId);
         }
+
+        if (currentAssignmentId) {
+            params.append("assignmentId", currentAssignmentId);
+        }
+
+        const query = params.toString();
+
+        navigate(
+            `/appraisals/${docId}/review/${currentVersionId}${query ? `?${query}` : ""}`
+        );
     }, [navigate]);
 
     const handleActionClick = useCallback((task: TechnicalDocumentResponseDto) => {
@@ -72,7 +79,7 @@ const MyTasksPage = () => {
         const hasAssignment = currentAssignmentId && currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
         if (hasAssignment) {
-            navigate(`/appraisals/assignment/${currentAssignmentId}`);
+            navigate(`/appraisals/assignment-detail/${currentAssignmentId}`);
         }
     }, [navigate]);
 
@@ -151,9 +158,9 @@ const MyTasksPage = () => {
                                             >
                                                 <td className="p-4">
                                                     <div className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors uppercase line-clamp-1">
-                                                        {task.requesterName}
+                                                        {task.title}
                                                     </div>
-                                                    <div className="text-xs text-gray-300 mt-0.5 line-clamp-1">{task.title}</div>
+                                                    <div className="text-xs text-gray-300 mt-0.5 line-clamp-1">{task.requesterName}</div>
                                                     <div className="text-[10px] text-gray-500 mt-1 flex gap-2 items-center">
                                                         <span className="bg-dark-800 px-1.5 py-0.5 rounded text-primary-300">{task.departmentName}</span>
                                                         <span>•</span>

@@ -9,8 +9,8 @@ interface TechnicalSpec {
 }
 
 interface Props {
-    value: Record<string, any>; // ✅ đổi sang object
-    onChange: (value: Record<string, any>) => void; // ✅ trả object
+    value: Record<string, any>;
+    onChange: (value: Record<string, any>) => void;
     className?: string;
 }
 
@@ -51,7 +51,7 @@ const TechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
 
     const notifyChange = (newSpecs: TechnicalSpec[]) => {
         setSpecs(newSpecs);
-        onChange(buildJson(newSpecs)); // ✅ trả object
+        onChange(buildJson(newSpecs));
     };
 
     const addRow = () => notifyChange([...specs, { key: "", value: "" }]);

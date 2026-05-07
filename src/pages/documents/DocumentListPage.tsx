@@ -6,9 +6,9 @@ import { toast } from "react-hot-toast";
 import { documentService } from "@/services/documentService";
 import type { TechnicalDocumentResponseDto, DocumentFilterDto } from "@/types/document";
 import type { PagedResult } from "@/types/paginationResult";
-import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
-import { DocumentStatus, DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
-import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
+import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
+import { DocumentStatus, DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
 
 const DocumentListPage = () => {
     const navigate = useNavigate();
@@ -31,13 +31,13 @@ const DocumentListPage = () => {
     const typeOptions = useMemo(() =>
         Object.values(DocumentType).map(v => ({
             value: String(v),
-            label: DOCUMENT_TYPE_LABELS[v as DocumentType]
+            label: DOCUMENT_TYPE_MAP[v as DocumentType]?.label
         })), []);
 
     const statusOptions = useMemo(() =>
         Object.values(DocumentStatus).map(v => ({
             value: String(v),
-            label: DOCUMENT_STATUS_LABELS[v as DocumentStatus]
+            label: DOCUMENT_STATUS_MAP[v as DocumentStatus]?.label
         })), []);
 
     const fetchDocuments = useCallback(async () => {
@@ -118,12 +118,12 @@ const DocumentListPage = () => {
                                         </td>
                                         <td className="p-4 space-y-1.5">
                                             <div className="text-[12px] text-gray-400 font-medium">
-                                                {DOCUMENT_TYPE_LABELS[doc.type as DocumentType]}
+                                                {DOCUMENT_TYPE_MAP[doc.type as DocumentType]?.label}
                                             </div>
-                                            <Badge label={ISSUE_SEVERITY_LABELS[Number(doc.priority) as IssueSeverity]} />
+                                            <Badge label={ISSUE_SEVERITY_MAP[Number(doc.priority) as IssueSeverity]?.label} />
                                         </td>
                                         <td className="p-4">
-                                            <Badge label={DOCUMENT_STATUS_LABELS[Number(doc.status) as DocumentStatus]} />
+                                            <Badge label={DOCUMENT_STATUS_MAP[Number(doc.status) as DocumentStatus]?.label} />
                                         </td>
                                         <td className="p-4">
                                             <div className="text-[13px]">{doc.requesterName}</div>

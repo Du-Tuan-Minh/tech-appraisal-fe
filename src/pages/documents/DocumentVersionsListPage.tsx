@@ -64,7 +64,7 @@ const DocumentVersionsListPage = () => {
                 });
             } catch (err) {
                 toast.error("Khong the tai thong tin phien ban.");
-                navigate("/documents/list");
+                navigate("/documents");
             } finally {
                 setIsLoading(false);
             }
@@ -165,7 +165,7 @@ const DocumentVersionsListPage = () => {
                         <p className="text-primary-400">Khong tim thay thong tin tai lieu.</p>
                         <Button
                             variant="primary"
-                            onClick={() => navigate("/documents/list")}
+                            onClick={() => navigate("/documents")}
                             className="mt-4"
                         >
                             Quay lai danh sach

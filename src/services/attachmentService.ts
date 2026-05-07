@@ -37,7 +37,7 @@ export const attachmentService = {
 
     getFile: async (id: string): Promise<Blob> => {
         const response = await axiosClient.get(
-            API_ENDPOINTS.attachments.fileDetail(id),
+            API_ENDPOINTS.attachments.getFile(id),
             {
                 responseType: "blob",
             }

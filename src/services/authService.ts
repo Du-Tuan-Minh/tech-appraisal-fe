@@ -21,5 +21,6 @@ export const register = async (data: UserCreateDto) => {
 };
 
 export const logout = async () => {
-    await axiosClient.post(API_ENDPOINTS.auth.logout);
+    const refreshToken = localStorage.getItem("refreshToken");
+    await axiosClient.post(API_ENDPOINTS.auth.logout, refreshToken ? { refreshToken } : {});
 };

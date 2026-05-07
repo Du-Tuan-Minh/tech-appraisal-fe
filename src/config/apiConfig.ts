@@ -26,6 +26,8 @@ export const API_ENDPOINTS = {
         filter: `/users/user-filter`,
         changePassword: `/users/change-password`,
         detail: (id: string) => `/users/detail/${id}`,
+        getSeniorCenter: ({ page, pageSize }: pagination, searchTerm?: string) =>
+            `/users/senior-center?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
     },
 
     documents: {

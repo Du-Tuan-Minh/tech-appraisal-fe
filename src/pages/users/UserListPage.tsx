@@ -9,7 +9,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Pagination from "../../components/ui/Pagination";
 import { getUsers, updateAccountStatus } from "../../services/userService";
-import { UserRole, USER_ROLE_LABELS } from "../../constants/enum/UserRole";
+import { UserRole, USER_ROLE_MAP } from "../../constants/enum/UserRole";
 import type { UserResponseDto } from "@/types/user";
 import UpdateAccountStatusPopUp from "../../components/popups/UpdateAccountStatusPopUp";
 
@@ -114,7 +114,7 @@ const UserListPage = () => {
                             value={filters.role?.toString() || ""}
                             options={[
                                 { value: "", label: "Tất cả vai trò" },
-                                ...Object.entries(USER_ROLE_LABELS).map(([v, l]) => ({ value: v, label: l }))
+                                ...Object.entries(USER_ROLE_MAP).map(([v, info]) => ({ value: v, label: info.label }))
                             ]}
                             onChange={(v) => setFilters(p => ({ ...p, role: v ? (Number(v) as UserRole) : undefined, page: 1 }))}
                         />
@@ -201,7 +201,7 @@ const UserListPage = () => {
                                             </td>
                                             <td className="p-4">
                                                 <span className="px-3 py-1 rounded-md bg-dark-800 text-xs font-semibold text-gray-300 border border-dark-700">
-                                                    {USER_ROLE_LABELS[user.role]}
+                                                    {USER_ROLE_MAP[user.role]?.label}
                                                 </span>
                                             </td>
                                             <td className="p-4">

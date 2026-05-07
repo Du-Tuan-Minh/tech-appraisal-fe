@@ -2,21 +2,43 @@ import { useMemo } from "react";
 import { getRoleFromToken } from "@/utils/auth";
 import { UserRole } from "@/constants/enum/UserRole";
 
+const MANAGER_GROUP: UserRole[] = [
+    UserRole.Admin,
+    UserRole.Manager,
+    UserRole.Director,
+    UserRole.DeputyInstituteDirector,
+    UserRole.InstituteDirector
+];
+
+const STAFF_GROUP: UserRole[] = [
+    UserRole.Staff,
+    UserRole.Inspector
+];
+
+const VALID_ROLES = Object.values(UserRole).filter((v): v is UserRole => typeof v === "number");
+
 export const useAuth = () => {
     const rawRole = getRoleFromToken();
 
-    const role: number = useMemo(() => {
-        if (typeof rawRole === 'string' && isNaN(Number(rawRole))) {
-            return (UserRole as any)[rawRole] || 0;
+    const role = useMemo((): UserRole | null => {
+        if (rawRole === null || rawRole === undefined || rawRole === "") return null;
+
+        if (typeof rawRole === "string" && isNaN(Number(rawRole))) {
+            return (UserRole as any)[rawRole] ?? null;
         }
-        return Number(rawRole) || 0;
+
+        const numRole = Number(rawRole);
+        return VALID_ROLES.includes(numRole as UserRole)
+            ? (numRole as UserRole)
+            : null;
     }, [rawRole]);
 
-    return {
+    return useMemo(() => ({
         role,
         isAdmin: role === UserRole.Admin,
-        isManager: ([UserRole.Admin, UserRole.Manager, UserRole.Director] as number[]).includes(role),
-        isStaff: ([UserRole.Staff, UserRole.Staff, UserRole.Inspector] as number[]).includes(role),
-        isOnlyManager: role === UserRole.Manager
-    };
+        isManager: role !== null && MANAGER_GROUP.includes(role),
+        isStaff: role !== null && STAFF_GROUP.includes(role),
+        isOnlyManager: role === UserRole.Manager,
+        isAuthenticated: role !== null,
+    }), [role]);
 };

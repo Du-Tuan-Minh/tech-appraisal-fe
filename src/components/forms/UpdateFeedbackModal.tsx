@@ -5,7 +5,7 @@ import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
 import { feedbackService } from "../../services/feedbackService";
-import { ASSIGNMENT_STATUS_MAP } from "../../constants/mapping/ui-mapping";
+import { ASSIGNMENT_STATUS_MAP } from "../../constants/enum/AssignmentStatus";
 import type { FeedbackIssueDetailDto, FeedbackIssueUpdateDto } from "@/types/feedback";
 
 interface Props {

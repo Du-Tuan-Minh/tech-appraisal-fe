@@ -60,3 +60,10 @@ export const getUserDetail = async (id: string): Promise<UserDetailResponseDto> 
     );
     return res.data.data;
 };
+
+export const getSeniorCenter = async (page: number = 1, pageSize: number = 10, searchTerm?: string): Promise<PagedResult<UserResponseDto>> => {
+    const response = await axiosClient.get<ApiResponse<PagedResult<UserResponseDto>>>(
+        API_ENDPOINTS.users.getSeniorCenter({ page, pageSize }, searchTerm)
+    );
+    return response.data.data;
+};

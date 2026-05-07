@@ -25,7 +25,7 @@ const LoginPage = () => {
             const res = await login({ employeeCode, password });
             setAuth(res.accessToken, res.refreshToken);
             toast.success("Đăng nhập thành công");
-            navigate("/documents/list");
+            navigate("/documents");
         } catch (err: any) {
             const message = err.response?.data?.message || "Đăng nhập thất bại";
             setError(message);

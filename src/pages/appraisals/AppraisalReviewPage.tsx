@@ -9,10 +9,9 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import NestedTechnicalSpecsEditor from "../../components/forms/NestedTechnicalSpecsEditor";
 
-import { IssueCategory, ISSUE_CATEGORY_LABELS } from "@/constants/enum/IssueCategory";
-import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
-import { IssueStatus, ISSUE_STATUS_LABELS } from "@/constants/enum/IssueStatus";
-import { ISSUE_SEVERITY_MAP } from "@/constants/mapping/ui-mapping";
+import { IssueCategory, ISSUE_CATEGORY_MAP } from "@/constants/enum/IssueCategory";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
+import { IssueStatus, ISSUE_STATUS_MAP } from "@/constants/enum/IssueStatus";
 
 import { documentService } from "../../services/documentService";
 import { signingService } from "../../services/signingService";
@@ -24,6 +23,7 @@ import type { PagedResult } from "../../types/paginationResult";
 import FeedbackList from "@/components/forms/FeedbackList";
 import { appraisalService } from "@/services/appraisalService";
 import { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
+import { useSearchParams } from "react-router-dom";
 
 interface FeedbackFormState {
     indicatorPath: string;
@@ -48,10 +48,10 @@ const IssueRow: React.FC<{ item: any; onDelete?: () => void; isHistory?: boolean
                             📍 {item.indicatorPath.split('.').pop()}
                         </code>
                     )}
-                    <Badge className={severityInfo.color}>{ISSUE_SEVERITY_LABELS[item.severity as IssueSeverity]}</Badge>
+                    <Badge className={severityInfo.color}>{ISSUE_SEVERITY_MAP[item.severity as IssueSeverity]?.label}</Badge>
                     {isHistory && (
                         <span className="text-[10px] text-slate-500 italic ml-auto">
-                            {ISSUE_STATUS_LABELS[item.status as IssueStatus]}
+                            {ISSUE_STATUS_MAP[item.status as IssueStatus]?.label}
                         </span>
                     )}
                 </div>
@@ -67,12 +67,14 @@ const IssueRow: React.FC<{ item: any; onDelete?: () => void; isHistory?: boolean
 const AppraisalReviewPage = () => {
     const navigate = useNavigate();
     const { role } = useAuth();
-    const { documentId, versionId, reviewerId } = useParams<{
+    const { documentId, versionId } = useParams<{
         documentId: string;
         versionId: string;
-        reviewerId?: string;
     }>();
 
+    const [searchParams] = useSearchParams();
+    const assignmentId = searchParams.get("assignmentId") || undefined;
+    const reviewerId = searchParams.get("reviewerId") || undefined;
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const [data, setData] = useState<any>({ document: null, version: null });
@@ -92,6 +94,7 @@ const AppraisalReviewPage = () => {
     });
 
     const isDirector = role === UserRole.Director;
+    const isInstituteDirector = role === UserRole.InstituteDirector;
 
     const loadHistory = useCallback(async (page: number) => {
         if (!versionId) return;
@@ -136,6 +139,28 @@ const AppraisalReviewPage = () => {
         }
     }, [currentPage, loadHistory, loading.page]);
 
+    const handleSubmitPendingIssues = async () => {
+        if (pendingIssues.length === 0) {
+            return toast.error("Không có issue để gửi");
+        }
+
+        try {
+            const payload = pendingIssues.map(({ id, ...rest }) => ({
+                ...rest,
+                documentId: documentId!,
+            }));
+
+            await feedbackService.addReviewIssue(payload);
+
+            toast.success("Đã lưu issues vào hệ thống");
+
+            setPendingIssues([]);
+            loadHistory(1);
+        } catch (e: any) {
+            toast.error(e.response?.data?.message || "Lỗi khi lưu issues");
+        }
+    };
+
     const handleAddPendingIssue = () => {
         if (!newFeedback.description.trim()) return toast.error("Nhập mô tả lỗi");
         const issue = { ...newFeedback, id: Date.now().toString(), documentId, requestVersionId: versionId };
@@ -168,15 +193,79 @@ const AppraisalReviewPage = () => {
 
     const handleApprove = async () => {
         if (!window.confirm("Xác nhận thông qua?")) return;
+
         setLoading(p => ({ ...p, submit: true }));
+
         try {
-            if (isDirector) {
-                await signingService.approveSign({ documentId: documentId!, comment: "Director Approved" });
-                toast.success("Đã ký duyệt");
-            } else {
-                await documentService.submitForAppraisal(documentId!);
-                toast.success("Đã gửi thẩm định");
+            if (assignmentId && !reviewerId) {
+                const allIds = historyData?.items.map(x => x.id) || [];
+                const validatedIds = allIds.filter(id => !rejectedIds.includes(id));
+
+                if (isDirector) {
+                    await appraisalService.confirmCenter({
+                        documentId: documentId!,
+                        requestVersionId: versionId!,
+                        validatedIssueIds: validatedIds,
+                        rejectedIssueIds: rejectedIds,
+                        finalComment: "Confirmed at Center Level",
+                        isPass: rejectedIds.length === 0,
+                        attachmentIds: []
+                    });
+
+                    toast.success("Đã tổng hợp & phê duyệt cấp trung tâm");
+                }
+                else if (isInstituteDirector) {
+                    await signingService.publicIssue(documentId!);
+                    toast.success("Hồ sơ đã được Ban hành thành công");
+                }
+                else {
+                    await appraisalService.confirmDepartment(documentId!, {
+                        assignmentId,
+                        finalComment: "Manager confirmed",
+                        validatedIssueIds: validatedIds,
+                        rejectedIssueIds: rejectedIds,
+                        attachmentIds: []
+                    });
+
+                    toast.success("Đã xác nhận phòng ban");
+                }
             }
+
+            else {
+                if (isInstituteDirector) {
+                    await signingService.publicIssue(documentId!);
+                    toast.success("Hồ sơ đã được Ban hành thành công");
+                }
+
+                else if (isDirector) {
+                    await signingService.approveSign({
+                        documentId: documentId!,
+                        comment: "Director Approved"
+                    });
+                    toast.success("Đã ký duyệt");
+                } else {
+                    await documentService.submitForAppraisal(documentId!);
+                    toast.success("Đã gửi thẩm định");
+                }
+            }
+
+            navigate("/appraisals/my-tasks");
+
+        } catch (e: any) {
+            toast.error(e.response?.data?.message || "Lỗi hệ thống");
+        } finally {
+            setLoading(p => ({ ...p, submit: false }));
+        }
+    };
+
+    const handleRecall = async () => {
+        if (!window.confirm("Thu hồi toàn bộ phân công thẩm định?")) return;
+
+        setLoading(p => ({ ...p, submit: true }));
+
+        try {
+            await appraisalService.recallAssignments(documentId!);
+            toast.success("Đã thu hồi phân công");
             navigate("/appraisals/my-tasks");
         } catch (e: any) {
             toast.error(e.response?.data?.message || "Lỗi hệ thống");
@@ -185,8 +274,18 @@ const AppraisalReviewPage = () => {
         }
     };
 
+    const [rejectedIds, setRejectedIds] = useState<string[]>([]);
+
+    const handleToggleReject = (id: string) => {
+        setRejectedIds(prev =>
+            prev.includes(id)
+                ? prev.filter(x => x !== id)
+                : [...prev, id]
+        );
+    };
+
     const handleRowClick = (id: string) => {
-        navigate(`/appraisals/feedback-detail/${id}`);
+        navigate(`/appraisals/feedback/${id}`);
     };
 
     const handleReject = async () => {
@@ -209,7 +308,7 @@ const AppraisalReviewPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-[1650px] mx-auto p-6 space-y-6">
+            <div className="w-full max-w-none px-6 space-y-6">
                 <div className="flex justify-between items-center border-b border-slate-800 pb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -234,7 +333,7 @@ const AppraisalReviewPage = () => {
                                 ✓ Hoàn thành review
                             </Button>
                         ) : (
-                            // DIRECTOR / MANAGER
+                            // MANAGER / DIRECTOR
                             <>
                                 <Button
                                     variant="ghost"
@@ -250,13 +349,23 @@ const AppraisalReviewPage = () => {
                                     onClick={handleApprove}
                                     isLoading={loading.submit}
                                 >
-                                    ✓ Thông qua
+                                    {isInstituteDirector ? "✓ Ban hành" : "✓ Thông qua"}
                                 </Button>
+
+                                {(isDirector || isInstituteDirector) && assignmentId && (
+                                    <Button
+                                        variant="outline"
+                                        className="text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10"
+                                        onClick={handleRecall}
+                                        isLoading={loading.submit}
+                                    >
+                                        ↺ Thu hồi
+                                    </Button>
+                                )}
                             </>
                         )}
 
                         <div className="w-px h-8 bg-slate-800 mx-2" />
-
                         <Button variant="ghost" onClick={() => navigate(-1)}>
                             Hủy
                         </Button>
@@ -286,7 +395,7 @@ const AppraisalReviewPage = () => {
                                 <Input label="Vị trí (Path)" value={newFeedback.indicatorPath} readOnly placeholder="Chọn 📍 bên trái" className="bg-slate-950 font-mono text-primary-400 text-xs" />
                                 <Select
                                     label="Phân loại"
-                                    options={Object.entries(ISSUE_CATEGORY_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+                                    options={Object.entries(ISSUE_CATEGORY_MAP).map(([v, l]) => ({ value: String(v), label: l.label }))}
                                     value={newFeedback.issueCategory.toString()}
                                     onChange={v => setNewFeedback(p => ({ ...p, issueCategory: Number(v) as IssueCategory }))}
                                 />
@@ -321,6 +430,16 @@ const AppraisalReviewPage = () => {
                                     ))}
                                 </div>
                             )}
+
+                            {assignmentId && (role === UserRole.Manager || role === UserRole.Director || role === UserRole.DeputyInstituteDirector || role === UserRole.InstituteDirector) && (
+                                <Button
+                                    variant="primary"
+                                    className="w-full mt-3"
+                                    onClick={handleSubmitPendingIssues}
+                                >
+                                    ✓ Lưu issues vào hệ thống
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -332,9 +451,11 @@ const AppraisalReviewPage = () => {
                                 totalCount={historyData?.totalCount || 0}
                                 totalPages={historyData?.totalPages || 0}
                                 currentPage={currentPage}
-
                                 onPageChange={setCurrentPage}
                                 onRowClick={handleRowClick}
+
+                                rejectedIds={rejectedIds}
+                                onToggleReject={handleToggleReject}
                             />
                         </div>
                     </div>

@@ -54,7 +54,7 @@ export interface FeedbackActionRequestDto {
     action: FeedbackAction;
     content: string;
     attachmentIds?: string[] | null;
-    newTechnicalSpecs?: any;
+    newTechnicalSpecs?: Record<string, any>;
 }
 
 export interface FeedbackResponseDto {

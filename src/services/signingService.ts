@@ -21,7 +21,7 @@ export const signingService = {
         return response.data.data;
     },
 
-    submitIssue: async (docId: string): Promise<boolean> => {
+    publicIssue: async (docId: string): Promise<boolean> => {
         const response = await axiosClient.post<ApiResponse<boolean>>(
             API_ENDPOINTS.signing.issue(docId)
         );

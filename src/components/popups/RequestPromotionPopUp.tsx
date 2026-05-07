@@ -3,7 +3,7 @@ import PopUp from "@/components/ui/PopUp";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import FormField from "@/components/ui/FormField";
-import { UserRole, USER_ROLE_LABELS } from "@/constants/enum/UserRole";
+import { UserRole, USER_ROLE_MAP } from "@/constants/enum/UserRole";
 
 interface RequestPromotionPopUpProps {
   isOpen: boolean;
@@ -14,9 +14,9 @@ interface RequestPromotionPopUpProps {
 }
 
 const RequestPromotionPopUp = ({ isOpen, onClose, onSubmit, currentRole, isLoading }: RequestPromotionPopUpProps) => {
-  const roleOptions = Object.entries(USER_ROLE_LABELS).map(([value, label]) => ({
-    value,
-    label
+  const roleOptions = Object.entries(USER_ROLE_MAP).map(([value, info]) => ({
+    value: String(value),
+    label: info.label
   }));
 
   const [formData, setFormData] = useState({
@@ -45,7 +45,7 @@ const RequestPromotionPopUp = ({ isOpen, onClose, onSubmit, currentRole, isLoadi
       >
         <FormField label="Vai trò hiện tại">
           <div className="px-3 py-2 bg-dark-800 border border-dark-700 rounded-lg text-gray-400">
-            {USER_ROLE_LABELS[currentRole]}
+            {USER_ROLE_MAP[currentRole]?.label}
           </div>
         </FormField>
 

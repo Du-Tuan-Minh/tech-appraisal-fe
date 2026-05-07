@@ -204,7 +204,7 @@
 // const EmptyState = ({ navigate }: any) => (
 //     <div className="text-center p-20 bg-dark-900/30 rounded-3xl border border-dashed border-dark-700">
 //         <p className="text-gray-500 text-lg italic">Không tìm thấy dữ liệu tài liệu này.</p>
-//         <Button variant="primary" className="mt-6 px-8" onClick={() => navigate("/documents/list")}>Quay về danh sách</Button>
+//         <Button variant="primary" className="mt-6 px-8" onClick={() => navigate("/documents")}>Quay về danh sách</Button>
 //     </div>
 // );
 

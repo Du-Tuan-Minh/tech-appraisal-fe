@@ -4,18 +4,31 @@ import { attachmentService } from "@/services/attachmentService";
 import { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
 import type { AttachmentResponseDto } from "@/types/attachment";
 
+const areSameAttachments = (a: AttachmentResponseDto[], b: AttachmentResponseDto[]) => {
+    if (a === b) return true;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        // Compare minimal stable fields to avoid update loops
+        if (a[i]?.id !== b[i]?.id) return false;
+        if (a[i]?.fileName !== b[i]?.fileName) return false;
+        if (a[i]?.fileSize !== b[i]?.fileSize) return false;
+        if (a[i]?.contentCategory !== b[i]?.contentCategory) return false;
+    }
+    return true;
+};
+
 export const useAttachments = (
-    docId: string,
+    docId: string | undefined,
     category: AttachmentCategory,
-    initialData: AttachmentResponseDto[],
-    onChange: (files: AttachmentResponseDto[]) => void
+    initialData: AttachmentResponseDto[] = [],
+    onChange?: (files: AttachmentResponseDto[]) => void
 ) => {
     const [isUploading, setIsUploading] = useState(false);
     const [savedFiles, setSavedFiles] = useState<AttachmentResponseDto[]>(initialData);
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
     useEffect(() => {
-        setSavedFiles(initialData);
+        setSavedFiles(prev => (areSameAttachments(prev, initialData) ? prev : initialData));
     }, [initialData]);
 
     const formatFileSize = useCallback((bytes: number) => {
@@ -27,7 +40,7 @@ export const useAttachments = (
     }, []);
 
     const handleUploadAll = useCallback(async () => {
-        if (!pendingFiles.length || isUploading) return;
+        if (!docId || !pendingFiles.length || isUploading) return;
 
         setIsUploading(true);
         try {
@@ -36,54 +49,50 @@ export const useAttachments = (
             );
 
             const newFiles = await Promise.all(promises);
-            const updatedList = [...savedFiles, ...newFiles];
 
-            setSavedFiles(updatedList);
+            setSavedFiles(prev => {
+                const updated = [...prev, ...newFiles];
+                onChange?.(updated);
+                return updated;
+            });
+
             setPendingFiles([]);
-
-            onChange(updatedList);
-
             toast.success(`Đã tải lên ${newFiles.length} tệp thành công`);
         } catch (error) {
-            console.error("Upload error:", error);
-            toast.error("Quá trình tải lên gặp lỗi, vui lòng thử lại");
+            toast.error("Quá trình tải lên gặp lỗi");
         } finally {
             setIsUploading(false);
         }
-    }, [pendingFiles, isUploading, docId, category, savedFiles, onChange]);
+    }, [pendingFiles, isUploading, docId, category, onChange]);
 
     const handleDelete = useCallback(async (id: string) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa tệp này vĩnh viễn?")) return;
+        if (!window.confirm("Bạn có chắc chắn muốn xóa tệp này?")) return;
 
         try {
             await attachmentService.delete(id);
-            const updatedList = savedFiles.filter(f => f.id !== id);
-
-            setSavedFiles(updatedList);
-            onChange(updatedList);
-
-            toast.success("Đã xóa tệp khỏi hệ thống");
+            setSavedFiles(prev => {
+                const updated = prev.filter(f => f.id !== id);
+                onChange?.(updated);
+                return updated;
+            });
+            toast.success("Đã xóa tệp");
         } catch (error) {
-            console.error("Delete error:", error);
-            toast.error("Không thể xóa tệp vào lúc này");
+            toast.error("Không thể xóa tệp");
         }
-    }, [savedFiles, onChange]);
+    }, [onChange]);
 
     const handleDownload = useCallback(async (id: string, name: string) => {
         try {
             const blob = await attachmentService.getFile(id);
             const url = window.URL.createObjectURL(blob);
-
             const link = document.createElement("a");
             link.href = url;
             link.setAttribute("download", name);
             document.body.appendChild(link);
             link.click();
-
-            document.body.removeChild(link);
+            link.remove();
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Download error:", error);
             toast.error("Tải xuống thất bại");
         }
     }, []);

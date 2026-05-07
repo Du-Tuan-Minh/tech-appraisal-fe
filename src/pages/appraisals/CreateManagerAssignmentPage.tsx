@@ -10,11 +10,21 @@ import Input from "../../components/ui/Input";
 import { appraisalService } from "../../services/appraisalService";
 import { departmentService } from "../../services/departmentService";
 import type { DepartmentResponseDto } from "../../types/department";
+import type { UserResponseDto } from "@/types/user";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/constants/enum/UserRole";
+import { getSeniorCenter } from "@/services/userService";
 
 const CreateManagerAssignmentPage = () => {
     const navigate = useNavigate();
     const { versionId } = useParams<{ versionId: string }>();
     const [searchParams] = useSearchParams();
+
+    const { role } = useAuth();
+    const [seniors, setSeniors] = useState<UserResponseDto[]>([]);
+    const [selectedSeniors, setSelectedSeniors] = useState<string[]>([]);
+    const isInstituteDirector = role === UserRole.InstituteDirector;
+    const isDeputyInstituteDirector = role === UserRole.DeputyInstituteDirector;
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
@@ -32,6 +42,7 @@ const CreateManagerAssignmentPage = () => {
     }), [searchParams]);
 
     useEffect(() => {
+        if (isInstituteDirector) return;
         const fetchDepartments = async () => {
             try {
                 const res = await departmentService.getDepartments(
@@ -50,29 +61,45 @@ const CreateManagerAssignmentPage = () => {
         return () => clearTimeout(debounceTimer);
     }, [searchTerm, context.parentId]);
 
+    useEffect(() => {
+        if (!isInstituteDirector) return;
+        const fetchSeniors = async () => {
+            const res = await getSeniorCenter(1, 100, searchTerm);
+            setSeniors(res.items);
+        };
+        fetchSeniors();
+    }, [searchTerm, isInstituteDirector]);
+
     const handleSubmit = async () => {
         if (!versionId) return toast.error("Thiếu thông tin tài liệu.");
-        if (selectedDepartments.length === 0) return toast.error("Vui lòng chọn ít nhất 1 phòng ban.");
+        const hasSelection = isDeputyInstituteDirector
+            ? true
+            : (isInstituteDirector ? selectedSeniors.length > 0 : selectedDepartments.length > 0);
+        if (!hasSelection) return toast.error(isInstituteDirector ? "Vui lòng chọn ít nhất 1 cán bộ." : "Vui lòng chọn ít nhất 1 phòng ban.");
         if (!deadline) return toast.error("Vui lòng chọn hạn chót thẩm định.");
 
         const utcDeadline = new Date(deadline).toISOString();
 
         setIsSubmitting(true);
         try {
+            const targetIds = isDeputyInstituteDirector
+                ? []
+                : (isInstituteDirector ? selectedSeniors : selectedDepartments);
+
             await appraisalService.createParallelAssignments({
                 documentId: context.documentId,
                 requestVersionId: versionId,
                 globalDeadline: utcDeadline,
                 globalComment: globalComment || null,
-                departmentAssignments: selectedDepartments.map(id => ({
-                    departmentId: id,
+                departmentAssignments: targetIds.map(id => ({
+                    targetId: id,
                     deadline: utcDeadline,
                     managerComment: globalComment || null
                 }))
             });
 
             toast.success("Đã phát hành phân công thẩm định song song.");
-            navigate("/appraisals/director-assignments");
+            navigate("/appraisals/assignments/director");
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Lỗi khi tạo phân công.");
         } finally {
@@ -109,58 +136,68 @@ const CreateManagerAssignmentPage = () => {
                             />
                         </div>
 
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-end">
-                                <label className="text-sm font-semibold text-primary-400 uppercase">
-                                    {context.parentId ? "Danh sách Phòng Ban trực thuộc" : "Danh sách Trung tâm"}
-                                </label>
-                                <span className="text-xs text-gray-500">Đã chọn: {selectedDepartments.length}</span>
-                            </div>
+                        {!isDeputyInstituteDirector && (
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-end">
+                                    <label className="text-sm font-semibold text-primary-400 uppercase">
+                                        {context.parentId ? "Danh sách Phòng Ban trực thuộc" : "Danh sách Trung tâm"}
+                                    </label>
+                                    <span className="text-xs text-gray-500">
+                                        Đã chọn: {isInstituteDirector ? selectedSeniors.length : selectedDepartments.length}
+                                    </span>
+                                </div>
 
-                            <Input
-                                placeholder="Tên phòng ban..."
-                                value={searchTerm}
-                                onChange={setSearchTerm}
-                            />
+                                <Input
+                                    placeholder={isInstituteDirector ? "Tìm kiếm cán bộ..." : "Tên phòng ban..."}
+                                    value={searchTerm}
+                                    onChange={setSearchTerm}
+                                />
 
-                            <div className="max-h-64 overflow-y-auto border border-dark-700 rounded-xl p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-dark-950/50 shadow-inner">
-                                {departments.length > 0 ? (
-                                    departments.map(dept => {
-                                        const isChecked = selectedDepartments.includes(dept.id);
-                                        return (
-                                            <label
-                                                key={dept.id}
-                                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border transition-all ${isChecked
-                                                    ? "bg-primary-500/10 border-primary-500/50 shadow-sm"
-                                                    : "bg-dark-800/50 border-transparent hover:border-dark-600"
-                                                    }`}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange={() => setSelectedDepartments(prev =>
-                                                        isChecked ? prev.filter(i => i !== dept.id) : [...prev, dept.id]
-                                                    )}
-                                                    className="w-4 h-4 rounded accent-primary-500"
-                                                />
-                                                <div className="flex flex-col overflow-hidden">
-                                                    <span className={`text-sm truncate ${isChecked ? "text-primary-400 font-bold" : "text-gray-300"}`}>
-                                                        {dept.nameDepartment}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-tighter">
-                                                        {dept.codeDepartment}
-                                                    </span>
-                                                </div>
-                                            </label>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="col-span-full py-10 text-center text-gray-500 italic text-sm">
-                                        Không tìm thấy phòng ban nào khả dụng.
-                                    </div>
-                                )}
+                                <div className="max-h-64 overflow-y-auto border border-dark-700 rounded-xl p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-dark-950/50 shadow-inner">
+                                    {isInstituteDirector ? (
+                                        // HIỂN THỊ DANH SÁCH USER (SENIORS)
+                                        seniors.length > 0 ? seniors.map(user => {
+                                            const isChecked = selectedSeniors.includes(user.id);
+                                            return (
+                                                <label key={user.id} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border transition-all ${isChecked ? "bg-yellow-500/10 border-yellow-500/50" : "bg-dark-800/50 border-transparent hover:border-dark-600"}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => setSelectedSeniors(prev => isChecked ? prev.filter(i => i !== user.id) : [...prev, user.id])}
+                                                        className="w-4 h-4 rounded accent-yellow-500"
+                                                    />
+                                                    <div className="flex flex-col overflow-hidden">
+                                                        <span className={`text-sm truncate ${isChecked ? "text-yellow-500 font-bold" : "text-gray-300"}`}>
+                                                            {user.lastName} {user.firstName}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-500 uppercase">{user.employeeCode}</span>
+                                                    </div>
+                                                </label>
+                                            );
+                                        }) : <div className="col-span-full py-10 text-center text-gray-500 italic">Không tìm thấy cán bộ nào.</div>
+                                    ) : (
+                                        // HIỂN THỊ DANH SÁCH PHÒNG BAN (GIỮ NGUYÊN CODE CŨ)
+                                        departments.length > 0 ? departments.map(dept => {
+                                            const isChecked = selectedDepartments.includes(dept.id);
+                                            return (
+                                                <label key={dept.id} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border transition-all ${isChecked ? "bg-primary-500/10 border-primary-500/50" : "bg-dark-800/50 border-transparent hover:border-dark-600"}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => setSelectedDepartments(prev => isChecked ? prev.filter(i => i !== dept.id) : [...prev, dept.id])}
+                                                        className="w-4 h-4 rounded accent-primary-500"
+                                                    />
+                                                    <div className="flex flex-col overflow-hidden">
+                                                        <span className={`text-sm truncate ${isChecked ? "text-primary-400 font-bold" : "text-gray-300"}`}>{dept.nameDepartment}</span>
+                                                        <span className="text-[10px] text-gray-500 uppercase">{dept.codeDepartment}</span>
+                                                    </div>
+                                                </label>
+                                            );
+                                        }) : <div className="col-span-full py-10 text-center text-gray-500 italic">Không tìm thấy phòng ban nào.</div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-primary-400 uppercase">Ghi chú từ Quản lý</label>

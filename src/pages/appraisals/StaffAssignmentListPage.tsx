@@ -9,7 +9,7 @@ import Input from "../../components/ui/Input";
 import Pagination from "../../components/ui/Pagination";
 
 import { appraisalService } from "../../services/appraisalService";
-import { ReviewerStatus, REVIEWER_STATUS_LABELS } from "@/constants/enum/ReviewerStatus"; // Nên dùng file enum tập trung
+import { ReviewerStatus, REVIEWER_STATUS_MAP } from "@/constants/enum/ReviewerStatus";
 import type { AppraisalReviewerDto } from "@/types/reviewer";
 
 const REVIEWER_STATUS_STYLES: Record<number, string> = {
@@ -32,6 +32,10 @@ const StaffAssignmentListPage = () => {
         totalCount: 0,
         totalPages: 0
     });
+
+    const handleSearch = () => {
+        loadData(1);
+    };
 
     const loadData = useCallback(async (page: number = 1) => {
         if (!assignmentId) return;
@@ -83,13 +87,16 @@ const StaffAssignmentListPage = () => {
                                 placeholder="Tìm kiếm tên nhân viên..."
                                 value={searchTerm}
                                 onChange={(val) => setSearchTerm(val)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                             />
                         </div>
                         <Button
                             variant="primary"
-                            onClick={() => navigate(`/appraisals/staff-assignment/${assignmentId}`)}
+                            onClick={handleSearch}
+                            isLoading={isLoading}
+                            className="min-w-[120px]"
                         >
-                            + Gán nhân viên
+                            Tìm kiếm
                         </Button>
                     </div>
                 </Card>
@@ -116,14 +123,14 @@ const StaffAssignmentListPage = () => {
                                             </td>
                                             <td className="p-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${REVIEWER_STATUS_STYLES[reviewer.status]}`}>
-                                                    {REVIEWER_STATUS_LABELS[reviewer.status]}
+                                                    {REVIEWER_STATUS_MAP[reviewer.status]?.label}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-center">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/appraisals/assignment/${reviewer.id}`)}
+                                                    onClick={() => navigate(`/appraisals/assignment-detail/${reviewer.id}`)}
                                                 >
                                                     Chi tiết
                                                 </Button>

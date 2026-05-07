@@ -27,6 +27,7 @@ export interface TechnicalDocumentDetailDto extends TechnicalDocumentResponseDto
     totalVersions: number;
     qrCode?: string | null;
     externalDepartmentIds?: string[] | null;
+    approvalProposerIds?: string[] | null;
 }
 
 export interface TechnicalDocumentCreateDto {
@@ -36,8 +37,9 @@ export interface TechnicalDocumentCreateDto {
     type: DocumentType;
     priority: IssueSeverity;
     externalDepartmentIds?: string[] | null;
+    approvalProposerIds?: string[] | null;
     attachmentIds?: string[] | null;
-    technicalSpecs: any;
+    technicalSpecs: Record<string, any>;
 }
 
 export interface TechnicalDocumentUpdateDto {

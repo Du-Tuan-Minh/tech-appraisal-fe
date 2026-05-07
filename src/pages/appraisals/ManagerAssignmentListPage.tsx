@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -12,9 +12,8 @@ import { Layout } from "../../components/layout";
 import { UserRole } from "@/constants/enum/UserRole";
 import { useAuth } from "@/hooks/useAuth";
 import { appraisalService } from "../../services/appraisalService";
-import type { AppraisalAssignmentDetailDto } from "../../types/assignment";
-import { AssignmentStatus } from "@/constants/enum/AssignmentStatus";
-import { ASSIGNMENT_STATUS_MAP, ASSIGNMENT_STATUS_OPTIONS } from "@/constants/mapping/ui-mapping";
+import type { AppraisalAssignmentDto } from "../../types/assignment";
+import { AssignmentStatus, ASSIGNMENT_STATUS_MAP } from "@/constants/enum/AssignmentStatus";
 
 const ManagerAssignmentListPage = () => {
     const navigate = useNavigate();
@@ -28,7 +27,7 @@ const ManagerAssignmentListPage = () => {
         sortOrder: "desc" as "asc" | "desc"
     };
 
-    const [assignments, setAssignments] = useState<AppraisalAssignmentDetailDto[]>([]);
+    const [assignments, setAssignments] = useState<AppraisalAssignmentDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [pagination, setPagination] = useState({
         page: 1,
@@ -164,9 +163,9 @@ const ManagerAssignmentListPage = () => {
                                                 <StatusBadge status={item.status as AssignmentStatus} />
                                             </td>
                                             <td className="p-4 text-center">
-                                                <div className={`text-sm ${getDeadlineStyle(item.deadline)}`}>
+                                                {/* <div className={`text-sm ${getDeadlineStyle(item.deadline)}`}>
                                                     {item.deadline ? new Date(item.deadline).toLocaleDateString("vi-VN") : "---"}
-                                                </div>
+                                                </div> */}
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
@@ -175,7 +174,7 @@ const ManagerAssignmentListPage = () => {
                                                             variant="primary"
                                                             size="sm"
                                                             className="h-8 px-3 text-[11px]"
-                                                            onClick={() => navigate(`/appraisals/department/${item.departmentId}/assignment/staff/${item.id}`)}
+                                                            onClick={() => navigate(`/appraisals/department/${item.departmentId}/assignment/${item.id}/staff`)}
                                                         >
                                                             + Gán việc
                                                         </Button>
@@ -185,7 +184,7 @@ const ManagerAssignmentListPage = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
-                                                        onClick={() => navigate(`/appraisals/assignment/${item.id}`)}
+                                                        onClick={() => navigate(`/appraisals/assignment-detail/${item.id}`)}
                                                     >
                                                         Chi tiết
                                                     </Button>
@@ -193,7 +192,7 @@ const ManagerAssignmentListPage = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
-                                                        onClick={() => navigate(`/appraisals/list-reviewer-assignments/${item.id}`)}
+                                                        onClick={() => navigate(`/appraisals/reviewer-assignments/${item.id}/staff`)}
                                                     >
                                                         Danh sách phân công
                                                     </Button>

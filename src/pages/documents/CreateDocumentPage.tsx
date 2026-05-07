@@ -5,18 +5,33 @@ import { Button, Card, Input, Select } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { documentService } from "@/services/documentService";
 import { departmentService } from "@/services/departmentService";
-import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
-import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
+import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
 import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
+import FileUploadComponent from "@/components/forms/FileUploadComponent";
 
 import type { TechnicalDocumentCreateDto } from "@/types/document";
 import type { DepartmentResponseDto } from "@/types/department";
+import type { UserResponseDto } from "@/types/user";
+import { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
+import { attachmentService } from "@/services/attachmentService";
+import { getSeniorCenter } from "@/services/userService";
+
+type PendingAttachment = {
+    file: File;
+    category: AttachmentCategory;
+};
 
 const CreateDocumentPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [centers, setCenters] = useState<DepartmentResponseDto[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const [seniorCenters, setSeniorCenters] = useState<UserResponseDto[]>([]);
+    const [seniorSearchTerm, setSeniorSearchTerm] = useState("");
+
+    const [pendingFiles, setPendingFiles] = useState<PendingAttachment[]>([]);
 
     const [formData, setFormData] = useState<TechnicalDocumentCreateDto>({
         title: "",
@@ -26,7 +41,8 @@ const CreateDocumentPage = () => {
         priority: IssueSeverity.Minor,
         attachmentIds: [],
         technicalSpecs: {},
-        externalDepartmentIds: []
+        externalDepartmentIds: [],
+        approvalProposerIds: [],
     });
 
     useEffect(() => {
@@ -47,6 +63,19 @@ const CreateDocumentPage = () => {
         return () => clearTimeout(debounce);
     }, [searchTerm]);
 
+    useEffect(() => {
+        const fetchSenior = async () => {
+            try {
+                const result = await getSeniorCenter(1, 50, seniorSearchTerm || undefined);
+                setSeniorCenters(result.items);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        const debounce = setTimeout(fetchSenior, 300);
+        return () => clearTimeout(debounce);
+    }, [seniorSearchTerm]);
+
     const toggleCenter = (id: string) => {
         setFormData(prev => {
             const currentIds = prev.externalDepartmentIds || [];
@@ -60,12 +89,19 @@ const CreateDocumentPage = () => {
         });
     };
 
+    const selectSeniorCenter = (id: string) => {
+        setFormData(prev => ({
+            ...prev,
+            approvalProposerIds: prev.approvalProposerIds?.includes(id) ? [] : [id]
+        }));
+    };
+
     const typeOptions = useMemo(() =>
         Object.values(DocumentType)
             .filter(v => typeof v === 'number')
             .map((v) => ({
                 value: String(v),
-                label: DOCUMENT_TYPE_LABELS[v as DocumentType]
+                label: DOCUMENT_TYPE_MAP[v as DocumentType]?.label
             })), []);
 
     const priorityOptions = useMemo(() =>
@@ -73,21 +109,53 @@ const CreateDocumentPage = () => {
             .filter(v => typeof v === 'number')
             .map((v) => ({
                 value: String(v),
-                label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
+                label: ISSUE_SEVERITY_MAP[v as IssueSeverity]?.label
             })), []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
+
         if (!formData.title.trim() || !formData.documentCode.trim()) {
+            setIsLoading(false);
             return toast.error("Vui lòng điền đầy đủ Tiêu đề và Mã tài liệu.");
         }
         if (!formData.description?.trim()) {
+            setIsLoading(false);
             return toast.error("Vui lòng nhập Mô tả mục tiêu.");
         }
 
-        setIsLoading(true);
         try {
-            const newDoc = await documentService.createDocument(formData);
+            const payload: TechnicalDocumentCreateDto = {
+                ...formData,
+                description: formData.description?.trim() || null,
+                externalDepartmentIds:
+                    formData.externalDepartmentIds && formData.externalDepartmentIds.length > 0
+                        ? formData.externalDepartmentIds
+                        : null,
+                approvalProposerIds: formData.approvalProposerIds?.length ? formData.approvalProposerIds : null,
+                attachmentIds:
+                    formData.attachmentIds && formData.attachmentIds.length > 0
+                        ? formData.attachmentIds
+                        : null,
+                technicalSpecs: formData.technicalSpecs ?? {},
+            };
+
+            const newDoc = await documentService.createDocument(payload);
+            if (pendingFiles.length > 0) {
+                const toastId = toast.loading("Đang tải tệp lên hệ thống...");
+                await Promise.allSettled(
+                    pendingFiles.map(item =>
+                        attachmentService.upload(
+                            item.file,
+                            newDoc.id,
+                            item.category
+                        )
+                    )
+                );
+                toast.dismiss(toastId);
+            }
+
             toast.success("Khởi tạo tài liệu thành công");
             navigate(`/documents/${newDoc.id}/editor`);
         } catch (err: any) {
@@ -157,6 +225,13 @@ const CreateDocumentPage = () => {
                                 onChange={(val) => setFormData(p => ({ ...p, technicalSpecs: val }))}
                             />
 
+                            <div className="pt-4 border-t border-dark-800">
+                                <FileUploadComponent
+                                    onPendingChange={setPendingFiles}
+                                    disabled={isLoading}
+                                />
+                            </div>
+
                             <div className="space-y-3">
                                 <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">
                                     Đơn vị thẩm định phối hợp ({(formData.externalDepartmentIds || []).length})
@@ -192,10 +267,40 @@ const CreateDocumentPage = () => {
                                     })}
                                 </div>
                             </div>
+
+                            <div className="space-y-3 pt-4 border-t border-dark-800">
+                                <label className="block text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
+                                    Cấp phê duyệt đề xuất (Chọn 1)
+                                </label>
+                                <Input
+                                    placeholder="Tìm kiếm cấp phê duyệt..."
+                                    value={seniorSearchTerm}
+                                    onChange={setSeniorSearchTerm}
+                                />
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto p-2 bg-dark-950/80 rounded-lg border border-dark-700 custom-scrollbar">
+                                    {seniorCenters.map((center) => {
+                                        const isSelected = formData.approvalProposerIds?.includes(center.id);
+                                        return (
+                                            <div
+                                                key={center.id}
+                                                onClick={() => selectSeniorCenter(center.id)}
+                                                className={`cursor-pointer p-2 rounded border transition-all flex items-center justify-between
+                        ${isSelected ? 'bg-yellow-500/20 border-yellow-500 text-white' : 'bg-dark-800/50 border-dark-700 text-gray-400 hover:border-dark-500'}`}
+                                            >
+                                                <div className="flex flex-col overflow-hidden text-[10px]">
+                                                    <span className="font-bold truncate">{center.lastName} {center.firstName}</span>
+                                                    <span className="opacity-60 truncate">{center.employeeCode} - {center.role}</span>
+                                                </div>
+                                                {isSelected && <span className="text-yellow-500">✓</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </Card>
 
                         <div className="flex justify-end gap-3 pt-4">
-                            <Button variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>Hủy bỏ</Button>
+                            <Button type="button" variant="ghost" onClick={() => navigate("/documents")} disabled={isLoading}>Hủy bỏ</Button>
                             <Button
                                 variant="primary"
                                 type="submit"

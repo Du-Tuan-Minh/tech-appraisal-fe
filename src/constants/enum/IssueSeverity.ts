@@ -7,9 +7,21 @@ export const IssueSeverity = {
 
 export type IssueSeverity = (typeof IssueSeverity)[keyof typeof IssueSeverity];
 
-export const ISSUE_SEVERITY_LABELS: Record<IssueSeverity, string> = {
-    [IssueSeverity.Minor]: "Thấp",
-    [IssueSeverity.Moderate]: "Trung bình",
-    [IssueSeverity.Serious]: "Cao",
-    [IssueSeverity.Critical]: "Quan trọng"
+export const ISSUE_SEVERITY_MAP: Record<IssueSeverity, { label: string; color: string }> = {
+    [IssueSeverity.Minor]: {
+        label: "Thấp",
+        color: "text-green-400 bg-green-900/20"
+    },
+    [IssueSeverity.Moderate]: {
+        label: "Trung bình",
+        color: "text-yellow-400 bg-yellow-900/20"
+    },
+    [IssueSeverity.Serious]: {
+        label: "Cao",
+        color: "text-orange-400 bg-orange-900/20"
+    },
+    [IssueSeverity.Critical]: {
+        label: "Quan trọng",
+        color: "text-red-500 bg-red-900/30 border border-red-500/20"
+    }
 };

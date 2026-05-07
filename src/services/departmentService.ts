@@ -52,5 +52,5 @@ export const departmentService = {
         await axiosClient.post<ApiResponse<any>>(
             `${API_ENDPOINTS.users.joinDepartment}?inviteCode=${invitationCode}`
         );
-    }
+    },
 };

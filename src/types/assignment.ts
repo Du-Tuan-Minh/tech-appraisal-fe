@@ -68,7 +68,7 @@ export interface CreateParallelAssignmentsRequest {
 }
 
 export interface DepartmentAssignmentInfo {
-    departmentId: string;
+    targetId: string;
     deadline?: string | null;
     managerComment?: string | null;
 }

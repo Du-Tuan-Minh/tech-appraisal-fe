@@ -6,7 +6,8 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { Layout } from "../../components/layout";
 import { appraisalService } from "../../services/appraisalService";
-import { ASSIGNMENT_STATUS_MAP, REVIEWER_STATUS_MAP } from "../../constants/mapping/ui-mapping";
+import { ASSIGNMENT_STATUS_MAP } from "../../constants/enum/AssignmentStatus";
+import { REVIEWER_STATUS_MAP } from "../../constants/enum/ReviewerStatus";
 import type { AppraisalAssignmentDetailDto } from "../../types/assignment";
 
 const AssignmentDetailPage = () => {

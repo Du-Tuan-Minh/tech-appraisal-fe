@@ -3,18 +3,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Select } from "@/components/ui";
 import Pagination from "@/components/ui/Pagination";
-import FileUploadComponent from "@/components/forms/FileUploadComponent";
 
 import { toast } from "react-hot-toast";
 import { documentService } from "@/services/documentService";
 
 import type { TechnicalDocumentDetailDto, TechnicalDocumentUpdateDto } from "@/types/document";
 import type { DocumentVersionDto } from "@/types/version";
-import type { AttachmentResponseDto } from "@/types/attachment";
 
-import { DocumentType, DOCUMENT_TYPE_LABELS } from "@/constants/enum/DocumentType";
-import { DOCUMENT_STATUS_LABELS } from "@/constants/enum/DocumentStatus";
-import { IssueSeverity, ISSUE_SEVERITY_LABELS } from "@/constants/enum/IssueSeverity";
+import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
+import { DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
 
 import { History, Save, ArrowLeft, Eye } from "lucide-react";
 
@@ -23,7 +21,7 @@ const DocumentEditorPage = () => {
     const navigate = useNavigate();
 
     const [doc, setDoc] = useState<TechnicalDocumentDetailDto | null>(null);
-    const [formData, setFormData] = useState<(TechnicalDocumentUpdateDto & { attachments: AttachmentResponseDto[] }) | null>(null);
+    const [formData, setFormData] = useState<(TechnicalDocumentUpdateDto) | null>(null);
     const [versions, setVersions] = useState<DocumentVersionDto[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -33,12 +31,12 @@ const DocumentEditorPage = () => {
 
     const typeOptions = useMemo(() =>
         Object.values(DocumentType).filter(v => typeof v === "number").map(v => ({
-            value: String(v), label: DOCUMENT_TYPE_LABELS[v as DocumentType]
+            value: String(v), label: DOCUMENT_TYPE_MAP[v as DocumentType]?.label
         })), []);
 
     const priorityOptions = useMemo(() =>
         Object.values(IssueSeverity).filter(v => typeof v === "number").map(v => ({
-            value: String(v), label: ISSUE_SEVERITY_LABELS[v as IssueSeverity]
+            value: String(v), label: ISSUE_SEVERITY_MAP[v as IssueSeverity]?.label
         })), []);
 
     const fetchData = useCallback(async () => {
@@ -57,11 +55,10 @@ const DocumentEditorPage = () => {
                 type: document.type,
                 priority: document.priority,
                 technicalSpecs: null,
-                attachments: (document as any).attachments || []
             });
         } catch {
             toast.error("Không thể tải dữ liệu tài liệu");
-            navigate("/documents/list");
+            navigate("/documents");
         } finally {
             setIsLoading(false);
         }
@@ -94,7 +91,7 @@ const DocumentEditorPage = () => {
                     <h1 className="text-xl font-bold text-white">
                         Biên tập: <span className="text-primary-400 font-mono">{doc.documentCode}</span>
                     </h1>
-                    <Button variant="ghost" size="sm" onClick={() => navigate("/documents/list")}>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/documents")}>
                         <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                     </Button>
                 </header>
@@ -129,16 +126,6 @@ const DocumentEditorPage = () => {
                                         rows={4}
                                         value={formData.description || ""}
                                         onChange={(e) => setFormData(p => p ? ({ ...p, description: e.target.value }) : null)}
-                                    />
-                                </div>
-
-                                <div className="pt-4 border-t border-dark-800">
-                                    <FileUploadComponent
-                                        technicalDocumentId={doc.id}
-                                        initialAttachments={formData.attachments}
-                                        onChange={(updatedFiles) => {
-                                            setFormData(prev => prev ? ({ ...prev, attachments: updatedFiles }) : null);
-                                        }}
                                     />
                                 </div>
 
@@ -188,7 +175,7 @@ const DocumentEditorPage = () => {
 
                     <aside className="space-y-4">
                         <Card className="p-4 bg-dark-900 border-dark-800 space-y-3">
-                            <MetaRow label="Trạng thái" value={DOCUMENT_STATUS_LABELS[doc.status]} />
+                            <MetaRow label="Trạng thái" value={DOCUMENT_STATUS_MAP[doc.status]?.label} />
                             <MetaRow label="Phòng ban" value={doc.departmentName} />
                             <MetaRow label="Người tạo" value={doc.requesterName} />
                         </Card>

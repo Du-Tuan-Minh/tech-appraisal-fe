@@ -8,7 +8,7 @@ import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
 import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
 import RequestPromotionPopUp from "@/components/popups/RequestPromotionPopUp";
 import type { UserResponseDto } from "@/types/user";
-import { UserRole, USER_ROLE_LABELS } from "@/constants/enum/UserRole";
+import { UserRole, USER_ROLE_MAP } from "@/constants/enum/UserRole";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -54,7 +54,7 @@ const ProfilePage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-primary-950 p-6">
             <div className="max-w-4xl mx-auto">
-                <Button variant="ghost" onClick={() => navigate("/documents/list")} className="mb-6">
+                <Button variant="ghost" onClick={() => navigate("/documents")} className="mb-6">
                     ← Quay lại Documents
                 </Button>
 
@@ -77,7 +77,7 @@ const ProfilePage = () => {
                     <Card className="p-6 h-fit border-dark-700">
                         <h2 className="text-xl font-bold text-white mb-6">Tài Khoản</h2>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{USER_ROLE_LABELS[userData.role]}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{USER_ROLE_MAP[userData.role]?.label}</span></div>
                             <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">{userData.isActive ? "Hoạt động" : "Không hoạt động"}</span></div>
                         </div>
                         <div className="space-y-3 mt-10">
