@@ -92,10 +92,12 @@ const Header = () => {
                     </nav>
 
                     <div className="flex items-center space-x-4">
-                        <Button variant="ghost" size="sm" className="relative">
-                            <span className="text-xl">🔔</span>
-                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </Button>
+                        <Link to="/notifications">
+                            <Button variant="ghost" size="sm" className="relative">
+                                <span className="text-xl">🔔</span>
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </Button>
+                        </Link>
 
                         <div className="relative group">
                             <Button variant="ghost" size="sm" className="flex items-center space-x-2">

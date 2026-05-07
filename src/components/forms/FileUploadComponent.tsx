@@ -32,7 +32,6 @@ const FileUploadComponent = ({
     onChange,
     onPendingChange,
     initialAttachments = EMPTY_ATTACHMENTS,
-    maxFiles = 10,
     maxSize = 10,
     acceptTypes = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png",
     disabled = false,
@@ -77,14 +76,6 @@ const FileUploadComponent = ({
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (!files.length) return;
-
-        const currentCount = isEditMode
-            ? savedFiles.length + editPendingFiles.length
-            : createFiles.length;
-
-        if (currentCount + files.length > maxFiles) {
-            return toast.error(`Tối đa ${maxFiles} tệp.`);
-        }
 
         if (files.some(f => f.size > maxSize * 1024 * 1024)) {
             return toast.error(`Tệp vượt quá ${maxSize}MB.`);
@@ -147,7 +138,7 @@ const FileUploadComponent = ({
                     <div className="flex items-center gap-2">
                         <Paperclip className="w-3.5 h-3.5 text-primary-500" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">
-                            {isEditMode ? `Tài liệu (${savedFiles.length}/${maxFiles})` : `Đã chọn (${createFiles.length}/${maxFiles})`}
+                            {isEditMode ? `Tài liệu (${savedFiles.length})` : `Đã chọn (${createFiles.length})`}
                         </span>
                     </div>
                 </div>

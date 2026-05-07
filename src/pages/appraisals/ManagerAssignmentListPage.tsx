@@ -82,7 +82,7 @@ const ManagerAssignmentListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full px-6 py-6 space-y-6">
                 <header className="flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">

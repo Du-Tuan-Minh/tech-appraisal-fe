@@ -146,8 +146,12 @@ const MyTasksPage = () => {
                                     </tr>
                                 ) : (
                                     tasks.map(task => {
-                                        const severity = ISSUE_SEVERITY_MAP[task.priority as IssueSeverity] || { label: "Unknown", color: "text-gray-400" };
-                                        const status = DOCUMENT_STATUS_MAP[task.status as DocumentStatus] || { label: "N/A", color: "text-gray-500" };
+                                        const severityValue = IssueSeverity[task.priority as unknown as keyof typeof IssueSeverity];
+                                        const severity = ISSUE_SEVERITY_MAP[severityValue] || { label: "Unknown", color: "text-gray-400 bg-gray-900/20" };
+
+                                        const statusValue = DocumentStatus[task.status as unknown as keyof typeof DocumentStatus];
+                                        const status = DOCUMENT_STATUS_MAP[statusValue] || { label: "N/A", color: "text-gray-500 bg-dark-800" };
+
                                         const hasAssignment = task.currentAssignmentId && task.currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
                                         return (

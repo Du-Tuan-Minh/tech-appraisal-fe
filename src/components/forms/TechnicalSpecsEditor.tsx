@@ -17,7 +17,6 @@ interface Props {
 const TechnicalSpecsEditor = ({ value, onChange, className = "" }: Props) => {
     const [specs, setSpecs] = useState<TechnicalSpec[]>([]);
 
-    // ✅ sync từ parent → local state
     useEffect(() => {
         if (!value || typeof value !== "object") {
             setSpecs([]);

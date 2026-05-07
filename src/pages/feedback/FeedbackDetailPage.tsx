@@ -10,10 +10,8 @@ import CommentSection from "../../components/forms/CommentSection";
 import { feedbackService } from "../../services/feedbackService";
 import type { FeedbackIssueDetailDto } from "@/types/feedback";
 
-import {
-    ISSUE_SEVERITY_MAP,
-    DOCUMENT_STATUS_MAP
-} from "../../constants/mapping/ui-mapping";
+import { ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
+import { DOCUMENT_STATUS_MAP } from "../../constants/enum/DocumentStatus";
 
 const FeedbackDetailPage = () => {
     const navigate = useNavigate();

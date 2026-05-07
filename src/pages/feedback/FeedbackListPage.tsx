@@ -10,23 +10,9 @@ import { Layout } from "../../components/layout";
 import { feedbackService } from "../../services/feedbackService";
 import type { FeedbackIssueResponseDto } from "../../types/feedback";
 
-import { ISSUE_CATEGORY_LABELS } from "../../constants/enum/IssueCategory";
-import { IssueStatus, ISSUE_STATUS_LABELS } from "../../constants/enum/IssueStatus";
-import { ISSUE_SEVERITY_MAP } from "../../constants/mapping/ui-mapping";
-
-const getStatusInfo = (status: IssueStatus) => {
-    const colors: Record<IssueStatus, string> = {
-        [IssueStatus.New]: "text-yellow-400 bg-yellow-900/20",
-        [IssueStatus.InProcessing]: "text-blue-400 bg-blue-900/20",
-        [IssueStatus.Adjusted]: "text-indigo-400 bg-indigo-900/20",
-        [IssueStatus.Closed]: "text-green-400 bg-green-900/20",
-        [IssueStatus.Rejected]: "text-red-400 bg-red-900/20",
-    };
-    return {
-        label: ISSUE_STATUS_LABELS[status] || "N/A",
-        color: colors[status] || "text-gray-400 bg-gray-900/20"
-    };
-};
+import { ISSUE_CATEGORY_MAP } from "../../constants/enum/IssueCategory";
+import { IssueStatus, ISSUE_STATUS_MAP } from "../../constants/enum/IssueStatus";
+import { ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
 
 const FeedbackListPage = () => {
     const navigate = useNavigate();
@@ -70,7 +56,7 @@ const FeedbackListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full px-6 py-6 space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Chi Tiết Phản Hồi</h1>
@@ -105,7 +91,7 @@ const FeedbackListPage = () => {
                                     </tr>
                                 ) : feedback.length > 0 ? (
                                     feedback.map((item) => {
-                                        const statusInfo = getStatusInfo(item.status);
+                                        const statusInfo = ISSUE_STATUS_MAP[item.status];
                                         const severityInfo = ISSUE_SEVERITY_MAP[item.severity];
 
                                         return (
@@ -119,7 +105,7 @@ const FeedbackListPage = () => {
                                                     <div className="text-xs text-primary-500 font-mono">Ver: {item.versionNumber}</div>
                                                 </td>
                                                 <td className="p-4 text-gray-300 text-sm">
-                                                    {ISSUE_CATEGORY_LABELS[item.issueCategory]}
+                                                    {ISSUE_CATEGORY_MAP[item.issueCategory].label}
                                                 </td>
                                                 <td className="p-4">
                                                     <span className={`px-2 py-1 rounded text-[11px] font-bold ${severityInfo?.color}`}>

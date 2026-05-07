@@ -68,7 +68,7 @@ const DocumentListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full px-6 py-6 space-y-6">
                 <header className="flex justify-between items-center">
                     <h1 className="text-3xl font-bold text-white tracking-tight italic">Quản Lý Tài Liệu</h1>
                     <Button variant="primary" onClick={() => navigate("/documents/create")}>+ Tạo Mới</Button>
@@ -105,7 +105,7 @@ const DocumentListPage = () => {
                                     <th className="p-4">Tiêu đề</th>
                                     <th className="p-4">Loại / Độ ưu tiên</th>
                                     <th className="p-4">Trạng thái</th>
-                                    <th className="p-4">Người yêu cầu / Phòng ban</th>
+                                    <th className="p-4">Người yêu cầu</th>
                                     <th className="p-4">Ngày tạo</th>
                                     <th className="p-4 text-right">Thao tác</th>
                                 </tr>
@@ -118,12 +118,15 @@ const DocumentListPage = () => {
                                         </td>
                                         <td className="p-4 space-y-1.5">
                                             <div className="text-[12px] text-gray-400 font-medium">
-                                                {DOCUMENT_TYPE_MAP[doc.type as DocumentType]?.label}
+                                                {DOCUMENT_TYPE_MAP[
+                                                    DocumentType[doc.type as unknown as keyof typeof DocumentType]
+                                                ]?.label}
                                             </div>
-                                            <Badge label={ISSUE_SEVERITY_MAP[Number(doc.priority) as IssueSeverity]?.label} />
+                                            <Badge
+                                                label={ISSUE_SEVERITY_MAP[IssueSeverity[doc.priority as unknown as keyof typeof IssueSeverity]]?.label} />
                                         </td>
                                         <td className="p-4">
-                                            <Badge label={DOCUMENT_STATUS_MAP[Number(doc.status) as DocumentStatus]?.label} />
+                                            <Badge label={DOCUMENT_STATUS_MAP[DocumentStatus[doc.status as unknown as keyof typeof DocumentStatus]]?.label} />
                                         </td>
                                         <td className="p-4">
                                             <div className="text-[13px]">{doc.requesterName}</div>

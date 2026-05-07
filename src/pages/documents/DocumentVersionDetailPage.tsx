@@ -84,7 +84,7 @@ const DocumentVersionDetailPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full px-6 py-6 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-dark-800 pb-6">
                     <div>
                         <button onClick={() => navigate(-1)} className="flex items-center text-gray-400 hover:text-white mb-2 transition-colors">

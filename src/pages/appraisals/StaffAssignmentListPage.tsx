@@ -71,7 +71,7 @@ const StaffAssignmentListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full px-6 py-6 space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Nhân viên Thẩm định</h1>
