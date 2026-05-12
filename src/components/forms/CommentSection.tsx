@@ -68,7 +68,7 @@ const CommentSection = ({ feedbackIssueId, className = "" }: CommentSectionProps
 
         // Cleanup: Rời group khi đóng component hoặc đổi Issue
         return () => {
-            signalRService.leaveIssueGroup(feedbackIssueId);
+            void signalRService.leaveIssueGroup(feedbackIssueId);
             signalRService.offReceiveComment();
         };
     }, [feedbackIssueId, fetchComments]);

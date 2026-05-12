@@ -1,13 +1,19 @@
 import axiosClient from "@/services/axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
+
 import type { ApiResponse } from "@/types/apiResponse";
-import type { UserNotificationResponseDto } from "@/types/notification";
+import type { PagedResult } from "@/types/paginationResult";
+import type {
+    NotificationQueryDto,
+    UserNotificationResponseDto
+} from "@/types/notification";
 
 export const notificationService = {
-    getMyNotifications: async (): Promise<UserNotificationResponseDto[]> => {
+    getMyNotifications: async (params: NotificationQueryDto
+    ): Promise<PagedResult<UserNotificationResponseDto>> => {
         const response = await axiosClient.get<
-            ApiResponse<UserNotificationResponseDto[]>
-        >(API_ENDPOINTS.notifications.getAll);
+            ApiResponse<PagedResult<UserNotificationResponseDto>>
+        >(API_ENDPOINTS.notifications.getAll, { params });
 
         return response.data.data;
     },

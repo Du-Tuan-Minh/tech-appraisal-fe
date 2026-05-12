@@ -31,6 +31,14 @@ const Header = () => {
     };
 
     const filteredNavigation = useMemo(() => {
+        if (role === UserRole.Admin) {
+            return [
+                { name: "Dashboard", path: "/dashboard", icon: "🏠" },
+                { name: "Người dùng", path: "/users", icon: "👥" },
+                { name: "Phòng Ban", path: "/centers", icon: "🏢" },
+            ];
+        }
+
         const baseNav = [
             { name: "Dashboard", path: "/dashboard", icon: "🏠" },
             { name: "Phòng Ban", path: "/centers", icon: "🏢" },

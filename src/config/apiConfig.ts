@@ -87,7 +87,7 @@ export const API_ENDPOINTS = {
     },
 
     notifications: {
-        getAll: `/notifications`,
+        getAll: `/notifications/my`,
         markRead: (id: string) => `/notifications/${id}/read`,
         delete: (id: string) => `/notifications/${id}`,
     },

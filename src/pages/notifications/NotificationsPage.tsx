@@ -7,6 +7,7 @@ import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { Layout } from "../../components/layout";
+import { signalRService } from "../../services/signalRService";
 
 import { notificationService } from "../../services/notificationService";
 import type { UserNotificationResponseDto } from "../../types/notification";
@@ -29,6 +30,10 @@ const NotificationsPage = () => {
         sortOrder: "desc" as "asc" | "desc"
     });
 
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+
     const unreadCount = useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
 
     const formatDate = (dateString: string) => {
@@ -49,25 +54,86 @@ const NotificationsPage = () => {
         setIsLoading(true);
         try {
             const params = {
+                page,
+                pageSize,
                 search: filters.searchTerm || undefined,
-                type: filters.type !== "" ? Number(filters.type) : undefined,
-                isRead: filters.isRead === "read" ? true : filters.isRead === "unread" ? false : undefined,
+                type: filters.type !== ""
+                    ? (Number(filters.type) as NotificationType)
+                    : undefined,
+                isRead:
+                    filters.isRead === "read"
+                        ? true
+                        : filters.isRead === "unread"
+                            ? false
+                            : undefined,
                 sortBy: filters.sortBy,
                 sortOrder: filters.sortOrder
             };
 
             const data = await notificationService.getMyNotifications(params);
-            setNotifications(data);
+            setNotifications(data.items);
+            setTotalPages(data.totalPages);
         } catch (err) {
             toast.error("Không thể tải danh sách thông báo.");
         } finally {
             setIsLoading(false);
         }
-    }, [filters]);
+    }, [filters, page, pageSize]);
 
     useEffect(() => {
         loadNotifications();
     }, [loadNotifications]);
+
+    useEffect(() => {
+        const initSignalR = async () => {
+            await signalRService.startConnection();
+
+            signalRService.onReceiveNotification((newNotification: UserNotificationResponseDto) => {
+                setNotifications(prev => {
+                    if (prev.some(n => n.id === newNotification.id)) {
+                        return prev;
+                    }
+
+                    return [newNotification, ...prev];
+                });
+
+                toast.success("Bạn có thông báo mới");
+            });
+
+            signalRService.onNotificationRead((notificationId: string) => {
+                setNotifications(prev =>
+                    prev.map(n =>
+                        n.id === notificationId
+                            ? { ...n, isRead: true }
+                            : n
+                    )
+                );
+            });
+
+            signalRService.onNotificationDeleted((notificationId: string) => {
+                setNotifications(prev =>
+                    prev.filter(n => n.id !== notificationId)
+                );
+
+                setSelectedNotification(prev => {
+                    if (prev?.id === notificationId) {
+                        setShowDetail(false);
+                        return null;
+                    }
+
+                    return prev;
+                });
+            });
+        };
+
+        initSignalR();
+
+        return () => {
+            signalRService.offReceiveNotification();
+            signalRService.offNotificationRead();
+            signalRService.offNotificationDeleted();
+        };
+    }, []);
 
     const handleMarkAsRead = async (id: string) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
@@ -76,20 +142,6 @@ const NotificationsPage = () => {
         } catch {
             loadNotifications();
             toast.error("Thao tác thất bại.");
-        }
-    };
-
-    const handleMarkAllAsRead = async () => {
-        if (isUpdating || unreadCount === 0) return;
-        setIsUpdating(true);
-        try {
-            await notificationService.markAllAsRead();
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            toast.success("Đã đọc tất cả.");
-        } catch {
-            toast.error("Thất bại.");
-        } finally {
-            setIsUpdating(false);
         }
     };
 
@@ -121,11 +173,6 @@ const NotificationsPage = () => {
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight italic">Thông Báo</h1>
                         <p className="text-primary-400 mt-1 font-medium text-sm">{unreadCount} thông báo chưa đọc</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={handleMarkAllAsRead} disabled={isUpdating || unreadCount === 0} className="text-sm font-semibold uppercase tracking-wider">
-                            Đánh dấu tất cả đã đọc
-                        </Button>
                     </div>
                 </div>
 

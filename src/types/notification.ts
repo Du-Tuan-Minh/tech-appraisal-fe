@@ -1,4 +1,5 @@
 import type { NotificationType } from "@/constants/enum/NotificationType";
+import type { pagination } from "./pagination";
 
 export interface UserNotificationResponseDto {
     id: string;
@@ -22,4 +23,12 @@ export interface NotificationCreateDto {
     metadata?: Record<string, any> | null;
     senderId?: string | null;
     targetUserIds: string[];
+}
+
+export interface NotificationQueryDto extends pagination {
+    search?: string;
+    type?: NotificationType;
+    isRead?: boolean;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
 }

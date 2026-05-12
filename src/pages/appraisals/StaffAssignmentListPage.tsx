@@ -9,14 +9,8 @@ import Input from "../../components/ui/Input";
 import Pagination from "../../components/ui/Pagination";
 
 import { appraisalService } from "../../services/appraisalService";
-import { ReviewerStatus, REVIEWER_STATUS_MAP } from "@/constants/enum/ReviewerStatus";
+import { REVIEWER_STATUS_MAP } from "@/constants/enum/ReviewerStatus";
 import type { AppraisalReviewerDto } from "@/types/reviewer";
-
-const REVIEWER_STATUS_STYLES: Record<number, string> = {
-    [ReviewerStatus.Pending]: "text-yellow-400 bg-yellow-900/20 border-yellow-500/30",
-    [ReviewerStatus.Reviewing]: "text-blue-400 bg-blue-900/20 border-blue-500/30",
-    [ReviewerStatus.Completed]: "text-green-400 bg-green-900/20 border-green-500/30",
-};
 
 const StaffAssignmentListPage = () => {
     const navigate = useNavigate();
@@ -122,7 +116,7 @@ const StaffAssignmentListPage = () => {
                                                 <div className="text-xs text-gray-500 font-mono">ID: {reviewer.id.split('-')[0]}...</div>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${REVIEWER_STATUS_STYLES[reviewer.status]}`}>
+                                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${REVIEWER_STATUS_MAP[reviewer.status].color}`}>
                                                     {REVIEWER_STATUS_MAP[reviewer.status]?.label}
                                                 </span>
                                             </td>
