@@ -42,7 +42,7 @@ const UserListPage = () => {
             setUsers(res.items || []);
             setTotalData({
                 totalPages: res.totalPages || 0,
-                totalItems: res.totalItems || 0
+                totalItems: res.totalCount || 0
             });
         } catch (err) {
             toast.error("Không thể tải danh sách nhân sự.");
@@ -93,7 +93,7 @@ const UserListPage = () => {
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Quản Lý Nhân Sự</h1>
-                        <p className="text-primary-400 font-medium">Hệ thống thẩm định và phân quyền tài khoản</p>
+                        <p className="text-primary-400 font-medium">Danh sách nhân sự của phòng ban</p>
                     </div>
                 </header>
 

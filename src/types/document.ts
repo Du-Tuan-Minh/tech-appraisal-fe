@@ -47,8 +47,9 @@ export interface TechnicalDocumentUpdateDto {
     description?: string | null;
     type: DocumentType;
     priority: IssueSeverity;
-    technicalSpecs?: any | null;
+    technicalSpecs?: Record<string, any> | null;
     externalDepartmentIds?: string[] | null;
+    approvalProposerIds?: string | null;
 }
 
 export interface DocumentFilterDto extends pagination {

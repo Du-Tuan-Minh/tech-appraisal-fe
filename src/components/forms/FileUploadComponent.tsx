@@ -69,7 +69,6 @@ const FileUploadComponent = ({
             name: f.file.name,
             size: f.file.size,
             isPending: true,
-            status: "Chưa upload"
         }));
     }, [isEditMode, editPendingFiles, createFiles]);
 
@@ -151,7 +150,6 @@ const FileUploadComponent = ({
                             <FileText className="w-4 h-4 text-primary-400 shrink-0" />
                             <div className="truncate">
                                 <p className="text-[11px] text-primary-200 truncate font-medium">{f.name}</p>
-                                <p className="text-[9px] text-primary-400/60 uppercase font-bold tracking-tighter">{f.status}</p>
                             </div>
                         </div>
                         <button type="button" onClick={() => handleRemoveFile(i)} className="p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-md">

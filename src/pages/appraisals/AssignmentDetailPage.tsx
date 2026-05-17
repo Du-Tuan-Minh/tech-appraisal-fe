@@ -87,7 +87,7 @@ const AssignmentDetailPage = () => {
                                 <InfoItem label="Phòng ban" value={assignment.departmentName} />
                                 <InfoItem label="Người phân công" value={assignment.assignedByName} />
                                 <InfoItem label="Quản lý trách nhiệm" value={assignment.responsibleManagerName} />
-                                <InfoItem label="Hạn chót (Deadline)" value={assignment.deadline ? formatDate(assignment.deadline) : "Không có"} />
+                                <InfoItem label="Hạn chót" value={assignment.deadline ? formatDate(assignment.deadline) : "Không có"} />
 
                                 <div className="md:col-span-2">
                                     <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Trạng thái hệ thống</span>
@@ -106,9 +106,7 @@ const AssignmentDetailPage = () => {
                         </Card>
                     </div>
 
-                    {/* Right Column: Reviewers & Stats */}
                     <div className="lg:col-span-5 space-y-6">
-                        {/* Reviewers List */}
                         <Card className="p-6 border-dark-700 bg-dark-900/50">
                             <h2 className="text-lg font-semibold text-white mb-4 flex items-center justify-between">
                                 Danh Sách Thẩm Định
@@ -131,7 +129,6 @@ const AssignmentDetailPage = () => {
                             </div>
                         </Card>
 
-                        {/* Statistics */}
                         <Card className="p-6 border-dark-700 bg-dark-900/50">
                             <h2 className="text-lg font-semibold text-white mb-4">Thống Kê Tổng Quan</h2>
                             <div className="space-y-4">

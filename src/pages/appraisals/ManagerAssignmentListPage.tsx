@@ -100,12 +100,12 @@ const ManagerAssignmentListPage = () => {
                             value={filters.searchTerm}
                             onChange={(val) => setFilters(f => ({ ...f, searchTerm: val }))}
                         />
-                        <Select
+                        {/* <Select
                             label="Trạng thái"
                             value={filters.status}
                             options={ASSIGNMENT_STATUS_OPTIONS}
                             onChange={(val) => setFilters(f => ({ ...f, status: val }))}
-                        />
+                        /> */}
                         <Select
                             label="Sắp xếp theo"
                             value={filters.sortBy}
@@ -160,12 +160,12 @@ const ManagerAssignmentListPage = () => {
                                             </td>
                                             <td className="p-4 text-sm text-gray-400">{item.departmentName}</td>
                                             <td className="p-4 text-center">
-                                                <StatusBadge status={item.status as AssignmentStatus} />
+                                                {ASSIGNMENT_STATUS_MAP[AssignmentStatus[item.status as unknown as keyof typeof AssignmentStatus]]?.label}
                                             </td>
                                             <td className="p-4 text-center">
-                                                {/* <div className={`text-sm ${getDeadlineStyle(item.deadline)}`}>
+                                                <div className={`text-sm ${getDeadlineStyle(item.deadline)}`}>
                                                     {item.deadline ? new Date(item.deadline).toLocaleDateString("vi-VN") : "---"}
-                                                </div> */}
+                                                </div>
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
@@ -184,7 +184,7 @@ const ManagerAssignmentListPage = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
-                                                        onClick={() => navigate(`/appraisals/assignment-detail/${item.id}`)}
+                                                        onClick={() => navigate(`/appraisals/assignments/${item.id}`)}
                                                     >
                                                         Chi tiết
                                                     </Button>

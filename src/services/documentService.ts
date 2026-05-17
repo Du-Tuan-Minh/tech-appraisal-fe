@@ -49,11 +49,12 @@ export const documentService = {
     updateDocument: async (
         id: string,
         data: TechnicalDocumentUpdateDto
-    ): Promise<TechnicalDocumentResponseDto> => {
-        const res = await axiosClient.put<ApiResponse<TechnicalDocumentResponseDto>>(
+    ): Promise<boolean> => {
+        const res = await axiosClient.put<ApiResponse<boolean>>(
             API_ENDPOINTS.documents.updateDraft(id),
             data
         );
+
         return res.data.data;
     },
 

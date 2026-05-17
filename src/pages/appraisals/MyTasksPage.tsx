@@ -79,7 +79,7 @@ const MyTasksPage = () => {
         const hasAssignment = currentAssignmentId && currentAssignmentId !== "00000000-0000-0000-0000-000000000000";
 
         if (hasAssignment) {
-            navigate(`/appraisals/assignment-detail/${currentAssignmentId}`);
+            navigate(`/appraisals/assignments/${currentAssignmentId}`);
         }
     }, [navigate]);
 

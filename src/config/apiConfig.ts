@@ -78,8 +78,8 @@ export const API_ENDPOINTS = {
     },
 
     signing: {
-        getProgress: (docId: string, versionId: string) =>
-            `/signing/${docId}/progress?versionId=${versionId}`,
+        // getProgress: (docId: string, versionId: string) =>
+        //     `/signing/${docId}/progress?versionId=${versionId}`,
         approve: `/signing/approve-sign`,
         reject: `/signing/reject`,
         issue: (docId: string) => `/signing/${docId}/issue`,
@@ -94,6 +94,13 @@ export const API_ENDPOINTS = {
 
     dashboard: {
         appraisal: `/dashboard/appraisal-dashboard`,
+    },
+
+    approvalWorkflows: {
+        getDocumentWorkflow: (documentId: string, requestVersionId?: string) =>
+            `/approval-workflows/document/${documentId}${requestVersionId ? `?requestVersionId=${requestVersionId}` : ""}`,
+
+        getWorkflowDetail: (id: string) => `/approval-workflows/${id}`,
     },
 
     departments: {

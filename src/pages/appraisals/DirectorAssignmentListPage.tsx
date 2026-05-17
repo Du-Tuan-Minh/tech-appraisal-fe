@@ -112,16 +112,7 @@ const DirectorAssignmentListPage = () => {
                             options={statusOptions}
                             onChange={(val) => setFilters(f => ({ ...f, status: val }))}
                         />
-                        <Select
-                            label="Sắp xếp theo"
-                            value={filters.sortBy}
-                            options={[
-                                { value: "createdAt", label: "Ngày trình ký" },
-                                { value: "deadline", label: "Hạn định" },
-                                { value: "documentTitle", label: "Tên hồ sơ" }
-                            ]}
-                            onChange={(val) => setFilters(f => ({ ...f, sortBy: val }))}
-                        />
+
                         <div className="flex items-end">
                             <Button variant="ghost" onClick={() => setFilters(INITIAL_FILTERS)} className="text-red-400 hover:bg-red-500/10 h-10 w-full md:w-auto">
                                 Xóa lọc
@@ -137,7 +128,6 @@ const DirectorAssignmentListPage = () => {
                                 <tr className="bg-dark-800/70 border-b border-dark-700 text-[13px]">
                                     <th className="p-4 text-primary-300 font-bold uppercase tracking-wider">Hồ Sơ / Tài Liệu</th>
                                     <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Phiên Bản</th>
-                                    <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Reviewers</th>
                                     <th className="p-4 text-primary-300 font-bold uppercase tracking-wider">Trạng Thái</th>
                                     <th className="p-4 text-primary-300 font-bold uppercase tracking-wider text-center">Thao tác</th>
                                 </tr>
@@ -147,7 +137,7 @@ const DirectorAssignmentListPage = () => {
                                     <TableLoader colSpan={5} />
                                 ) : assignments.length > 0 ? (
                                     assignments.map((item) => (
-                                        <tr key={item.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => navigate(`/appraisals/assignment-detail/${item.id}`)}>
+                                        <tr key={item.id} className="hover:bg-primary-500/5 transition-colors cursor-pointer group" onClick={() => navigate(`/appraisals/assignments/${item.id}`)}>
                                             <td className="p-4">
                                                 <div className="font-semibold text-white group-hover:text-primary-400 transition-colors">{item.documentTitle}</div>
                                                 <div className="text-[11px] text-gray-500 font-mono mt-1 uppercase tracking-widest">{item.documentCode}</div>
@@ -155,16 +145,13 @@ const DirectorAssignmentListPage = () => {
                                             <td className="p-4 text-center">
                                                 <span className="bg-dark-700 px-2 py-0.5 rounded text-xs text-gray-300">v{item.versionNumber}</span>
                                             </td>
-                                            {/* <td className="p-4 text-center text-white font-medium">
-                                                {item.reviewerCount}
-                                            </td> */}
                                             <td className="p-4">
-                                                <StatusBadge status={item.status as AssignmentStatus} />
+                                                {ASSIGNMENT_STATUS_MAP[AssignmentStatus[item.status as unknown as keyof typeof AssignmentStatus]]?.label}
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <ActionIconBtn icon="📋" title="Quản lý phân công" onClick={() => navigate(`/appraisals/listAssignments/${item.requestVersionId}`)} colorClass="hover:bg-blue-500/20 text-blue-400 border-blue-500/30" />
-                                                    <ActionIconBtn icon="👁️" title="Xem chi tiết" onClick={() => navigate(`/appraisals/assignment-detail/${item.id}`)} colorClass="hover:bg-green-500/20 text-green-400 border-green-500/30" />
+                                                    <ActionIconBtn icon="👁️" title="Xem chi tiết" onClick={() => navigate(`/appraisals/assignments/${item.id}`)} colorClass="hover:bg-green-500/20 text-green-400 border-green-500/30" />
                                                     <Button
                                                         variant="primary"
                                                         size="sm"

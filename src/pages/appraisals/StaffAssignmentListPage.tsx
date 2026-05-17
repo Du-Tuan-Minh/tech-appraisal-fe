@@ -124,7 +124,7 @@ const StaffAssignmentListPage = () => {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/appraisals/assignment-detail/${reviewer.id}`)}
+                                                    onClick={() => navigate(`/appraisals/assignments/${reviewer.id}`)}
                                                 >
                                                     Chi tiết
                                                 </Button>

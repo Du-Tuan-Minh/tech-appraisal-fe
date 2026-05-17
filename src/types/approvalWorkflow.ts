@@ -7,11 +7,14 @@ export interface ApprovalWorkflowResponseDto {
     requiredRole: UserRole;
     status: AssignmentStatus;
     isCurrentStep: boolean;
-    deadline?: string | null;
     signedAt?: string | null;
-    note?: string | null;
     approverId?: string | null;
     approverName?: string | null;
+}
+
+export interface ApprovalWorkflowDetailDto extends ApprovalWorkflowResponseDto {
+    deadline?: string | null;
+    note?: string | null;
     documentId: string;
     requestVersionId: string;
     appraisalAssignmentId?: string | null;

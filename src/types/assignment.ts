@@ -12,6 +12,7 @@ export interface AppraisalAssignmentDto {
     requestVersionId: string;
     status: AssignmentStatus;
     documentCode: string;
+    deadline?: string | null;
 }
 
 export interface AppraisalAssignmentDetailDto extends AppraisalAssignmentDto {
@@ -19,7 +20,6 @@ export interface AppraisalAssignmentDetailDto extends AppraisalAssignmentDto {
     assignedByName: string;
     responsibleManagerId: string;
     responsibleManagerName: string;
-    deadline?: string | null;
     managerComment?: string | null;
     createdAt: string;
     completedAt?: string | null;

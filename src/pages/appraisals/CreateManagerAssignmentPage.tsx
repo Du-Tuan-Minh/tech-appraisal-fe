@@ -128,7 +128,7 @@ const CreateManagerAssignmentPage = () => {
                     <div className="space-y-6">
                         <div className="w-full md:w-1/2">
                             <Input
-                                label="Hạn chót thẩm định (Toàn bộ)"
+                                label="Hạn chót thẩm định"
                                 type="datetime-local"
                                 value={deadline}
                                 onChange={setDeadline}
@@ -176,7 +176,6 @@ const CreateManagerAssignmentPage = () => {
                                             );
                                         }) : <div className="col-span-full py-10 text-center text-gray-500 italic">Không tìm thấy cán bộ nào.</div>
                                     ) : (
-                                        // HIỂN THỊ DANH SÁCH PHÒNG BAN (GIỮ NGUYÊN CODE CŨ)
                                         departments.length > 0 ? departments.map(dept => {
                                             const isChecked = selectedDepartments.includes(dept.id);
                                             return (

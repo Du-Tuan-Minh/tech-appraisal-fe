@@ -86,8 +86,6 @@ const NotificationsPage = () => {
 
     useEffect(() => {
         const initSignalR = async () => {
-            await signalRService.startConnection();
-
             signalRService.onReceiveNotification((newNotification: UserNotificationResponseDto) => {
                 setNotifications(prev => {
                     if (prev.some(n => n.id === newNotification.id)) {
@@ -230,7 +228,7 @@ const NotificationsPage = () => {
                             <div className="flex justify-center p-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div></div>
                         ) : notifications.length > 0 ? (
                             notifications.map((n) => {
-                                const typeConfig = NOTIFICATION_TYPE_MAP[n.type as NotificationType] || { label: "Khác", color: "text-gray-400 bg-gray-900/20" };
+                                const typeConfig = NOTIFICATION_TYPE_MAP[n.type as NotificationType] || NOTIFICATION_TYPE_MAP[NotificationType.System];
 
                                 return (
                                     <Card
@@ -240,7 +238,11 @@ const NotificationsPage = () => {
                                     >
                                         <div className="flex gap-4">
                                             <div className="w-12 h-12 rounded-full bg-dark-700 flex items-center justify-center border border-dark-600 overflow-hidden font-bold text-primary-400">
-                                                {n.senderAvatar ? <img src={n.senderAvatar} alt="avatar" /> : <span>{n.title.charAt(0)}</span>}
+                                                {n.senderAvatar ? (
+                                                    <img src={n.senderAvatar} alt="avatar" className="object-cover w-full h-full" />
+                                                ) : (
+                                                    <span>{n.title.charAt(0)}</span>
+                                                )}
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-start">

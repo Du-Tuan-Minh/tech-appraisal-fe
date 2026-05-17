@@ -101,14 +101,14 @@ const FeedbackList = ({
                       </td>
 
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tight ${ISSUE_SEVERITY_MAP[item.severity].color}`}>
-                          {ISSUE_SEVERITY_MAP[item.severity].label}
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tight ${ISSUE_SEVERITY_MAP[item.severity]?.color}`}>
+                          {ISSUE_SEVERITY_MAP[item.severity]?.label}
                         </span>
                       </td>
 
                       <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${ISSUE_STATUS_MAP[item.status].color}`}>
-                          {ISSUE_STATUS_MAP[item.status].label}
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${ISSUE_STATUS_MAP[item.status]?.color}`}>
+                          {ISSUE_STATUS_MAP[item.status]?.label}
                         </span>
                       </td>
 

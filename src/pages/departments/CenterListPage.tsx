@@ -143,8 +143,13 @@ const CenterListPage = () => {
                                         <span className="text-[10px] text-gray-500 uppercase font-bold">Quản lý</span>
                                         <span className="text-sm text-primary-300 font-medium">{dept.managerName || "N/A"}</span>
                                     </div>
+
+                                    <Button variant="ghost" size="sm" onClick={() => navigate(`/users`)}>
+                                        Danh sách nhân sự
+                                    </Button>
+
                                     <Button variant="ghost" size="sm" onClick={() => navigate(`/centers/${dept.id}/departments`)}>
-                                        Vào phòng →
+                                        Vào phòng
                                     </Button>
                                 </div>
                             </Card>
