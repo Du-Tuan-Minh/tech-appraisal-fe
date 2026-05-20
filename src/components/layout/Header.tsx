@@ -40,7 +40,7 @@ const Header = () => {
         }
 
         const baseNav = [
-            { name: "Dashboard", path: "/dashboard", icon: "🏠" },
+            { name: "Dashboard", path: "/staff/dashboard", icon: "🏠" },
             { name: "Phòng Ban", path: "/centers", icon: "🏢" },
             { name: "Tài Liệu", path: "/documents", icon: "📄" },
             { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },

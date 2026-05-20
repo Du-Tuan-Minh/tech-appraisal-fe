@@ -42,11 +42,12 @@ const NotificationListener = () => {
                             )}
                         </div>
                     </div>
-                    <div className="ml-3 flex-1">
+                    <div className="ml-3 flex-1 min-w-0">
                         <p className="text-sm font-bold text-white italic truncate">
                             {notification.title}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400 line-clamp-2 leading-relaxed">
+
+                        <p className="mt-1 text-xs text-gray-400 line-clamp-2 leading-relaxed break-words overflow-hidden">
                             {notification.content}
                         </p>
                     </div>

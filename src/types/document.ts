@@ -60,3 +60,21 @@ export interface DocumentFilterDto extends pagination {
     fromDate?: string | null;
     toDate?: string | null;
 }
+
+export interface UserCurrentDocumentDto {
+    id: string;
+    versionId: string;
+    title: string;
+    documentCode: string;
+    status: DocumentStatus;
+    priority: IssueSeverity;
+    currentHandlerId?: string | null;
+    currentHandlerName?: string | null;
+    deadline?: string | null;
+}
+
+export interface UserCurrentDocumentFilterDto extends pagination {
+    searchTerm?: string | null;
+    priority?: IssueSeverity | null;
+    status?: DocumentStatus | null;
+}

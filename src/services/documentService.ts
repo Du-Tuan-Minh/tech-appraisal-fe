@@ -7,7 +7,9 @@ import type {
     TechnicalDocumentUpdateDto,
     DocumentFilterDto,
     TechnicalDocumentResponseDto,
-    TechnicalDocumentDetailDto
+    TechnicalDocumentDetailDto,
+    UserCurrentDocumentDto,
+    UserCurrentDocumentFilterDto
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -110,5 +112,18 @@ export const documentService = {
             API_ENDPOINTS.documents.createVersionFromIssue(issueId),
             data
         );
-    }
+    },
+
+    getMyCurrentDocuments: async (
+        filters: UserCurrentDocumentFilterDto
+    ): Promise<PagedResult<UserCurrentDocumentDto>> => {
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<UserCurrentDocumentDto>>
+        >(
+            API_ENDPOINTS.documents.myCurrentDocuments,
+            { params: filters }
+        );
+
+        return res.data.data;
+    },
 };

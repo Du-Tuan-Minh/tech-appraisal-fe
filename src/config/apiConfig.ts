@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
         myTasks: "/documents/my-tasks",
         createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
+        myCurrentDocuments: "/documents/my-current-documents",
     },
 
     appraisal: {
@@ -93,6 +94,7 @@ export const API_ENDPOINTS = {
     },
 
     dashboard: {
+        staffSummary: "/dashboard/staff-summary",
         appraisal: `/dashboard/appraisal-dashboard`,
     },
 

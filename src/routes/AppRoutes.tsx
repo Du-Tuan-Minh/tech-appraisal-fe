@@ -3,7 +3,7 @@ import ProtectedRoute from "./ProtectedRoute";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
-import DashboardPage from "../pages/dashboard/DashboardPage";
+import StaffDashboardPage from "../pages/dashboard/StaffDashboardPage";
 import ProfilePage from "../pages/users/ProfilePage";
 import DepartmentListPage from "../pages/departments/DepartmentListPage";
 import CenterListPage from "../pages/departments/CenterListPage";
@@ -33,6 +33,7 @@ import DirectorAssignmentListPage from "../pages/appraisals/DirectorAssignmentLi
 import StaffAssignmentListPage from "../pages/appraisals/StaffAssignmentListPage";
 import CreateStaffAssignmentPage from "../pages/appraisals/CreateStaffAssignmentPage";
 import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
+import UserDocumentListPage from "../pages/documents/UserDocumentListPage";
 
 const AppRoutes = () => {
     return (
@@ -45,7 +46,7 @@ const AppRoutes = () => {
 
             <Route element={<ProtectedRoute />}>
                 {/* DASHBOARD */}
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
                 <Route path="/users" element={<UserListPage />} />
 
                 {/* PROFILE */}
@@ -62,7 +63,7 @@ const AppRoutes = () => {
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
                 <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
                 <Route path="/documents/:id/version/:versionId" element={<DocumentVersionDetailPage />} />
-
+                <Route path="/use/documents" element={<UserDocumentListPage />} />
                 {/* APPRAISALS */}
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
