@@ -1,3 +1,4 @@
+import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 import type { KnowledgeBaseFilterDto } from "@/types/knowledge-base";
 import type { pagination } from "@/types/pagination";
 
@@ -28,6 +29,10 @@ export const API_ENDPOINTS = {
         detail: (id: string) => `/users/detail/${id}`,
         getSeniorCenter: ({ page, pageSize }: pagination, searchTerm?: string) =>
             `/users/senior-center?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        topDocumentAuthors: ({ page, pageSize }: pagination, searchTerm?: string) =>
+            `/users/top-document-authors?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        topRejectedAuthors: ({ page, pageSize }: pagination, searchTerm?: string) =>
+            `/users/top-rejected-authors?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
     },
 
     documents: {
@@ -42,6 +47,9 @@ export const API_ENDPOINTS = {
         createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
         myCurrentDocuments: "/documents/my-current-documents",
+        pendingAppraisalResponses: ({ page, pageSize }: pagination, searchTerm?: string, status?: ReviewerStatus | null) =>
+            `/documents/pending-appraisal-responses?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""
+            }${status ? `&status=${status}` : ""}`,
     },
 
     appraisal: {
@@ -95,7 +103,7 @@ export const API_ENDPOINTS = {
 
     dashboard: {
         staffSummary: "/dashboard/staff-summary",
-        appraisal: `/dashboard/appraisal-dashboard`,
+        managerSummary: "/dashboard/manager-summary",
     },
 
     approvalWorkflows: {

@@ -34,6 +34,9 @@ import StaffAssignmentListPage from "../pages/appraisals/StaffAssignmentListPage
 import CreateStaffAssignmentPage from "../pages/appraisals/CreateStaffAssignmentPage";
 import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
 import UserDocumentListPage from "../pages/documents/UserDocumentListPage";
+import ManagerDashboardPage from "../pages/dashboard/ManagerDashboardPage";
+import PendingAppraisalResponsesPage from "../pages/appraisals/PendingAppraisalResponsesPage";
+import TopUsersPage from "../pages/users/TopUsersPage";
 
 const AppRoutes = () => {
     return (
@@ -47,7 +50,9 @@ const AppRoutes = () => {
             <Route element={<ProtectedRoute />}>
                 {/* DASHBOARD */}
                 <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+                <Route path="/manager/dashboard" element={<ManagerDashboardPage />} />
                 <Route path="/users" element={<UserListPage />} />
+                <Route path="/users/top" element={<TopUsersPage />} />
 
                 {/* PROFILE */}
                 <Route path="/profile" element={<ProfilePage />} />
@@ -63,8 +68,10 @@ const AppRoutes = () => {
                 <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
                 <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
                 <Route path="/documents/:id/version/:versionId" element={<DocumentVersionDetailPage />} />
-                <Route path="/use/documents" element={<UserDocumentListPage />} />
+                <Route path="/user/documents" element={<UserDocumentListPage />} />
+
                 {/* APPRAISALS */}
+                <Route path="/manager/pending-appraisals" element={<PendingAppraisalResponsesPage />} />
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />

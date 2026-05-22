@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
-import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto, UserFilterDto } from "../types/user";
+import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto, UserFilterDto, UserDocumentStatisticDto } from "../types/user";
 import type { UserRole } from "../constants/enum/UserRole";
 import type { PagedResult } from "@/types/paginationResult";
 
@@ -66,4 +66,32 @@ export const getSeniorCenter = async (page: number = 1, pageSize: number = 10, s
         API_ENDPOINTS.users.getSeniorCenter({ page, pageSize }, searchTerm)
     );
     return response.data.data;
+};
+
+export const getTopDocumentAuthors = async (
+    page: number = 1,
+    pageSize: number = 10,
+    searchTerm?: string
+): Promise<PagedResult<UserDocumentStatisticDto>> => {
+    const res = await axiosClient.get<
+        ApiResponse<PagedResult<UserDocumentStatisticDto>>
+    >(
+        API_ENDPOINTS.users.topDocumentAuthors({ page, pageSize }, searchTerm)
+    );
+
+    return res.data.data;
+};
+
+export const getTopRejectedAuthors = async (
+    page: number = 1,
+    pageSize: number = 10,
+    searchTerm?: string
+): Promise<PagedResult<UserDocumentStatisticDto>> => {
+    const res = await axiosClient.get<
+        ApiResponse<PagedResult<UserDocumentStatisticDto>>
+    >(
+        API_ENDPOINTS.users.topRejectedAuthors({ page, pageSize }, searchTerm)
+    );
+
+    return res.data.data;
 };

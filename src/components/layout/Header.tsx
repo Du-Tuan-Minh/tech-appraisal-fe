@@ -39,12 +39,21 @@ const Header = () => {
             ];
         }
 
-        const baseNav = [
-            { name: "Dashboard", path: "/staff/dashboard", icon: "🏠" },
+        const baseNav = [];
+
+        if (role === UserRole.Staff) {
+            baseNav.push({ name: "Dashboard", path: "/staff/dashboard", icon: "🏠" });
+        } else if (role === UserRole.Manager) {
+            baseNav.push({ name: "Dashboard", path: "/manager/dashboard", icon: "🏠" });
+        } else if (role === UserRole.Director || role === UserRole.InstituteDirector || role === UserRole.DeputyInstituteDirector) {
+            baseNav.push({ name: "Dashboard", path: "/director/dashboard", icon: "🏠" });
+        }
+
+        baseNav.push(
             { name: "Phòng Ban", path: "/centers", icon: "🏢" },
             { name: "Tài Liệu", path: "/documents", icon: "📄" },
-            { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" },
-        ];
+            { name: "Thẩm Định", path: "/appraisals/my-tasks", icon: "📋" }
+        );
 
         if (role === UserRole.Director || role === UserRole.InstituteDirector || role === UserRole.DeputyInstituteDirector) {
             baseNav.push({

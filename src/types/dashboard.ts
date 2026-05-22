@@ -7,13 +7,9 @@ export interface DashboardSummaryStaffDto {
     issuedCount: number;
 }
 
-////////////////
-// export interface AppraisalDashboardDto {
-//     totalDocuments: number;
-//     documentsUnderAppraisal: number;
-//     approvedDocuments: number;
-//     rejectedDocuments: number;
-//     openIssues: number;
-//     viewScope: string;
-//     lastUpdated: string;
-// }
+export interface DashboardSummaryManagerDto {
+    internalSigningCount: number;
+    pendingReviewCount: number;
+    needConfirmationCount: number;
+    rejectedCount: number;
+}

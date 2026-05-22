@@ -1,6 +1,7 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
+import qs from "qs";
 
 import type {
     TechnicalDocumentCreateDto,
@@ -9,7 +10,9 @@ import type {
     TechnicalDocumentResponseDto,
     TechnicalDocumentDetailDto,
     UserCurrentDocumentDto,
-    UserCurrentDocumentFilterDto
+    UserCurrentDocumentFilterDto,
+    PendingAppraisalResponseDto,
+    PendingAppraisalFilterDto
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -121,7 +124,25 @@ export const documentService = {
             ApiResponse<PagedResult<UserCurrentDocumentDto>>
         >(
             API_ENDPOINTS.documents.myCurrentDocuments,
-            { params: filters }
+            {
+                params: filters,
+                paramsSerializer: (params) =>
+                    qs.stringify(params, {
+                        arrayFormat: "repeat"
+                    })
+            }
+        );
+
+        return res.data.data;
+    },
+
+    getPendingAppraisalResponses: async (
+        filters: PendingAppraisalFilterDto
+    ): Promise<PagedResult<PendingAppraisalResponseDto>> => {
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<PendingAppraisalResponseDto>>
+        >(
+            API_ENDPOINTS.documents.pendingAppraisalResponses(filters)
         );
 
         return res.data.data;

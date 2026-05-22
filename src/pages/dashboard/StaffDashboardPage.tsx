@@ -16,37 +16,69 @@ const TOP_METRICS_CONFIG = [
         title: "Tài liệu soạn thảo",
         icon: <span className="text-lg">📄</span>,
         isActive: true,
-        statusValue: DocumentStatus.Draft
+        statusValue: [DocumentStatus.Draft]
     },
     {
         key: "returnedForRevisionCount",
         title: "Tài liệu cần chỉnh sửa",
         icon: <span className="text-lg">🔄</span>,
         isActive: false,
-        statusValue: DocumentStatus.AdjustmentRequired
+        statusValue: [
+            DocumentStatus.AdjustmentRequired,
+            DocumentStatus.Rejected
+        ]
     },
     {
         key: "internalReviewCount",
         title: "Tài liệu đang chờ duyệt nội bộ",
         icon: <span className="text-lg">🕒</span>,
         isActive: false,
-        statusValue: DocumentStatus.InternalPending
+        statusValue: [
+            DocumentStatus.InternalPending,
+            DocumentStatus.InternalApproved
+        ]
     },
     {
         key: "issuedCount",
         title: "Tài liệu đã phát hành",
         icon: <span className="text-lg">✔️</span>,
         isActive: false,
-        statusValue: DocumentStatus.Issued
+        statusValue: [DocumentStatus.Issued]
     }
 ] as const;
 
 const PIPELINE_CONFIG = [
-    { key: "draftCount", label: "Soạn thảo", statusValue: DocumentStatus.Draft },
-    { key: "internalReviewCount", label: "Duyệt nội bộ", statusValue: DocumentStatus.InternalPending },
-    { key: "appraisalCount", label: "Đánh giá", statusValue: DocumentStatus.Appraising },
-    { key: "signingCount", label: "Ký tên", statusValue: DocumentStatus.Signing },
-    { key: "issuedCount", label: "Đã phát hành", statusValue: DocumentStatus.Issued }
+    {
+        key: "draftCount",
+        label: "Soạn thảo",
+        statusValue: [DocumentStatus.Draft]
+    },
+    {
+        key: "internalReviewCount",
+        label: "Duyệt nội bộ",
+        statusValue: [
+            DocumentStatus.InternalPending,
+            DocumentStatus.InternalApproved
+        ]
+    },
+    {
+        key: "appraisalCount",
+        label: "Đánh giá",
+        statusValue: [
+            DocumentStatus.AppraisalPending,
+            DocumentStatus.Appraising
+        ]
+    },
+    {
+        key: "signingCount",
+        label: "Ký tên",
+        statusValue: [DocumentStatus.Signing]
+    },
+    {
+        key: "issuedCount",
+        label: "Đã phát hành",
+        statusValue: [DocumentStatus.Issued]
+    }
 ] as const;
 
 const StaffDashboardPage = () => {
@@ -69,8 +101,20 @@ const StaffDashboardPage = () => {
         fetchSummary();
     }, []);
 
-    const handleMetricClick = (status: number) => {
-        navigate(`/use/documents?status=${status}`);
+    const handleMetricClick = (statuses: readonly DocumentStatus[]) => {
+        const queryParams = new URLSearchParams();
+
+        statuses.forEach(status => {
+            const statusKey = Object.keys(DocumentStatus).find(
+                key => DocumentStatus[key as keyof typeof DocumentStatus] === status
+            );
+
+            if (statusKey) {
+                queryParams.append("status", statusKey);
+            }
+        });
+
+        navigate(`/user/documents?${queryParams.toString()}`);
     };
 
     if (isLoading) {

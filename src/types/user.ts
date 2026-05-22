@@ -67,3 +67,10 @@ export interface UserFilterDto extends pagination {
     isActive?: boolean | null;
     searchTerm?: string | null;
 }
+
+export interface UserDocumentStatisticDto {
+    id: string;
+    employeeCode: string;
+    fullName: string;
+    totalDocuments: number;
+}

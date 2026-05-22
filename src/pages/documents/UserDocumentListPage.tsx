@@ -53,14 +53,16 @@ const UserDocumentListPage = () => {
         const pageParam = Number(searchParams.get("page"));
         const sizeParam = Number(searchParams.get("pageSize"));
         const priorityParam = Number(searchParams.get("priority"));
-        const statusParam = Number(searchParams.get("status"));
+        const statusParams = searchParams.getAll("status");
 
         return {
             page: isNaN(pageParam) || pageParam <= 0 ? 1 : pageParam,
             pageSize: isNaN(sizeParam) || sizeParam <= 0 ? 10 : sizeParam,
             searchTerm: searchParams.get("search") || null,
             priority: isNaN(priorityParam) || !searchParams.get("priority") ? null : (priorityParam as IssueSeverity),
-            status: isNaN(statusParam) || !searchParams.get("status") ? null : (statusParam as DocumentStatus)
+            status: statusParams.length > 0
+                ? statusParams as unknown as DocumentStatus[]
+                : null
         };
     }, [searchParams]);
 
@@ -106,12 +108,20 @@ const UserDocumentListPage = () => {
         return () => clearTimeout(handler);
     }, [localSearch, searchParams]);
 
-    const updateUrlParams = (patch: Record<string, string | number | null>) => {
+    const updateUrlParams = (
+        patch: Record<string, string | number | string[] | number[] | null>
+    ) => {
         const newParams = new URLSearchParams(searchParams);
 
         Object.entries(patch).forEach(([key, value]) => {
-            if (value === null || value === "") {
-                newParams.delete(key);
+            newParams.delete(key);
+
+            if (value === null || value === "") return;
+
+            if (Array.isArray(value)) {
+                value.forEach(v => {
+                    newParams.append(key, v.toString());
+                });
             } else {
                 newParams.set(key, value.toString());
             }
@@ -173,9 +183,14 @@ const UserDocumentListPage = () => {
 
                         <Select
                             label="Trạng thái"
-                            value={urlFilters.status?.toString() || ""}
+                            value={urlFilters.status && urlFilters.status.length > 0 ? urlFilters.status[0].toString() : ""}
                             options={STATUS_OPTIONS}
-                            onChange={(val) => updateUrlParams({ status: val || null, page: 1 })}
+                            onChange={(val) =>
+                                updateUrlParams({
+                                    status: val ? [val] : null,
+                                    page: 1
+                                })
+                            }
                         />
 
                         <div className="flex items-end gap-2">
@@ -214,12 +229,12 @@ const UserDocumentListPage = () => {
                                     documents.map((doc) => {
                                         const statusConfig =
                                             DOCUMENT_STATUS_MAP[
-                                            DocumentStatus[doc.status as unknown as keyof typeof DocumentStatus]
+                                            DocumentStatus[doc.status as keyof typeof DocumentStatus]
                                             ];
 
                                         const priorityConfig =
                                             ISSUE_SEVERITY_MAP[
-                                            IssueSeverity[doc.priority as unknown as keyof typeof IssueSeverity]
+                                            IssueSeverity[doc.priority as keyof typeof IssueSeverity]
                                             ];
 
                                         return (

@@ -2,7 +2,7 @@ import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 
 import type { ApiResponse } from "@/types/apiResponse";
-import type { DashboardSummaryStaffDto } from "@/types/dashboard";
+import type { DashboardSummaryManagerDto, DashboardSummaryStaffDto } from "@/types/dashboard";
 
 export const dashboardService = {
     getStaffSummary: async (): Promise<DashboardSummaryStaffDto> => {
@@ -10,6 +10,14 @@ export const dashboardService = {
             ApiResponse<DashboardSummaryStaffDto>
         >(
             API_ENDPOINTS.dashboard.staffSummary
+        );
+
+        return res.data.data;
+    },
+
+    getManagerSummary: async (): Promise<DashboardSummaryManagerDto> => {
+        const res = await axiosClient.get<ApiResponse<DashboardSummaryManagerDto>>(
+            API_ENDPOINTS.dashboard.managerSummary
         );
 
         return res.data.data;

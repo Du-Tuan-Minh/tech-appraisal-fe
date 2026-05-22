@@ -2,6 +2,7 @@ import type { IssueSeverity } from "@/constants/enum/IssueSeverity";
 import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
 import type { DocumentType } from "@/constants/enum/DocumentType";
 import type { pagination } from "@/types/pagination";
+import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 
 export interface TechnicalDocumentResponseDto {
     id: string;
@@ -76,5 +77,22 @@ export interface UserCurrentDocumentDto {
 export interface UserCurrentDocumentFilterDto extends pagination {
     searchTerm?: string | null;
     priority?: IssueSeverity | null;
-    status?: DocumentStatus | null;
+    status?: string[] | null;
+}
+
+export interface PendingAppraisalResponseDto {
+    assignmentId: string;
+    reviewerId: string;
+    reviewerName: string;
+    employeeCode: string;
+    documentId: string;
+    documentTitle: string;
+    documentCode: string;
+    status: ReviewerStatus;
+    deadline?: string | null;
+}
+
+export interface PendingAppraisalFilterDto extends pagination {
+    searchTerm?: string | null;
+    status?: ReviewerStatus | null;
 }
