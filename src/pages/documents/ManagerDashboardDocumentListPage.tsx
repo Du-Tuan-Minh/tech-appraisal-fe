@@ -9,6 +9,7 @@ import Select from "@/components/ui/Select";
 import Pagination from "@/components/ui/Pagination";
 import { Layout } from "@/components/layout";
 
+import { getEnumMapValue } from "@/utils/enumHelper";
 import { documentService } from "@/services/documentService";
 
 import type {
@@ -21,8 +22,8 @@ import {
     MANAGER_DASHBOARD_DOCUMENT_TYPE_MAP
 } from "@/constants/enum/ManagerDashboardDocumentType";
 
-import { DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
-import { ASSIGNMENT_STATUS_MAP } from "@/constants/enum/AssignmentStatus";
+import { DOCUMENT_STATUS_MAP, DocumentStatus } from "@/constants/enum/DocumentStatus";
+import { ASSIGNMENT_STATUS_MAP, AssignmentStatus } from "@/constants/enum/AssignmentStatus";
 
 const TYPE_OPTIONS = [
     { value: "", label: "Tất cả loại" },
@@ -64,10 +65,17 @@ interface DocumentRowProps {
 }
 
 const DocumentRow = memo(({ doc, onNavigate }: DocumentRowProps) => {
-    const statusConfig = DOCUMENT_STATUS_MAP[doc.status];
-    const assignmentConfig = doc.assignmentStatus !== null && doc.assignmentStatus !== undefined
-        ? ASSIGNMENT_STATUS_MAP[doc.assignmentStatus]
-        : null;
+    const statusConfig = getEnumMapValue(
+        DOCUMENT_STATUS_MAP,
+        DocumentStatus,
+        doc.status
+    );
+
+    const assignmentConfig = getEnumMapValue(
+        ASSIGNMENT_STATUS_MAP,
+        AssignmentStatus,
+        doc.assignmentStatus
+    );
 
     return (
         <tr
@@ -216,7 +224,6 @@ const ManagerDashboardDocumentListPage = () => {
                     </p>
                 </div>
 
-                {/* Filter Section */}
                 <Card className="p-5 border-dark-700 bg-dark-900/40 backdrop-blur-md">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <Input

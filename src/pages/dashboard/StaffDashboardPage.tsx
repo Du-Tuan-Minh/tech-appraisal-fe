@@ -8,7 +8,7 @@ import StatCard from "../../components/ui/StatCard";
 
 import { dashboardService } from "../../services/dashboardService";
 import type { DashboardSummaryStaffDto } from "../../types/dashboard";
-import { DocumentStatus } from "../../constants/enum/DocumentStatus";
+import { StaffDashboardDocumentType } from "../../constants/enum/StaffDashboardDocumentType";
 
 const TOP_METRICS_CONFIG = [
     {
@@ -16,34 +16,28 @@ const TOP_METRICS_CONFIG = [
         title: "Tài liệu soạn thảo",
         icon: <span className="text-lg">📄</span>,
         isActive: true,
-        statusValue: [DocumentStatus.Draft]
+        typeValue: StaffDashboardDocumentType.Draft
     },
     {
         key: "returnedForRevisionCount",
         title: "Tài liệu cần chỉnh sửa",
         icon: <span className="text-lg">🔄</span>,
         isActive: false,
-        statusValue: [
-            DocumentStatus.AdjustmentRequired,
-            DocumentStatus.Rejected
-        ]
+        typeValue: StaffDashboardDocumentType.ReturnedForRevision
     },
     {
         key: "internalReviewCount",
         title: "Tài liệu đang chờ duyệt nội bộ",
         icon: <span className="text-lg">🕒</span>,
         isActive: false,
-        statusValue: [
-            DocumentStatus.InternalPending,
-            DocumentStatus.InternalApproved
-        ]
+        typeValue: StaffDashboardDocumentType.InternalReview
     },
     {
         key: "issuedCount",
         title: "Tài liệu đã phát hành",
         icon: <span className="text-lg">✔️</span>,
         isActive: false,
-        statusValue: [DocumentStatus.Issued]
+        typeValue: StaffDashboardDocumentType.Issued
     }
 ] as const;
 
@@ -51,33 +45,27 @@ const PIPELINE_CONFIG = [
     {
         key: "draftCount",
         label: "Soạn thảo",
-        statusValue: [DocumentStatus.Draft]
+        typeValue: StaffDashboardDocumentType.Draft
     },
     {
         key: "internalReviewCount",
         label: "Duyệt nội bộ",
-        statusValue: [
-            DocumentStatus.InternalPending,
-            DocumentStatus.InternalApproved
-        ]
+        typeValue: StaffDashboardDocumentType.InternalReview
     },
     {
         key: "appraisalCount",
         label: "Đánh giá",
-        statusValue: [
-            DocumentStatus.AppraisalPending,
-            DocumentStatus.Appraising
-        ]
+        typeValue: StaffDashboardDocumentType.Appraisal
     },
     {
         key: "signingCount",
         label: "Ký tên",
-        statusValue: [DocumentStatus.Signing]
+        typeValue: StaffDashboardDocumentType.Signing
     },
     {
         key: "issuedCount",
         label: "Đã phát hành",
-        statusValue: [DocumentStatus.Issued]
+        typeValue: StaffDashboardDocumentType.Issued
     }
 ] as const;
 
@@ -92,7 +80,7 @@ const StaffDashboardPage = () => {
             try {
                 const data = await dashboardService.getStaffSummary();
                 if (data) setSummary(data);
-            } catch (err) {
+            } catch {
                 toast.error("Không thể kết nối dữ liệu Dashboard từ máy chủ.");
             } finally {
                 setIsLoading(false);
@@ -101,20 +89,8 @@ const StaffDashboardPage = () => {
         fetchSummary();
     }, []);
 
-    const handleMetricClick = (statuses: readonly DocumentStatus[]) => {
-        const queryParams = new URLSearchParams();
-
-        statuses.forEach(status => {
-            const statusKey = Object.keys(DocumentStatus).find(
-                key => DocumentStatus[key as keyof typeof DocumentStatus] === status
-            );
-
-            if (statusKey) {
-                queryParams.append("status", statusKey);
-            }
-        });
-
-        navigate(`/user/documents?${queryParams.toString()}`);
+    const handleMetricClick = (type: StaffDashboardDocumentType) => {
+        navigate(`/user/documents?type=${type}&page=1`, { replace: true });
     };
 
     if (isLoading) {
@@ -141,7 +117,7 @@ const StaffDashboardPage = () => {
                                 icon={metric.icon}
                                 isActive={metric.isActive}
                                 activeBorderColor="border-purple-500"
-                                onClick={() => handleMetricClick(metric.statusValue)}
+                                onClick={() => handleMetricClick(metric.typeValue)}
                             />
                         );
                     })}
@@ -163,7 +139,7 @@ const StaffDashboardPage = () => {
                                     <div key={step.key} className="flex-1 w-full flex items-center">
                                         <div
                                             className="flex flex-col items-center mx-auto space-y-3 cursor-pointer group"
-                                            onClick={() => handleMetricClick(step.statusValue)}
+                                            onClick={() => handleMetricClick(step.typeValue)}
                                         >
                                             <div className="w-12 h-12 rounded-full border border-gray-700 bg-[#161f30] flex items-center justify-center transition-all group-hover:border-purple-500 group-hover:bg-[#1c263b]">
                                                 <span className="text-sm font-bold text-white">

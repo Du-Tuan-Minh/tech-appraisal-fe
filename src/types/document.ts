@@ -79,7 +79,7 @@ export interface UserCurrentDocumentDto {
 export interface UserCurrentDocumentFilterDto extends pagination {
     searchTerm?: string | null;
     priority?: IssueSeverity | null;
-    status?: string[] | null;
+    status?: DocumentStatus[] | null;
 }
 
 export interface PendingAppraisalResponseDto {

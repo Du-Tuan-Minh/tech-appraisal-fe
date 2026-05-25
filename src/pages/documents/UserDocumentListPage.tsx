@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -12,7 +12,27 @@ import { Layout } from "../../components/layout";
 import type { UserCurrentDocumentDto, UserCurrentDocumentFilterDto } from "../../types/document";
 import { DocumentStatus, DOCUMENT_STATUS_MAP } from "../../constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
+import { StaffDashboardDocumentType, STAFF_DASHBOARD_DOCUMENT_TYPE_MAP } from "../../constants/enum/StaffDashboardDocumentType";
 import { documentService } from "@/services/documentService";
+import { getEnumMapValue } from "@/utils/enumHelper";
+
+const STAFF_DASHBOARD_DOCUMENT_TYPE_VALUES = Object.values(
+    StaffDashboardDocumentType
+) as StaffDashboardDocumentType[];
+
+const parseStaffDashboardDocumentType = (
+    value: string | null
+): StaffDashboardDocumentType | null => {
+    if (value === null || value === "") return null;
+    const numericValue = Number(value);
+    if (!Number.isInteger(numericValue)) return null;
+
+    return STAFF_DASHBOARD_DOCUMENT_TYPE_VALUES.includes(
+        numericValue as StaffDashboardDocumentType
+    )
+        ? (numericValue as StaffDashboardDocumentType)
+        : null;
+};
 
 const PRIORITY_OPTIONS = [
     { value: "", label: "Tất cả mức độ" },
@@ -22,13 +42,31 @@ const PRIORITY_OPTIONS = [
     }))
 ];
 
-const STATUS_OPTIONS = [
-    { value: "", label: "Tất cả trạng thái" },
-    ...Object.entries(DOCUMENT_STATUS_MAP).map(([key]) => ({
-        value: key,
-        label: DOCUMENT_STATUS_MAP[key as keyof typeof DOCUMENT_STATUS_MAP].label
+const TYPE_OPTIONS = [
+    { value: "", label: "Tất cả danh mục" },
+    ...STAFF_DASHBOARD_DOCUMENT_TYPE_VALUES.map((value) => ({
+        value: value.toString(),
+        label: STAFF_DASHBOARD_DOCUMENT_TYPE_MAP[value].label
     }))
 ];
+
+const STAFF_DASHBOARD_TYPE_STATUS_MAP: Record<StaffDashboardDocumentType, DocumentStatus[]> = {
+    [StaffDashboardDocumentType.Draft]: [DocumentStatus.Draft],
+    [StaffDashboardDocumentType.ReturnedForRevision]: [
+        DocumentStatus.AdjustmentRequired,
+        DocumentStatus.Rejected
+    ],
+    [StaffDashboardDocumentType.InternalReview]: [
+        DocumentStatus.InternalPending,
+        DocumentStatus.InternalApproved
+    ],
+    [StaffDashboardDocumentType.Appraisal]: [
+        DocumentStatus.AppraisalPending,
+        DocumentStatus.Appraising
+    ],
+    [StaffDashboardDocumentType.Signing]: [DocumentStatus.Signing],
+    [StaffDashboardDocumentType.Issued]: [DocumentStatus.Issued]
+};
 
 const Badge = ({ label, className }: { label: string; className?: string }) => (
     <span className={`px-2 py-1 rounded-full text-xs font-medium inline-block ${className || "text-gray-400"}`}>
@@ -49,27 +87,52 @@ const UserDocumentListPage = () => {
         totalPages: 0
     });
 
+    const selectedType = useMemo(
+        () => parseStaffDashboardDocumentType(searchParams.get("type")),
+        [searchParams]
+    );
+
+    // 1. Phân rã bộ lọc sạch từ URL
     const urlFilters = useMemo<UserCurrentDocumentFilterDto>(() => {
         const pageParam = Number(searchParams.get("page"));
         const sizeParam = Number(searchParams.get("pageSize"));
-        const priorityParam = Number(searchParams.get("priority"));
-        const statusParams = searchParams.getAll("status");
+        const priorityRaw = searchParams.get("priority");
+        const priorityParam = priorityRaw ? Number(priorityRaw) : NaN;
 
         return {
             page: isNaN(pageParam) || pageParam <= 0 ? 1 : pageParam,
             pageSize: isNaN(sizeParam) || sizeParam <= 0 ? 10 : sizeParam,
             searchTerm: searchParams.get("search") || null,
-            priority: isNaN(priorityParam) || !searchParams.get("priority") ? null : (priorityParam as IssueSeverity),
-            status: statusParams.length > 0 ? statusParams : null
+            priority: isNaN(priorityParam) ? null : (priorityParam as IssueSeverity),
+            status: selectedType === null ? null : STAFF_DASHBOARD_TYPE_STATUS_MAP[selectedType]
         };
-    }, [searchParams]);
+    }, [searchParams, selectedType]);
 
     const [localSearch, setLocalSearch] = useState(urlFilters.searchTerm || "");
 
-    useEffect(() => {
-        setLocalSearch(urlFilters.searchTerm || "");
-    }, [urlFilters.searchTerm]);
+    // 2. Cập nhật URL Params thông qua Functional Update an toàn tuyệt đối
+    const updateUrlParams = useCallback((
+        patch: Record<string, string | number | string[] | number[] | null>
+    ) => {
+        setSearchParams((prevParams) => {
+            const newParams = new URLSearchParams(prevParams);
+            Object.entries(patch).forEach(([key, value]) => {
+                newParams.delete(key);
+                if (value === null || value === "") return;
 
+                if (Array.isArray(value)) {
+                    value.forEach(v => {
+                        if (v !== null && v !== "") newParams.append(key, v.toString());
+                    });
+                } else {
+                    newParams.set(key, value.toString());
+                }
+            });
+            return newParams;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    // 3. Hàm fetch dữ liệu độc lập
     const loadDocuments = useCallback(async (filters: UserCurrentDocumentFilterDto) => {
         setIsLoading(true);
         try {
@@ -83,7 +146,7 @@ const UserDocumentListPage = () => {
                     totalPages: response.totalPages || 0
                 });
             }
-        } catch (err) {
+        } catch {
             toast.error("Không thể tải danh sách tài liệu từ hệ thống.");
             setDocuments([]);
         } finally {
@@ -91,42 +154,31 @@ const UserDocumentListPage = () => {
         }
     }, []);
 
+    // Thực thi Fetch dữ liệu tập trung qua JSON Stringify để tránh lặp vô hạn
     useEffect(() => {
         loadDocuments(urlFilters);
-    }, [urlFilters, loadDocuments]);
+    }, [JSON.stringify(urlFilters), loadDocuments]);
 
+    // 4. Luồng xử lý Debounce Tìm kiếm một chiều chuẩn chỉ
     useEffect(() => {
-        const currentSearchInUrl = searchParams.get("search") || "";
+        const currentSearchInUrl = urlFilters.searchTerm || "";
         if (localSearch === currentSearchInUrl) return;
 
         const handler = setTimeout(() => {
             updateUrlParams({ search: localSearch || null, page: 1 });
-        }, 300);
+        }, 350);
 
         return () => clearTimeout(handler);
-    }, [localSearch, searchParams]);
+    }, [localSearch, urlFilters.searchTerm, updateUrlParams]);
 
-    const updateUrlParams = (
-        patch: Record<string, string | number | string[] | number[] | null>
-    ) => {
-        const newParams = new URLSearchParams(searchParams);
-
-        Object.entries(patch).forEach(([key, value]) => {
-            newParams.delete(key);
-
-            if (value === null || value === "") return;
-
-            if (Array.isArray(value)) {
-                value.forEach(v => {
-                    newParams.append(key, v.toString());
-                });
-            } else {
-                newParams.set(key, value.toString());
-            }
-        });
-
-        setSearchParams(newParams, { replace: true });
-    };
+    // Đồng bộ ngược từ URL về ô Input chỉ khi URL thay đổi từ nguồn bên ngoài (ví dụ: Clear filter)
+    const lastUrlSearchRef = useRef(urlFilters.searchTerm);
+    useEffect(() => {
+        if (lastUrlSearchRef.current !== urlFilters.searchTerm) {
+            setLocalSearch(urlFilters.searchTerm || "");
+            lastUrlSearchRef.current = urlFilters.searchTerm;
+        }
+    }, [urlFilters.searchTerm]);
 
     const handleClearFilters = () => {
         setSearchParams({}, { replace: true });
@@ -142,7 +194,7 @@ const UserDocumentListPage = () => {
         });
     };
 
-    const getDeadlineStyle = (deadline: string | null) => {
+    const getDeadlineStyle = (deadline?: string | null) => {
         if (!deadline) return "text-gray-400";
         const diffDays = Math.floor((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         if (diffDays < 0) return "text-red-400";
@@ -173,19 +225,24 @@ const UserDocumentListPage = () => {
                         />
 
                         <Select
-                            label="Mức độ ưu tiên"
-                            value={urlFilters.priority?.toString() || ""}
-                            options={PRIORITY_OPTIONS}
-                            onChange={(val) => updateUrlParams({ priority: val || null, page: 1 })}
+                            label="Danh mục xử lý"
+                            value={selectedType !== null ? String(selectedType) : ""}
+                            options={TYPE_OPTIONS}
+                            onChange={(val) =>
+                                updateUrlParams({
+                                    type: val !== "" ? val : null,
+                                    page: 1
+                                })
+                            }
                         />
 
                         <Select
-                            label="Trạng thái"
-                            value={urlFilters.status && urlFilters.status.length > 0 ? urlFilters.status[0] : ""}
-                            options={STATUS_OPTIONS}
+                            label="Mức độ ưu tiên"
+                            value={urlFilters.priority !== null ? String(urlFilters.priority) : ""}
+                            options={PRIORITY_OPTIONS}
                             onChange={(val) =>
                                 updateUrlParams({
-                                    status: val ? [val] : null,
+                                    priority: val !== "" ? val : null,
                                     page: 1
                                 })
                             }
@@ -219,26 +276,19 @@ const UserDocumentListPage = () => {
                             <tbody className="divide-y divide-dark-800">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={7} className="p-20 text-center">
+                                        <td colSpan={6} className="p-20 text-center">
                                             <div className="animate-spin inline-block w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full"></div>
                                         </td>
                                     </tr>
                                 ) : documents.length > 0 ? (
                                     documents.map((doc) => {
-                                        const statusConfig =
-                                            DOCUMENT_STATUS_MAP[
-                                            DocumentStatus[doc.status as keyof typeof DocumentStatus]
-                                            ];
-
-                                        const priorityConfig =
-                                            ISSUE_SEVERITY_MAP[
-                                            IssueSeverity[doc.priority as keyof typeof IssueSeverity]
-                                            ];
+                                        const statusConfig = getEnumMapValue(DOCUMENT_STATUS_MAP, DocumentStatus, doc.status);
+                                        const priorityConfig = getEnumMapValue(ISSUE_SEVERITY_MAP, IssueSeverity, doc.priority);
 
                                         return (
                                             <tr
                                                 key={doc.id}
-                                                className="hover:bg-primary-500/5 transition-colors cursor-pointer"
+                                                className="hover:bg-primary-500/5 transition-colors cursor-pointer group"
                                                 onClick={() => navigate(`/documents/${doc.id}`)}
                                             >
                                                 <td className="p-4">
@@ -250,14 +300,14 @@ const UserDocumentListPage = () => {
 
                                                 <td className="p-4">
                                                     <Badge
-                                                        label={statusConfig?.label}
+                                                        label={statusConfig?.label || "Không rõ"}
                                                         className={statusConfig?.color}
                                                     />
                                                 </td>
 
                                                 <td className="p-4">
                                                     <Badge
-                                                        label={priorityConfig?.label}
+                                                        label={priorityConfig?.label || "Không rõ"}
                                                         className={priorityConfig?.color}
                                                     />
                                                 </td>
@@ -275,9 +325,7 @@ const UserDocumentListPage = () => {
                                                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                                                         <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/editor`)}>Sửa</Button>
-
                                                         <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button>
-                                                        {/* <Button variant="ghost" size="sm" className="text-red-500/70" onClick={() => { if (confirm("Xác nhận xóa tài liệu?")) handleAction(() => documentService.getDocumentById(doc.id), "Đã xóa"); }}>Xóa</Button> */}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -285,7 +333,7 @@ const UserDocumentListPage = () => {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="p-20 text-center text-gray-500">
+                                        <td colSpan={6} className="p-20 text-center text-gray-500">
                                             Không tìm thấy tài liệu nào.
                                         </td>
                                     </tr>

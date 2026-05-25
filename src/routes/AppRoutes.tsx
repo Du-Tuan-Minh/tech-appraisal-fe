@@ -11,7 +11,6 @@ import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
 import DocumentEditorPage from "../pages/documents/DocumentEditorPage";
 import DocumentVersionsPage from "../pages/documents/DocumentVersionsPage";
-import AppraisalDashboardPage from "../pages/appraisals/AppraisalDashboardPage";
 import AppraisalReviewPage from "../pages/appraisals/AppraisalReviewPage";
 import ConsolidatedFeedbackPage from "../pages/appraisals/ConsolidatedFeedbackPage";
 import SigningDashboardPage from "../pages/signatures/SigningDashboardPage";
@@ -76,7 +75,6 @@ const AppRoutes = () => {
                 {/* APPRAISALS */}
                 <Route path="/manager/pending-appraisals" element={<PendingAppraisalResponsesPage />} />
                 <Route path="/manager/overdue-documents" element={<OverdueDocumentsPage />} />
-                <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />
                 <Route path="/appraisals/listAssignments/:versionId?" element={<ManagerAssignmentListPage />} />

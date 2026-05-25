@@ -121,6 +121,25 @@ export const documentService = {
         );
     },
 
+    // getMyCurrentDocuments: async (
+    //     filters: UserCurrentDocumentFilterDto
+    // ): Promise<PagedResult<UserCurrentDocumentDto>> => {
+    //     const res = await axiosClient.get<
+    //         ApiResponse<PagedResult<UserCurrentDocumentDto>>
+    //     >(
+    //         API_ENDPOINTS.documents.myCurrentDocuments,
+    //         {
+    //             params: filters,
+    //             paramsSerializer: (params) =>
+    //                 qs.stringify(params, {
+    //                     arrayFormat: "repeat"
+    //                 })
+    //         }
+    //     );
+
+    //     return res.data.data;
+    // },
+
     getMyCurrentDocuments: async (
         filters: UserCurrentDocumentFilterDto
     ): Promise<PagedResult<UserCurrentDocumentDto>> => {
