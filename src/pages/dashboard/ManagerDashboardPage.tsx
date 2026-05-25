@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -7,52 +7,84 @@ import { Layout } from "../../components/layout";
 import StatCard from "../../components/ui/StatCard";
 
 import { dashboardService } from "../../services/dashboardService";
-import { getTopDocumentAuthors } from "../../services/userService";
-import { getTopRejectedAuthors } from "../../services/userService";
+import { getTopDocumentAuthors, getTopRejectedAuthors } from "../../services/userService";
 import { documentService } from "../../services/documentService";
+
+import type { DashboardSummaryManagerDto } from "../../types/dashboard";
 import type { UserDocumentStatisticDto } from "../../types/user";
-import type { PendingAppraisalResponseDto } from "../../types/document";
+import type { OverdueDocumentDto } from "../../types/document";
 
 const ManagerDashboardPage = () => {
     const navigate = useNavigate();
 
-    const [summary, setSummary] = useState<any>(null);
+    const [summary, setSummary] = useState<DashboardSummaryManagerDto | null>(null);
     const [topAuthors, setTopAuthors] = useState<UserDocumentStatisticDto[]>([]);
     const [topRejectedAuthors, setTopRejectedAuthors] = useState<UserDocumentStatisticDto[]>([]);
-    const [pendingAppraisals, setPendingAppraisals] = useState<PendingAppraisalResponseDto[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [overdueDocuments, setOverdueDocuments] = useState<OverdueDocumentDto[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [activeTab, setActiveTab] = useState<string>("progress");
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                const [summaryRes, authorsRes, rejectedRes, pendingRes] = await Promise.all([
+                const [summaryRes, authorsRes, rejectedRes, overdueRes] = await Promise.all([
                     dashboardService.getManagerSummary(),
                     getTopDocumentAuthors(1, 4),
                     getTopRejectedAuthors(1, 4),
-                    documentService.getPendingAppraisalResponses({ page: 1, pageSize: 5 }) // Thường hiển thị top 5 bottleneck
+                    documentService.getOverdueDocuments({
+                        page: 1,
+                        pageSize: 5,
+                        searchTerm: null,
+                        status: null
+                    })
                 ]);
 
+                if (!isMounted) return;
+
                 setSummary(summaryRes);
-                setTopAuthors(authorsRes.items || []);
-                setTopRejectedAuthors(rejectedRes.items || []);
-                setPendingAppraisals(pendingRes.items || []);
+                setTopAuthors(authorsRes?.items || []);
+                setTopRejectedAuthors(rejectedRes?.items || []);
+                setOverdueDocuments(overdueRes?.items || []);
             } catch (err) {
-                console.error("[Dashboard Error]:", err);
-                toast.error("Không thể tải thông tin hệ thống.");
+                console.error("[Dashboard Critical Error]:", err);
+                toast.error("Không thể tải thông tin hệ thống. Vui lòng thử lại sau.");
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         };
 
         fetchDashboardData();
+        return () => { isMounted = false; };
     }, []);
 
-    const calculateIdleTime = (deadline: string | null | undefined): string => {
-        if (!deadline) return "24h Idle";
-        const hours = Math.floor((new Date().getTime() - new Date(deadline).getTime()) / (1000 * 60 * 60));
-        return `${hours > 0 ? hours : Math.abs(hours)}h Idle`;
+    const formatOverdueDynamic = (deadline: string | null | undefined): string => {
+        if (!deadline) return "Hạn linh hoạt";
+
+        const deadlineTime = new Date(deadline).getTime();
+        const nowTime = new Date().getTime();
+        const diffMs = nowTime - deadlineTime;
+
+        if (diffMs > 0) {
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            if (totalHours < 24) {
+                return `${totalHours}h Idle`;
+            }
+            const days = Math.floor(totalHours / 24);
+            return `Quá hạn ${days} ngày`;
+        }
+
+        const remainingMs = Math.abs(diffMs);
+        const remainingHours = remainingMs / (1000 * 60 * 60);
+
+        if (remainingHours < 24 && new Date(deadline).getDate() === new Date().getDate()) {
+            return "Đến hạn hôm nay";
+        }
+
+        const remainingDays = Math.ceil(remainingHours / 24);
+        return `Còn ${remainingDays} ngày`;
     };
 
     if (isLoading) {
@@ -106,18 +138,34 @@ const ManagerDashboardPage = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl">
-                        <div className="mb-4">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <span className="text-green-500 text-sm">📈</span> Top Nhân Viên Đóng Góp
-                            </h2>
-                            <p className="text-gray-500 text-xs mt-0.5">Tổng số tài liệu được soạn thảo & đánh giá trong tháng</p>
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <span className="text-green-500 text-sm">📈</span> Top Nhân Viên Đóng Góp
+                                </h2>
+                                <p className="text-gray-500 text-xs mt-0.5">Tổng số tài liệu được soạn thảo & đánh giá trong tháng</p>
+                            </div>
+                            <button
+                                onClick={() => navigate("/users/top?type=authors")}
+                                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                            >
+                                Xem tất cả
+                            </button>
                         </div>
+
                         <div className="divide-y divide-gray-800/60">
                             {topAuthors.map((author) => (
-                                <div key={author.id} className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer" onClick={() => navigate(`/users/${author.id}`)}>
+                                <div
+                                    key={author.id}
+                                    className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/users/${author.id}`);
+                                    }}
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-full bg-blue-900/30 border border-blue-500/20 flex items-center justify-center text-sm font-bold text-blue-400 uppercase">
-                                            {author.fullName.charAt(0)}
+                                            {author.fullName?.charAt(0) || "U"}
                                         </div>
                                         <div>
                                             <p className="text-white font-medium text-sm group-hover:text-blue-400 transition-colors">{author.fullName}</p>
@@ -131,18 +179,34 @@ const ManagerDashboardPage = () => {
                     </Card>
 
                     <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl">
-                        <div className="mb-4">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <span className="text-red-500 text-sm">⚠️</span> Tỷ Lệ Tài Liệu Bị Trả Về Cao
-                            </h2>
-                            <p className="text-gray-500 text-xs mt-0.5">Nhân sự có nhiều tài liệu cần sửa đổi/bị từ chối nhiều nhất</p>
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <span className="text-red-500 text-sm">⚠️</span> Tỷ Lệ Tài Liệu Bị Trả Về Cao
+                                </h2>
+                                <p className="text-gray-500 text-xs mt-0.5">Nhân sự có nhiều tài liệu cần sửa đổi/bị từ chối nhiều nhất</p>
+                            </div>
+                            <button
+                                onClick={() => navigate("/users/top?type=rejected")}
+                                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                            >
+                                Xem tất cả
+                            </button>
                         </div>
+
                         <div className="divide-y divide-gray-800/60">
                             {topRejectedAuthors.map((author) => (
-                                <div key={author.id} className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer" onClick={() => navigate(`/users/${author.id}`)}>
+                                <div
+                                    key={author.id}
+                                    className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/users/${author.id}`);
+                                    }}
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-full bg-red-900/30 border border-red-500/20 flex items-center justify-center text-sm font-bold text-red-400 uppercase">
-                                            {author.fullName.charAt(0)}
+                                            {author.fullName?.charAt(0) || "U"}
                                         </div>
                                         <div>
                                             <p className="text-white font-medium text-sm group-hover:text-red-400 transition-colors">{author.fullName}</p>
@@ -157,31 +221,52 @@ const ManagerDashboardPage = () => {
                 </div>
 
                 <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl max-w-2xl">
-                    <div className="mb-6">
+                    <div className="mb-6 flex items-center justify-between">
                         <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="text-gray-400 text-base">👥</span> ĐIỂM NGHẼN: TRỄ PHẢN HỒI
+                            <span className="text-red-400 text-base">⚠️</span> ĐIỂM NGHẼN: TRỄ PHẢN HỒI QUÁ HẠN
                         </h2>
+                        <button
+                            onClick={() => navigate("/manager/overdue-documents")}
+                            className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                        >
+                            Xem tất cả
+                        </button>
                     </div>
+
                     <div className="space-y-4">
-                        {pendingAppraisals.map((item) => (
-                            <div
-                                key={item.assignmentId}
-                                className="flex items-center justify-between p-4 bg-[#161f30]/50 rounded-xl border border-gray-800/20 hover:border-gray-700/60 transition-all cursor-pointer"
-                                onClick={() => navigate(`/appraisals/${item.assignmentId}`)}
-                            >
-                                <div>
-                                    <p className="text-white font-semibold text-sm">{item.reviewerName}</p>
-                                    <p className="text-gray-400 text-xs mt-0.5">
-                                        {item.documentTitle} — <span className="font-mono text-gray-500 text-[11px] uppercase">{item.documentCode}</span>
-                                    </p>
+                        {overdueDocuments.length > 0 ? (
+                            overdueDocuments.map((item) => (
+                                <div
+                                    key={item.assignmentId}
+                                    className="flex items-center justify-between p-4 bg-[#161f30]/50 rounded-xl border border-gray-800/20 hover:border-red-500/20 hover:bg-red-500/[0.02] transition-all cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/appraisals/${item.assignmentId}`);
+                                    }}
+                                >
+                                    <div>
+                                        <p className="text-white font-semibold text-sm">
+                                            {item.reviewerName}
+                                            {item.employeeCode && (
+                                                <span className="text-xs text-gray-500 font-mono font-normal ml-1.5">
+                                                    ({item.employeeCode})
+                                                </span>
+                                            )}
+                                        </p>
+                                        <p className="text-gray-400 text-xs mt-0.5">
+                                            {item.documentTitle} — <span className="font-mono text-gray-500 text-[11px] uppercase">{item.documentCode}</span>
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-md border border-red-500/20 clean-wrp">
+                                            {formatOverdueDynamic(item.deadline)}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
-                                        {calculateIdleTime(item.deadline)}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500 text-center py-6">Hiện không có điểm nghẽn quá hạn nào cần xử lý.</p>
+                        )}
                     </div>
                 </Card>
 

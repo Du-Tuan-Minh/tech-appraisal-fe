@@ -8,24 +8,28 @@ import Input from "../../components/ui/Input";
 import Pagination from "../../components/ui/Pagination";
 import { Layout } from "../../components/layout";
 
-import { getTopDocumentAuthors } from "../../services/userService";
-import { getTopRejectedAuthors } from "../../services/userService";
+import { getTopDocumentAuthors, getTopRejectedAuthors } from "../../services/userService";
 import type { UserDocumentStatisticDto } from "../../types/user";
 
 const PAGE_SIZE = 10;
 
 const TopUsersPage = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
+    // 1. Trích xuất dữ liệu trực tiếp từ URL (Single Source of Truth)
     const currentType = searchParams.get("type") === "rejected" ? "rejected" : "authors";
+    const currentPage = Number(searchParams.get("page")) || 1;
+    const urlSearch = searchParams.get("search") || "";
 
     const [users, setUsers] = useState<UserDocumentStatisticDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
+
+    // State local chỉ phục vụ lưu trữ ký tự tạm thời khi người dùng đang gõ phím
+    const [searchTerm, setSearchTerm] = useState(urlSearch);
 
     const [pagination, setPagination] = useState({
-        page: 1,
+        page: currentPage,
         pageSize: PAGE_SIZE,
         totalCount: 0,
         totalPages: 0
@@ -33,23 +37,19 @@ const TopUsersPage = () => {
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const loadUsers = useCallback(async (targetPage: number = 1) => {
+    // 2. Hàm Fetch API tinh khiết: Chỉ chạy khi các tham số thực tế trên URL thay đổi
+    const loadUsers = useCallback(async () => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
 
         const controller = new AbortController();
         abortControllerRef.current = controller;
-
         setIsLoading(true);
+
         try {
-            const cleanSearchTerm = searchTerm.trim() || undefined;
-
-            const fetchApi = currentType === "authors"
-                ? getTopDocumentAuthors
-                : getTopRejectedAuthors;
-
-            const response = await fetchApi(targetPage, PAGE_SIZE, cleanSearchTerm);
+            const fetchApi = currentType === "authors" ? getTopDocumentAuthors : getTopRejectedAuthors;
+            const response = await fetchApi(currentPage, PAGE_SIZE, urlSearch.trim() || undefined);
 
             if (!controller.signal.aborted) {
                 setUsers(response.items || []);
@@ -61,9 +61,7 @@ const TopUsersPage = () => {
                 });
             }
         } catch (err: any) {
-            if (err.name === "CanceledError" || err.name === "AbortError") {
-                return;
-            }
+            if (err.name === "CanceledError" || err.name === "AbortError") return;
             console.error("[Fetch Top Users Error]:", err);
             toast.error("Không thể tải danh sách thống kê người dùng.");
         } finally {
@@ -71,23 +69,60 @@ const TopUsersPage = () => {
                 setIsLoading(false);
             }
         }
-    }, [currentType, searchTerm]);
+    }, [currentType, currentPage, urlSearch]);
 
+    // Luồng kích hoạt API duy nhất của toàn bộ Component
+    useEffect(() => {
+        loadUsers();
+        return () => {
+            if (abortControllerRef.current) abortControllerRef.current.abort();
+        };
+    }, [loadUsers]);
+
+    // 同步 (Đồng bộ ngược): Giúp ô Input cập nhật đúng text khi người dùng nhấn Back/Forward trên trình duyệt
+    useEffect(() => {
+        setSearchTerm(urlSearch);
+    }, [urlSearch]);
+
+    // 3. Debounce xử lý chuỗi ký tự tìm kiếm và đẩy lên URL sạch sẽ
     useEffect(() => {
         const handler = setTimeout(() => {
-            loadUsers(1);
+            const cleanSearch = searchTerm.trim();
+            const newParams = new URLSearchParams(searchParams);
+
+            if (cleanSearch) {
+                newParams.set("search", cleanSearch);
+            } else {
+                newParams.delete("search");
+            }
+            newParams.set("page", "1"); // Tìm kiếm từ khóa mới luôn ép về trang 1
+
+            // Chỉ cập nhật URL nếu dữ liệu tìm kiếm thực sự khác dữ liệu cũ trên URL
+            if (newParams.toString() !== searchParams.toString()) {
+                setSearchParams(newParams);
+            }
         }, 300);
 
-        return () => {
-            clearTimeout(handler);
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-        };
-    }, [searchTerm, currentType, loadUsers]);
+        return () => clearTimeout(handler);
+    }, [searchTerm, searchParams, setSearchParams]);
 
-    const handleViewDetail = (userId: string) => {
-        navigate(`/users/${userId}`);
+    // 4. Hàm điều phối luồng khi chuyển Tab dữ liệu
+    const handleTabChange = (type: "authors" | "rejected") => {
+        setSearchTerm(""); // Xóa sạch chữ tại ô nhập liệu ngay lập tức
+
+        const newParams = new URLSearchParams();
+        newParams.set("type", type);
+        newParams.set("page", "1"); // Reset về trang 1 cho danh mục mới
+        // Không truyền 'search' cũ sang Tab mới nhằm tránh bộ lọc chéo dữ liệu bẩn
+
+        setSearchParams(newParams);
+    };
+
+    // 5. Hàm điều phối luồng phân trang
+    const handlePageChange = (page: number) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set("page", page.toString());
+        setSearchParams(newParams);
     };
 
     return (
@@ -105,21 +140,18 @@ const TopUsersPage = () => {
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <Button
-                            variant="ghost"
-                            onClick={() => navigate("/dashboard/manager")}
-                        >
+                        <Button variant="ghost" onClick={() => navigate("/dashboard/manager")}>
                             Quay lại Dashboard
                         </Button>
                         <Button
                             variant={currentType === "authors" ? "primary" : "ghost"}
-                            onClick={() => navigate("/top-users?type=authors")}
+                            onClick={() => handleTabChange("authors")}
                         >
                             Tác Giả Tài Liệu
                         </Button>
                         <Button
                             variant={currentType === "rejected" ? "primary" : "ghost"}
-                            onClick={() => navigate("/top-users?type=rejected")}
+                            onClick={() => handleTabChange("rejected")}
                         >
                             Tác Giả Bị Từ Chối
                         </Button>
@@ -163,7 +195,7 @@ const TopUsersPage = () => {
                                             <tr
                                                 key={user.id}
                                                 className="hover:bg-primary-500/5 transition-colors cursor-pointer"
-                                                onClick={() => handleViewDetail(user.id)}
+                                                onClick={() => navigate(`/users/${user.id}`)}
                                             >
                                                 <td className="p-4">
                                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${isTopThree
@@ -183,8 +215,7 @@ const TopUsersPage = () => {
                                                     <div className="font-semibold text-white text-sm">{user.fullName}</div>
                                                 </td>
                                                 <td className="p-4">
-                                                    <div className={`font-bold text-base ${currentType === "authors" ? "text-primary-400" : "text-red-400"
-                                                        }`}>
+                                                    <div className={`font-bold text-base ${currentType === "authors" ? "text-primary-400" : "text-red-400"}`}>
                                                         {user.totalDocuments}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
@@ -198,7 +229,7 @@ const TopUsersPage = () => {
                                                             size="sm"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleViewDetail(user.id);
+                                                                navigate(`/users/${user.id}`);
                                                             }}
                                                         >
                                                             Xem
@@ -225,7 +256,7 @@ const TopUsersPage = () => {
                         <Pagination
                             currentPage={pagination.page}
                             totalPages={pagination.totalPages}
-                            onPageChange={(page) => loadUsers(page)}
+                            onPageChange={handlePageChange}
                         />
                     </div>
                 )}

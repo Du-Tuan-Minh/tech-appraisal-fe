@@ -47,9 +47,7 @@ export const API_ENDPOINTS = {
         createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
         myCurrentDocuments: "/documents/my-current-documents",
-        pendingAppraisalResponses: ({ page, pageSize }: pagination, searchTerm?: string, status?: ReviewerStatus | null) =>
-            `/documents/pending-appraisal-responses?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""
-            }${status ? `&status=${status}` : ""}`,
+        overdueDocuments: "/documents/overdue-documents",
     },
 
     appraisal: {
@@ -118,10 +116,12 @@ export const API_ENDPOINTS = {
         create: `/departments/create-department`,
         update: (id: string) => `/departments/${id}/update-department`,
         delete: (id: string) => `/departments/${id}/delete-department`,
-        getCenters: ({ page, pageSize }: pagination, searchTerm?: string) =>
-            `/departments/centers?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
-        getSubDepartments: (parentId: string, { page, pageSize }: pagination, searchTerm?: string) =>
-            `/departments/${parentId}/sub-departments?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        // getCenters: ({ page, pageSize }: pagination, searchTerm?: string) =>
+        //     `/departments/centers?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        getCenters: "/departments/centers",
+        getSubDepartments: (parentId: string) => `/departments/${parentId}/sub-departments`,
+        // getSubDepartments: (parentId: string, { page, pageSize }: pagination, searchTerm?: string) =>
+        //     `/departments/${parentId}/sub-departments?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
     },
 
     knowledgeBase: {

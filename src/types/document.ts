@@ -96,3 +96,23 @@ export interface PendingAppraisalFilterDto extends pagination {
     searchTerm?: string | null;
     status?: ReviewerStatus | null;
 }
+
+export interface OverdueDocumentDto {
+    assignmentId: string;
+    reviewerId: string;
+
+    reviewerName: string;
+    employeeCode: string;
+
+    documentId: string;
+    documentTitle: string;
+    documentCode: string;
+
+    status: ReviewerStatus;
+    deadline?: string | null;
+}
+
+export interface OverdueFilterDto extends pagination {
+    searchTerm?: string | null;
+    status?: ReviewerStatus | null;
+}

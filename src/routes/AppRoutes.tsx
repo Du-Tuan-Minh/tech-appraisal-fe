@@ -36,6 +36,7 @@ import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
 import UserDocumentListPage from "../pages/documents/UserDocumentListPage";
 import ManagerDashboardPage from "../pages/dashboard/ManagerDashboardPage";
 import PendingAppraisalResponsesPage from "../pages/appraisals/PendingAppraisalResponsesPage";
+import OverdueDocumentsPage from "../pages/appraisals/OverdueDocumentsPage";
 import TopUsersPage from "../pages/users/TopUsersPage";
 
 const AppRoutes = () => {
@@ -72,6 +73,7 @@ const AppRoutes = () => {
 
                 {/* APPRAISALS */}
                 <Route path="/manager/pending-appraisals" element={<PendingAppraisalResponsesPage />} />
+                <Route path="/manager/overdue-documents" element={<OverdueDocumentsPage />} />
                 <Route path="/appraisals" element={<AppraisalDashboardPage />} />
                 <Route path="/appraisals/:documentId/review/:versionId" element={<AppraisalReviewPage />} />
                 <Route path="/documents/:id/feedback" element={<ConsolidatedFeedbackPage />} />

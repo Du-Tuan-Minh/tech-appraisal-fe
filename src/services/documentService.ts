@@ -12,7 +12,9 @@ import type {
     UserCurrentDocumentDto,
     UserCurrentDocumentFilterDto,
     PendingAppraisalResponseDto,
-    PendingAppraisalFilterDto
+    PendingAppraisalFilterDto,
+    OverdueDocumentDto,
+    OverdueFilterDto
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -136,13 +138,29 @@ export const documentService = {
         return res.data.data;
     },
 
-    getPendingAppraisalResponses: async (
-        filters: PendingAppraisalFilterDto
-    ): Promise<PagedResult<PendingAppraisalResponseDto>> => {
+    // getPendingAppraisalResponses: async (
+    //     filters: PendingAppraisalFilterDto
+    // ): Promise<PagedResult<PendingAppraisalResponseDto>> => {
+    //     const res = await axiosClient.get<
+    //         ApiResponse<PagedResult<PendingAppraisalResponseDto>>
+    //     >(
+    //         API_ENDPOINTS.documents.pendingAppraisalResponses(filters)
+    //     );
+
+    //     return res.data.data;
+    // },
+
+    getOverdueDocuments: async (
+        filters: OverdueFilterDto
+    ): Promise<PagedResult<OverdueDocumentDto>> => {
+
         const res = await axiosClient.get<
-            ApiResponse<PagedResult<PendingAppraisalResponseDto>>
+            ApiResponse<PagedResult<OverdueDocumentDto>>
         >(
-            API_ENDPOINTS.documents.pendingAppraisalResponses(filters)
+            API_ENDPOINTS.documents.overdueDocuments,
+            {
+                params: filters
+            }
         );
 
         return res.data.data;
