@@ -132,6 +132,7 @@ const CreateManagerAssignmentPage = () => {
                                 type="datetime-local"
                                 value={deadline}
                                 onChange={setDeadline}
+                                min={new Date().toISOString().slice(0, 16)}
                                 required
                             />
                         </div>

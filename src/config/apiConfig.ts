@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
         myCurrentDocuments: "/documents/my-current-documents",
         overdueDocuments: "/documents/overdue-documents",
+        managerDashboardDocuments: "/documents/manager-dashboard-documents",
     },
 
     appraisal: {

@@ -24,9 +24,9 @@ const PRIORITY_OPTIONS = [
 
 const STATUS_OPTIONS = [
     { value: "", label: "Tất cả trạng thái" },
-    ...Object.entries(DOCUMENT_STATUS_MAP).map(([key, value]) => ({
+    ...Object.entries(DOCUMENT_STATUS_MAP).map(([key]) => ({
         value: key,
-        label: value.label
+        label: DOCUMENT_STATUS_MAP[key as keyof typeof DOCUMENT_STATUS_MAP].label
     }))
 ];
 
@@ -60,9 +60,7 @@ const UserDocumentListPage = () => {
             pageSize: isNaN(sizeParam) || sizeParam <= 0 ? 10 : sizeParam,
             searchTerm: searchParams.get("search") || null,
             priority: isNaN(priorityParam) || !searchParams.get("priority") ? null : (priorityParam as IssueSeverity),
-            status: statusParams.length > 0
-                ? statusParams as unknown as DocumentStatus[]
-                : null
+            status: statusParams.length > 0 ? statusParams : null
         };
     }, [searchParams]);
 
@@ -183,7 +181,7 @@ const UserDocumentListPage = () => {
 
                         <Select
                             label="Trạng thái"
-                            value={urlFilters.status && urlFilters.status.length > 0 ? urlFilters.status[0].toString() : ""}
+                            value={urlFilters.status && urlFilters.status.length > 0 ? urlFilters.status[0] : ""}
                             options={STATUS_OPTIONS}
                             onChange={(val) =>
                                 updateUrlParams({

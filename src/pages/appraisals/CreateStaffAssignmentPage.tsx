@@ -24,6 +24,7 @@ const CreateStaffAssignmentPage = () => {
     const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [managerNote, setManagerNote] = useState("");
+    const [deadline, setDeadline] = useState("");
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -106,7 +107,8 @@ const CreateStaffAssignmentPage = () => {
             const request: AssignStaffRequest = {
                 assignmentId,
                 staffIds: selectedStaffIds,
-                managerNote: managerNote.trim() || null
+                managerNote: managerNote.trim() || null,
+                deadline: deadline ? new Date(deadline).toISOString() : null
             };
 
             await appraisalService.assignStaff(request);
@@ -206,6 +208,16 @@ const CreateStaffAssignmentPage = () => {
                                     <p className="text-4xl font-black text-primary-500">{selectedStaffIds.length}</p>
                                     <p className="text-[10px] text-gray-500 uppercase mt-1">Nhân sự thực hiện</p>
                                 </div>
+
+                                <FormField label="Hạn chót hoàn thành">
+                                    <input
+                                        type="datetime-local"
+                                        className="w-full bg-dark-950 border border-dark-700 rounded-xl p-3 text-sm text-white outline-none focus:ring-1 focus:ring-primary-500 [color-scheme:dark]"
+                                        value={deadline}
+                                        min={new Date().toISOString().slice(0, 16)}
+                                        onChange={(e) => setDeadline(e.target.value)}
+                                    />
+                                </FormField>
 
                                 <FormField label="Ghi chú phân công">
                                     <textarea

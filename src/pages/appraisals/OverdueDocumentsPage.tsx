@@ -190,9 +190,7 @@ const OverdueDocumentsPage = () => {
                             <thead>
                                 <tr className="bg-dark-800/70 border-b border-dark-700">
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Người Đánh Giá</th>
-                                    <th className="p-4 text-primary-300 font-semibold text-sm">Mã NV</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Tài Liệu</th>
-                                    <th className="p-4 text-primary-300 font-semibold text-sm">Mã Tài Liệu</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Trạng Thái</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Deadline</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Quá Hạn</th>
@@ -225,12 +223,7 @@ const OverdueDocumentsPage = () => {
                                                         {doc.reviewerName}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
-                                                        ID: {doc.reviewerId}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="font-mono text-white text-sm font-medium">
-                                                        {doc.employeeCode}
+                                                        Mã: {doc.employeeCode}
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
@@ -238,12 +231,7 @@ const OverdueDocumentsPage = () => {
                                                         {doc.documentTitle}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
-                                                        ID: {doc.documentId}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="font-mono text-gray-300 text-sm">
-                                                        {doc.documentCode}
+                                                        Mã: {doc.documentCode}
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

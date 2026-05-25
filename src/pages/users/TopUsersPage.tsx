@@ -17,7 +17,6 @@ const TopUsersPage = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // 1. Trích xuất dữ liệu trực tiếp từ URL (Single Source of Truth)
     const currentType = searchParams.get("type") === "rejected" ? "rejected" : "authors";
     const currentPage = Number(searchParams.get("page")) || 1;
     const urlSearch = searchParams.get("search") || "";
@@ -25,7 +24,6 @@ const TopUsersPage = () => {
     const [users, setUsers] = useState<UserDocumentStatisticDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // State local chỉ phục vụ lưu trữ ký tự tạm thời khi người dùng đang gõ phím
     const [searchTerm, setSearchTerm] = useState(urlSearch);
 
     const [pagination, setPagination] = useState({
@@ -37,7 +35,6 @@ const TopUsersPage = () => {
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // 2. Hàm Fetch API tinh khiết: Chỉ chạy khi các tham số thực tế trên URL thay đổi
     const loadUsers = useCallback(async () => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
@@ -71,7 +68,6 @@ const TopUsersPage = () => {
         }
     }, [currentType, currentPage, urlSearch]);
 
-    // Luồng kích hoạt API duy nhất của toàn bộ Component
     useEffect(() => {
         loadUsers();
         return () => {
@@ -79,12 +75,10 @@ const TopUsersPage = () => {
         };
     }, [loadUsers]);
 
-    // 同步 (Đồng bộ ngược): Giúp ô Input cập nhật đúng text khi người dùng nhấn Back/Forward trên trình duyệt
     useEffect(() => {
         setSearchTerm(urlSearch);
     }, [urlSearch]);
 
-    // 3. Debounce xử lý chuỗi ký tự tìm kiếm và đẩy lên URL sạch sẽ
     useEffect(() => {
         const handler = setTimeout(() => {
             const cleanSearch = searchTerm.trim();
@@ -95,9 +89,8 @@ const TopUsersPage = () => {
             } else {
                 newParams.delete("search");
             }
-            newParams.set("page", "1"); // Tìm kiếm từ khóa mới luôn ép về trang 1
+            newParams.set("page", "1");
 
-            // Chỉ cập nhật URL nếu dữ liệu tìm kiếm thực sự khác dữ liệu cũ trên URL
             if (newParams.toString() !== searchParams.toString()) {
                 setSearchParams(newParams);
             }
@@ -106,19 +99,15 @@ const TopUsersPage = () => {
         return () => clearTimeout(handler);
     }, [searchTerm, searchParams, setSearchParams]);
 
-    // 4. Hàm điều phối luồng khi chuyển Tab dữ liệu
     const handleTabChange = (type: "authors" | "rejected") => {
-        setSearchTerm(""); // Xóa sạch chữ tại ô nhập liệu ngay lập tức
+        setSearchTerm("");
 
         const newParams = new URLSearchParams();
         newParams.set("type", type);
-        newParams.set("page", "1"); // Reset về trang 1 cho danh mục mới
-        // Không truyền 'search' cũ sang Tab mới nhằm tránh bộ lọc chéo dữ liệu bẩn
-
+        newParams.set("page", "1");
         setSearchParams(newParams);
     };
 
-    // 5. Hàm điều phối luồng phân trang
     const handlePageChange = (page: number) => {
         const newParams = new URLSearchParams(searchParams);
         newParams.set("page", page.toString());
@@ -135,25 +124,25 @@ const TopUsersPage = () => {
                         </h1>
                         <p className="text-primary-400 mt-1">
                             {currentType === "authors"
-                                ? "Danh sách nhân viên đóng góp nhiều tài liệu hệ thống nhất"
-                                : "Danh sách nhân viên có nhiều tài liệu không đạt yêu cầu thẩm định"}
+                                ? "Danh sách nhân viên đóng góp tài liệu hệ thống"
+                                : "Danh sách nhân viên có nhiều tài liệu bị đánh giá không đạt"}
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="ghost" onClick={() => navigate("/dashboard/manager")}>
+                        <Button variant="ghost" onClick={() => navigate("/manager/dashboard")}>
                             Quay lại Dashboard
                         </Button>
                         <Button
                             variant={currentType === "authors" ? "primary" : "ghost"}
                             onClick={() => handleTabChange("authors")}
                         >
-                            Tác Giả Tài Liệu
+                            Top người tạo tài liệu nhiều nhất
                         </Button>
                         <Button
                             variant={currentType === "rejected" ? "primary" : "ghost"}
                             onClick={() => handleTabChange("rejected")}
                         >
-                            Tác Giả Bị Từ Chối
+                            Top người bị từ chối nhiều nhất
                         </Button>
                     </div>
                 </div>
@@ -173,7 +162,6 @@ const TopUsersPage = () => {
                             <thead>
                                 <tr className="bg-dark-800/70 border-b border-dark-700">
                                     <th className="p-4 text-primary-300 font-semibold text-sm w-24">Xếp hạng</th>
-                                    <th className="p-4 text-primary-300 font-semibold text-sm">Mã Nhân Viên</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Họ Tên</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Số Lượng</th>
                                     <th className="p-4 text-center text-primary-300 font-semibold w-24 text-sm">Thao Tác</th>
@@ -208,11 +196,8 @@ const TopUsersPage = () => {
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
-                                                    <div className="font-mono text-white text-sm font-medium">{user.employeeCode}</div>
-                                                    <div className="text-xs text-gray-500">ID: {user.id}</div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="font-semibold text-white text-sm">{user.fullName}</div>
+                                                    <div className="font-mono text-white text-sm font-medium">{user.fullName}</div>
+                                                    <div className="text-xs text-gray-500">ID: {user.employeeCode}</div>
                                                 </td>
                                                 <td className="p-4">
                                                     <div className={`font-bold text-base ${currentType === "authors" ? "text-primary-400" : "text-red-400"}`}>

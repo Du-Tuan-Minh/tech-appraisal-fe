@@ -30,22 +30,23 @@ export interface AppraisalAssignmentDetailDto extends AppraisalAssignmentDto {
 }
 
 export interface AssignStaffRequest {
-    assignmentId: string;       // [Required]
-    staffIds: string[];         // List<Guid>
-    managerNote?: string | null; // string? ManagerNote
+    assignmentId: string;
+    staffIds: string[];
+    managerNote?: string | null;
+    deadline?: string | null;
 }
 
 export interface CompleteAssignmentRequest {
-    assignmentId: string;       // [Required]
-    finalComment: string;        // [Required] string FinalComment
-    validatedIssueIds: string[]; // List<Guid>
-    rejectedIssueIds: string[];  // List<Guid>
-    attachmentIds: string[];     // List<Guid>
+    assignmentId: string;
+    finalComment: string;
+    validatedIssueIds: string[];
+    rejectedIssueIds: string[];
+    attachmentIds: string[];
 }
 
 export interface ConsolidateAppraisalRequest {
-    documentId: string;         // [Required]
-    requestVersionId: string;   // [Required]
+    documentId: string;
+    requestVersionId: string;
     validatedIssueIds: string[];
     rejectedIssueIds: string[];
     finalComment?: string | null;
@@ -75,5 +76,5 @@ export interface DepartmentAssignmentInfo {
 
 export interface SendParallelAssignmentsRequest {
     documentId: string;
-    comment: string | null;
+    comment?: string | null;
 }

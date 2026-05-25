@@ -9,6 +9,7 @@ import StatCard from "../../components/ui/StatCard";
 import { dashboardService } from "../../services/dashboardService";
 import { getTopDocumentAuthors, getTopRejectedAuthors } from "../../services/userService";
 import { documentService } from "../../services/documentService";
+import { ManagerDashboardDocumentType } from "../../constants/enum/ManagerDashboardDocumentType";
 
 import type { DashboardSummaryManagerDto } from "../../types/dashboard";
 import type { UserDocumentStatisticDto } from "../../types/user";
@@ -97,6 +98,10 @@ const ManagerDashboardPage = () => {
         );
     }
 
+    const handleStatCardClick = (type: number) => {
+        navigate(`/manager/dashboard/documents?type=${type}&page=1`);
+    };
+
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-8 bg-[#090d16] min-h-screen text-gray-300">
@@ -108,7 +113,7 @@ const ManagerDashboardPage = () => {
                         icon={<span>📄</span>}
                         isActive={activeTab === "progress"}
                         activeBorderColor="border-blue-500"
-                        onClick={() => setActiveTab("progress")}
+                        onClick={() => handleStatCardClick(ManagerDashboardDocumentType.InternalSigning)}
                     />
                     <StatCard
                         title="ĐÁNH GIÁ CHỜ XỬ LÝ"
@@ -116,7 +121,7 @@ const ManagerDashboardPage = () => {
                         icon={<span>⏱️</span>}
                         isActive={activeTab === "review"}
                         activeBorderColor="border-yellow-500"
-                        onClick={() => setActiveTab("review")}
+                        onClick={() => handleStatCardClick(ManagerDashboardDocumentType.PendingReview)}
                     />
                     <StatCard
                         title="CẦN XÁC NHẬN"
@@ -124,7 +129,7 @@ const ManagerDashboardPage = () => {
                         icon={<span>✅</span>}
                         isActive={activeTab === "confirm"}
                         activeBorderColor="border-green-500"
-                        onClick={() => setActiveTab("confirm")}
+                        onClick={() => handleStatCardClick(ManagerDashboardDocumentType.NeedConfirmation)}
                     />
                     <StatCard
                         title="TÀI LIỆU BỊ TỪ CHỐI"
@@ -132,7 +137,7 @@ const ManagerDashboardPage = () => {
                         icon={<span>⚠️</span>}
                         isActive={activeTab === "rejected"}
                         activeBorderColor="border-red-500"
-                        onClick={() => setActiveTab("rejected")}
+                        onClick={() => handleStatCardClick(ManagerDashboardDocumentType.Rejected)}
                     />
                 </div>
 
@@ -143,7 +148,7 @@ const ManagerDashboardPage = () => {
                                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                                     <span className="text-green-500 text-sm">📈</span> Top Nhân Viên Đóng Góp
                                 </h2>
-                                <p className="text-gray-500 text-xs mt-0.5">Tổng số tài liệu được soạn thảo & đánh giá trong tháng</p>
+                                <p className="text-gray-500 text-xs mt-0.5">Tổng số tài liệu được soạn thảo & đánh giá</p>
                             </div>
                             <button
                                 onClick={() => navigate("/users/top?type=authors")}

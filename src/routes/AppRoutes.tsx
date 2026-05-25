@@ -38,6 +38,7 @@ import ManagerDashboardPage from "../pages/dashboard/ManagerDashboardPage";
 import PendingAppraisalResponsesPage from "../pages/appraisals/PendingAppraisalResponsesPage";
 import OverdueDocumentsPage from "../pages/appraisals/OverdueDocumentsPage";
 import TopUsersPage from "../pages/users/TopUsersPage";
+import ManagerDashboardDocumentListPage from "../pages/documents/ManagerDashboardDocumentListPage";
 
 const AppRoutes = () => {
     return (
@@ -52,6 +53,7 @@ const AppRoutes = () => {
                 {/* DASHBOARD */}
                 <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
                 <Route path="/manager/dashboard" element={<ManagerDashboardPage />} />
+                <Route path="/manager/dashboard/documents" element={<ManagerDashboardDocumentListPage />} />
                 <Route path="/users" element={<UserListPage />} />
                 <Route path="/users/top" element={<TopUsersPage />} />
 

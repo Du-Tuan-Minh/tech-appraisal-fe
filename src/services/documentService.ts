@@ -14,7 +14,9 @@ import type {
     PendingAppraisalResponseDto,
     PendingAppraisalFilterDto,
     OverdueDocumentDto,
-    OverdueFilterDto
+    OverdueFilterDto,
+    ManagerDashboardDocumentDto,
+    ManagerDashboardDocumentFilterDto
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -158,6 +160,22 @@ export const documentService = {
             ApiResponse<PagedResult<OverdueDocumentDto>>
         >(
             API_ENDPOINTS.documents.overdueDocuments,
+            {
+                params: filters
+            }
+        );
+
+        return res.data.data;
+    },
+
+    getManagerDashboardDocuments: async (
+        filters: ManagerDashboardDocumentFilterDto
+    ): Promise<PagedResult<ManagerDashboardDocumentDto>> => {
+
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<ManagerDashboardDocumentDto>>
+        >(
+            API_ENDPOINTS.documents.managerDashboardDocuments,
             {
                 params: filters
             }

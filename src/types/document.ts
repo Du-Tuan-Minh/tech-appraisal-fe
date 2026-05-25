@@ -3,6 +3,8 @@ import type { DocumentStatus } from "@/constants/enum/DocumentStatus";
 import type { DocumentType } from "@/constants/enum/DocumentType";
 import type { pagination } from "@/types/pagination";
 import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
+import type { ManagerDashboardDocumentType } from "@/constants/enum/ManagerDashboardDocumentType";
+import type { AssignmentStatus } from "@/constants/enum/AssignmentStatus";
 
 export interface TechnicalDocumentResponseDto {
     id: string;
@@ -115,4 +117,23 @@ export interface OverdueDocumentDto {
 export interface OverdueFilterDto extends pagination {
     searchTerm?: string | null;
     status?: ReviewerStatus | null;
+}
+
+export interface ManagerDashboardDocumentDto {
+    id: string;
+    title: string;
+    documentCode: string;
+    status: DocumentStatus;
+    currentHandlerName?: string | null;
+    createdAt: string;
+    assignmentId?: string | null;
+    reviewerId?: string | null;
+    reviewerName?: string | null;
+    assignmentStatus?: AssignmentStatus | null;
+    deadline?: string | null;
+}
+
+export interface ManagerDashboardDocumentFilterDto extends pagination {
+    type?: ManagerDashboardDocumentType | null;
+    searchTerm?: string | null;
 }
