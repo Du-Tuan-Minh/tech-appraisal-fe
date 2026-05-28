@@ -10,6 +10,7 @@ import Pagination from "../../components/ui/Pagination";
 import { Layout } from "../../components/layout";
 
 import { documentService } from "../../services/documentService";
+import { getEnumMapValue } from "../../utils/enumHelper";
 
 import {
     ReviewerStatus,
@@ -191,6 +192,7 @@ const OverdueDocumentsPage = () => {
                                 <tr className="bg-dark-800/70 border-b border-dark-700">
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Người Đánh Giá</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Tài Liệu</th>
+                                    <th className="p-4 text-primary-300 font-semibold text-sm">Người tạo tài liệu</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Trạng Thái</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Deadline</th>
                                     <th className="p-4 text-primary-300 font-semibold text-sm">Quá Hạn</th>
@@ -207,7 +209,11 @@ const OverdueDocumentsPage = () => {
                                 ) : documents.length > 0 ? (
                                     documents.map((doc) => {
                                         const overdueDays = getOverdueDays(doc.deadline);
-                                        const statusConfig = REVIEWER_STATUS_MAP[doc.status] || {
+                                        const statusConfig = getEnumMapValue(
+                                            REVIEWER_STATUS_MAP,
+                                            ReviewerStatus,
+                                            doc.status
+                                        ) ?? {
                                             label: "Không xác định",
                                             color: "text-gray-400 bg-gray-900/20"
                                         };
@@ -223,7 +229,7 @@ const OverdueDocumentsPage = () => {
                                                         {doc.reviewerName}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
-                                                        Mã: {doc.employeeCode}
+                                                        MNV: {doc.employeeCode}
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
@@ -232,6 +238,11 @@ const OverdueDocumentsPage = () => {
                                                     </div>
                                                     <div className="text-xs text-gray-500">
                                                         Mã: {doc.documentCode}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="font-semibold text-white text-sm line-clamp-1 max-w-[250px]">
+                                                        {doc.requesterName}
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

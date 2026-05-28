@@ -7,20 +7,21 @@ import { Layout } from "../../components/layout";
 import StatCard from "../../components/ui/StatCard";
 
 import { dashboardService } from "../../services/dashboardService";
-import { getTopDocumentAuthors, getTopRejectedAuthors } from "../../services/userService";
+import { getTopRejectedDocumentTypes } from "../../services/userService";
 import { documentService } from "../../services/documentService";
 import { ManagerDashboardDocumentType } from "../../constants/enum/ManagerDashboardDocumentType";
 
 import type { DashboardSummaryManagerDto } from "../../types/dashboard";
-import type { UserDocumentStatisticDto } from "../../types/user";
+import type { DocumentTypeStatisticDto } from "../../types/user";
 import type { OverdueDocumentDto } from "../../types/document";
+import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
+import { getEnumMapValue } from "@/utils/enumHelper";
 
 const ManagerDashboardPage = () => {
     const navigate = useNavigate();
 
     const [summary, setSummary] = useState<DashboardSummaryManagerDto | null>(null);
-    const [topAuthors, setTopAuthors] = useState<UserDocumentStatisticDto[]>([]);
-    const [topRejectedAuthors, setTopRejectedAuthors] = useState<UserDocumentStatisticDto[]>([]);
+    const [topRejectedDocumentTypes, setTopRejectedDocumentTypes] = useState<DocumentTypeStatisticDto[]>([]);
     const [overdueDocuments, setOverdueDocuments] = useState<OverdueDocumentDto[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [activeTab, setActiveTab] = useState<string>("progress");
@@ -31,10 +32,9 @@ const ManagerDashboardPage = () => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                const [summaryRes, authorsRes, rejectedRes, overdueRes] = await Promise.all([
+                const [summaryRes, rejectedRes, overdueRes] = await Promise.all([
                     dashboardService.getManagerSummary(),
-                    getTopDocumentAuthors(1, 4),
-                    getTopRejectedAuthors(1, 4),
+                    getTopRejectedDocumentTypes(1, 4),
                     documentService.getOverdueDocuments({
                         page: 1,
                         pageSize: 5,
@@ -46,12 +46,11 @@ const ManagerDashboardPage = () => {
                 if (!isMounted) return;
 
                 setSummary(summaryRes);
-                setTopAuthors(authorsRes?.items || []);
-                setTopRejectedAuthors(rejectedRes?.items || []);
+                setTopRejectedDocumentTypes(rejectedRes?.items || []);
                 setOverdueDocuments(overdueRes?.items || []);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("[Dashboard Critical Error]:", err);
-                toast.error("Không thể tải thông tin hệ thống. Vui lòng thử lại sau.");
+                toast.error(err.response?.data?.message || 'Đã có lỗi xảy ra khi tải dữ liệu bảng điều khiển. Vui lòng thử lại sau.');
             } finally {
                 if (isMounted) setIsLoading(false);
             }
@@ -108,7 +107,7 @@ const ManagerDashboardPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
-                        title="TÀI LIỆU ĐANG XỬ LÝ"
+                        title="TÀI LIỆU ĐANG XỬ LÝ NỘI BỘ"
                         count={summary?.internalSigningCount || 0}
                         icon={<span>📄</span>}
                         isActive={activeTab === "progress"}
@@ -141,140 +140,101 @@ const ManagerDashboardPage = () => {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <span className="text-green-500 text-sm">📈</span> Top Nhân Viên Đóng Góp
-                                </h2>
-                                <p className="text-gray-500 text-xs mt-0.5">Tổng số tài liệu được soạn thảo & đánh giá</p>
-                            </div>
-                            <button
-                                onClick={() => navigate("/users/top?type=authors")}
-                                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
-                            >
-                                Xem tất cả
-                            </button>
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
-                        <div className="divide-y divide-gray-800/60">
-                            {topAuthors.map((author) => (
-                                <div
-                                    key={author.id}
-                                    className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/users/${author.id}`);
-                                    }}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-full bg-blue-900/30 border border-blue-500/20 flex items-center justify-center text-sm font-bold text-blue-400 uppercase">
-                                            {author.fullName?.charAt(0) || "U"}
-                                        </div>
-                                        <div>
-                                            <p className="text-white font-medium text-sm group-hover:text-blue-400 transition-colors">{author.fullName}</p>
-                                            <p className="text-gray-500 text-xs font-mono">{author.employeeCode}</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-white font-semibold text-sm">{author.totalDocuments}</span>
+                    <Card className="p-6 w-full flex flex-col justify-between">
+                        <div>
+                            <div className="mb-4 flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2 truncate">
+                                        <span className="text-red-500 text-sm flex-shrink-0">⚠️</span> Phân Loại Tài Liệu Bị Từ Chối
+                                    </h2>
+                                    <p className="text-gray-500 text-xs mt-0.5 truncate">Thống kê số lượng tài liệu bị trả về theo từng danh mục kỹ thuật</p>
                                 </div>
-                            ))}
+                            </div>
+
+                            <div className="divide-y divide-gray-800/60">
+                                {topRejectedDocumentTypes.map((item) => {
+                                    const config = getEnumMapValue(DOCUMENT_TYPE_MAP, DocumentType, String(item.type)) || {
+                                        label: `${String(item.type)}`,
+                                        color: "text-gray-400 bg-gray-900/20"
+                                    };
+
+                                    const initialChar = config.label.trim().charAt(0) || "D";
+
+                                    return (
+                                        <div
+                                            key={String(item.type)}
+                                            className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer gap-4"
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`w-9 h-9 rounded-xl border border-gray-800/40 flex items-center justify-center text-sm font-bold uppercase flex-shrink-0 ${config.color}`}>
+                                                    {initialChar}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-white font-medium text-sm group-hover:text-red-400 transition-colors truncate">
+                                                        {config.label}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="text-white font-semibold text-sm flex-shrink-0 bg-gray-800/30 px-2.5 py-1 rounded-md border border-gray-700/20">
+                                                {item.totalDocuments}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </Card>
 
-                    <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <span className="text-red-500 text-sm">⚠️</span> Tỷ Lệ Tài Liệu Bị Trả Về Cao
+                    <Card className="p-6 w-full flex flex-col justify-between">
+                        <div>
+                            <div className="mb-6 flex items-center justify-between gap-4">
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2 truncate">
+                                    <span className="text-red-400 text-base flex-shrink-0">⚠️</span> ĐIỂM NGHẼN: TRỄ PHẢN HỒI QUÁ HẠN
                                 </h2>
-                                <p className="text-gray-500 text-xs mt-0.5">Nhân sự có nhiều tài liệu cần sửa đổi/bị từ chối nhiều nhất</p>
-                            </div>
-                            <button
-                                onClick={() => navigate("/users/top?type=rejected")}
-                                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
-                            >
-                                Xem tất cả
-                            </button>
-                        </div>
-
-                        <div className="divide-y divide-gray-800/60">
-                            {topRejectedAuthors.map((author) => (
-                                <div
-                                    key={author.id}
-                                    className="flex items-center justify-between py-3.5 first:pt-1 last:pb-1 group cursor-pointer"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/users/${author.id}`);
-                                    }}
+                                <button
+                                    onClick={() => navigate("/manager/overdue-documents")}
+                                    className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20 whitespace-nowrap flex-shrink-0"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-full bg-red-900/30 border border-red-500/20 flex items-center justify-center text-sm font-bold text-red-400 uppercase">
-                                            {author.fullName?.charAt(0) || "U"}
+                                    Xem tất cả
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {overdueDocuments.length > 0 ? (
+                                    overdueDocuments.map((item) => (
+                                        <div
+                                            key={item.assignmentId}
+                                            className="flex items-center justify-between p-4 bg-[#161f30]/50 rounded-xl border border-gray-800/20 hover:border-red-500/20 hover:bg-red-500/[0.02] transition-all cursor-pointer gap-4"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-white font-semibold text-sm truncate">
+                                                    {item.reviewerName}
+                                                    {item.employeeCode && (
+                                                        <span className="text-xs text-gray-500 font-mono font-normal ml-1.5">
+                                                            ({item.employeeCode})
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                <p className="text-gray-400 text-xs mt-0.5 truncate">
+                                                    {item.documentTitle} — <span className="font-mono text-gray-500 text-[11px] uppercase">{item.documentCode}</span>
+                                                </p>
+                                            </div>
+                                            <div className="text-right flex-shrink-0">
+                                                <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-md border border-red-500/20 whitespace-nowrap">
+                                                    {formatOverdueDynamic(item.deadline)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-white font-medium text-sm group-hover:text-red-400 transition-colors">{author.fullName}</p>
-                                            <p className="text-gray-500 text-xs font-mono">{author.employeeCode}</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-white font-semibold text-sm">{author.totalDocuments}</span>
-                                </div>
-                            ))}
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-gray-500 text-center py-6">Hiện không có điểm nghẽn quá hạn nào cần xử lý.</p>
+                                )}
+                            </div>
                         </div>
                     </Card>
                 </div>
-
-                <Card className="p-6 bg-[#121824] border border-gray-800/40 rounded-xl max-w-2xl">
-                    <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="text-red-400 text-base">⚠️</span> ĐIỂM NGHẼN: TRỄ PHẢN HỒI QUÁ HẠN
-                        </h2>
-                        <button
-                            onClick={() => navigate("/manager/overdue-documents")}
-                            className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20"
-                        >
-                            Xem tất cả
-                        </button>
-                    </div>
-
-                    <div className="space-y-4">
-                        {overdueDocuments.length > 0 ? (
-                            overdueDocuments.map((item) => (
-                                <div
-                                    key={item.assignmentId}
-                                    className="flex items-center justify-between p-4 bg-[#161f30]/50 rounded-xl border border-gray-800/20 hover:border-red-500/20 hover:bg-red-500/[0.02] transition-all cursor-pointer"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/appraisals/${item.assignmentId}`);
-                                    }}
-                                >
-                                    <div>
-                                        <p className="text-white font-semibold text-sm">
-                                            {item.reviewerName}
-                                            {item.employeeCode && (
-                                                <span className="text-xs text-gray-500 font-mono font-normal ml-1.5">
-                                                    ({item.employeeCode})
-                                                </span>
-                                            )}
-                                        </p>
-                                        <p className="text-gray-400 text-xs mt-0.5">
-                                            {item.documentTitle} — <span className="font-mono text-gray-500 text-[11px] uppercase">{item.documentCode}</span>
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-md border border-red-500/20 clean-wrp">
-                                            {formatOverdueDynamic(item.deadline)}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-sm text-gray-500 text-center py-6">Hiện không có điểm nghẽn quá hạn nào cần xử lý.</p>
-                        )}
-                    </div>
-                </Card>
-
             </div>
         </Layout>
     );

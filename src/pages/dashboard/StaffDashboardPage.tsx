@@ -38,6 +38,13 @@ const TOP_METRICS_CONFIG = [
         icon: <span className="text-lg">✔️</span>,
         isActive: false,
         typeValue: StaffDashboardDocumentType.Issued
+    },
+    {
+        key: "overdueCount",
+        title: "Tài liệu đã quá hạn",
+        icon: <span className="text-lg">⚠️</span>,
+        isActive: false,
+        typeValue: StaffDashboardDocumentType.Overdue
     }
 ] as const;
 
@@ -72,21 +79,25 @@ const PIPELINE_CONFIG = [
 const StaffDashboardPage = () => {
     const navigate = useNavigate();
     const [summary, setSummary] = useState<DashboardSummaryStaffDto | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchSummary = async () => {
             setIsLoading(true);
             try {
                 const data = await dashboardService.getStaffSummary();
-                if (data) setSummary(data);
+                if (data && isMounted) setSummary(data);
             } catch {
-                toast.error("Không thể kết nối dữ liệu Dashboard từ máy chủ.");
+                if (isMounted) toast.error("Không thể kết nối dữ liệu Dashboard từ máy chủ.");
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         };
         fetchSummary();
+
+        return () => { isMounted = false; };
     }, []);
 
     const handleMetricClick = (type: StaffDashboardDocumentType) => {
@@ -106,7 +117,7 @@ const StaffDashboardPage = () => {
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-10">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                     {TOP_METRICS_CONFIG.map((metric) => {
                         const count = summary ? Number(summary[metric.key as keyof DashboardSummaryStaffDto] || 0) : 0;
                         return (

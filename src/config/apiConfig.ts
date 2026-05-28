@@ -1,4 +1,3 @@
-import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 import type { KnowledgeBaseFilterDto } from "@/types/knowledge-base";
 import type { pagination } from "@/types/pagination";
 
@@ -29,10 +28,8 @@ export const API_ENDPOINTS = {
         detail: (id: string) => `/users/detail/${id}`,
         getSeniorCenter: ({ page, pageSize }: pagination, searchTerm?: string) =>
             `/users/senior-center?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
-        topDocumentAuthors: ({ page, pageSize }: pagination, searchTerm?: string) =>
-            `/users/top-document-authors?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
-        topRejectedAuthors: ({ page, pageSize }: pagination, searchTerm?: string) =>
-            `/users/top-rejected-authors?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
+        topRejectedDocumentTypes: ({ page, pageSize }: pagination) =>
+            `/users/top-rejected-document-types?page=${page}&pageSize=${pageSize}`,
     },
 
     documents: {
@@ -49,6 +46,8 @@ export const API_ENDPOINTS = {
         myCurrentDocuments: "/documents/my-current-documents",
         overdueDocuments: "/documents/overdue-documents",
         managerDashboardDocuments: "/documents/manager-dashboard-documents",
+        departmentCreatedOverdueDocuments: "/documents/department-created-overdue-documents",
+        departmentDocumentStatusDocuments: "/documents/department-document-status-documents",
     },
 
     appraisal: {
@@ -103,6 +102,9 @@ export const API_ENDPOINTS = {
     dashboard: {
         staffSummary: "/dashboard/staff-summary",
         managerSummary: "/dashboard/manager-summary",
+        directorSummary: "/dashboard/director-summary",
+        managerWorkloads: "/dashboard/manager-workloads",
+        departmentDocumentStatusSummary: "/dashboard/department-document-status-summary",
     },
 
     approvalWorkflows: {

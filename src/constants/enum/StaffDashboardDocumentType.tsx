@@ -4,7 +4,8 @@ export const StaffDashboardDocumentType = {
     InternalReview: 2,
     Appraisal: 3,
     Signing: 4,
-    Issued: 5
+    Issued: 5,
+    Overdue: 6
 } as const;
 
 export type StaffDashboardDocumentType =
@@ -42,5 +43,10 @@ export const STAFF_DASHBOARD_DOCUMENT_TYPE_MAP: Record<
     [StaffDashboardDocumentType.Issued]: {
         label: "Đã ban hành",
         color: "text-green-400 bg-green-900/20"
+    },
+
+    [StaffDashboardDocumentType.Overdue]: {
+        label: "Quá hạn",
+        color: "text-orange-400 bg-orange-900/20"
     }
 };

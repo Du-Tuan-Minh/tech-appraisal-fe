@@ -5,6 +5,8 @@ import type { pagination } from "@/types/pagination";
 import type { ReviewerStatus } from "@/constants/enum/ReviewerStatus";
 import type { ManagerDashboardDocumentType } from "@/constants/enum/ManagerDashboardDocumentType";
 import type { AssignmentStatus } from "@/constants/enum/AssignmentStatus";
+import type { DepartmentDocumentStatusType } from "@/constants/enum/DepartmentDocumentStatusType";
+import type { StaffDashboardDocumentType } from "@/constants/enum/StaffDashboardDocumentType";
 
 export interface TechnicalDocumentResponseDto {
     id: string;
@@ -42,7 +44,7 @@ export interface TechnicalDocumentCreateDto {
     externalDepartmentIds?: string[] | null;
     approvalProposerIds?: string[] | null;
     attachmentIds?: string[] | null;
-    technicalSpecs: Record<string, any>;
+    technicalSpecs?: Record<string, any> | null;
 }
 
 export interface TechnicalDocumentUpdateDto {
@@ -79,7 +81,7 @@ export interface UserCurrentDocumentDto {
 export interface UserCurrentDocumentFilterDto extends pagination {
     searchTerm?: string | null;
     priority?: IssueSeverity | null;
-    status?: DocumentStatus[] | null;
+    type?: StaffDashboardDocumentType | null;
 }
 
 export interface PendingAppraisalResponseDto {
@@ -102,14 +104,13 @@ export interface PendingAppraisalFilterDto extends pagination {
 export interface OverdueDocumentDto {
     assignmentId: string;
     reviewerId: string;
-
     reviewerName: string;
     employeeCode: string;
-
     documentId: string;
     documentTitle: string;
     documentCode: string;
-
+    requesterId: string;
+    requesterName: string;
     status: ReviewerStatus;
     deadline?: string | null;
 }
@@ -135,5 +136,10 @@ export interface ManagerDashboardDocumentDto {
 
 export interface ManagerDashboardDocumentFilterDto extends pagination {
     type?: ManagerDashboardDocumentType | null;
+    searchTerm?: string | null;
+}
+
+export interface DepartmentDocumentStatusFilterDto extends pagination {
+    type?: DepartmentDocumentStatusType | null;
     searchTerm?: string | null;
 }

@@ -1,5 +1,6 @@
 import { UserRole } from "@/constants/enum/UserRole";
 import type { pagination } from "@/types/pagination";
+import type { DocumentType } from "@/constants/enum/DocumentType";
 
 export interface UserResponseDto {
     id: string;
@@ -68,9 +69,7 @@ export interface UserFilterDto extends pagination {
     searchTerm?: string | null;
 }
 
-export interface UserDocumentStatisticDto {
-    id: string;
-    employeeCode: string;
-    fullName: string;
+export interface DocumentTypeStatisticDto {
+    type: DocumentType;
     totalDocuments: number;
 }
