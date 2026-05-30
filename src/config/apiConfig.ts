@@ -44,10 +44,10 @@ export const API_ENDPOINTS = {
         createVersionFromIssue: (issueId: string) => `/documents/create-version-issue/${issueId}`,
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
         myCurrentDocuments: "/documents/my-current-documents",
-        overdueDocuments: "/documents/overdue-documents",
+        managerOverdueDocuments: "/documents/manager-overdue-documents",
         managerDashboardDocuments: "/documents/manager-dashboard-documents",
         departmentCreatedOverdueDocuments: "/documents/department-created-overdue-documents",
-        departmentDocumentStatusDocuments: "/documents/department-document-status-documents",
+        managerRequestedDocumentSummary: "/documents/manager-requested-document-summary",
     },
 
     appraisal: {
@@ -104,7 +104,7 @@ export const API_ENDPOINTS = {
         managerSummary: "/dashboard/manager-summary",
         directorSummary: "/dashboard/director-summary",
         managerWorkloads: "/dashboard/manager-workloads",
-        departmentDocumentStatusSummary: "/dashboard/department-document-status-summary",
+        managerRequestedDocumentSummary: "/dashboard/manager-requested-document-summary",
     },
 
     approvalWorkflows: {

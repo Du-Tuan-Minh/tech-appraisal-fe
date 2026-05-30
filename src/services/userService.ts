@@ -68,20 +68,6 @@ export const getSeniorCenter = async (page: number = 1, pageSize: number = 10, s
     return response.data.data;
 };
 
-// export const getTopDocumentAuthors = async (
-//     page: number = 1,
-//     pageSize: number = 10,
-//     searchTerm?: string
-// ): Promise<PagedResult<DocumentTypeStatisticDto>> => {
-//     const res = await axiosClient.get<
-//         ApiResponse<PagedResult<DocumentTypeStatisticDto>>
-//     >(
-//         API_ENDPOINTS.users.topDocumentAuthors({ page, pageSize }, searchTerm)
-//     );
-
-//     return res.data.data;
-// };
-
 export const getTopRejectedDocumentTypes = async (
     page: number = 1,
     pageSize: number = 10,

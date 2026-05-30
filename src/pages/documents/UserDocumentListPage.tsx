@@ -50,24 +50,6 @@ const TYPE_OPTIONS = [
     }))
 ];
 
-const STAFF_DASHBOARD_TYPE_STATUS_MAP: Record<StaffDashboardDocumentType, DocumentStatus[]> = {
-    [StaffDashboardDocumentType.Draft]: [DocumentStatus.Draft],
-    [StaffDashboardDocumentType.ReturnedForRevision]: [
-        DocumentStatus.AdjustmentRequired,
-        DocumentStatus.Rejected
-    ],
-    [StaffDashboardDocumentType.InternalReview]: [
-        DocumentStatus.InternalPending,
-        DocumentStatus.InternalApproved
-    ],
-    [StaffDashboardDocumentType.Appraisal]: [
-        DocumentStatus.AppraisalPending,
-        DocumentStatus.Appraising
-    ],
-    [StaffDashboardDocumentType.Signing]: [DocumentStatus.Signing],
-    [StaffDashboardDocumentType.Issued]: [DocumentStatus.Issued]
-};
-
 const Badge = ({ label, className }: { label: string; className?: string }) => (
     <span className={`px-2 py-1 rounded-full text-xs font-medium inline-block ${className || "text-gray-400"}`}>
         {label}
@@ -92,7 +74,6 @@ const UserDocumentListPage = () => {
         [searchParams]
     );
 
-    // 1. Phân rã bộ lọc sạch từ URL
     const urlFilters = useMemo<UserCurrentDocumentFilterDto>(() => {
         const pageParam = Number(searchParams.get("page"));
         const sizeParam = Number(searchParams.get("pageSize"));
@@ -104,13 +85,12 @@ const UserDocumentListPage = () => {
             pageSize: isNaN(sizeParam) || sizeParam <= 0 ? 10 : sizeParam,
             searchTerm: searchParams.get("search") || null,
             priority: isNaN(priorityParam) ? null : (priorityParam as IssueSeverity),
-            status: selectedType === null ? null : STAFF_DASHBOARD_TYPE_STATUS_MAP[selectedType]
+            type: selectedType
         };
     }, [searchParams, selectedType]);
 
     const [localSearch, setLocalSearch] = useState(urlFilters.searchTerm || "");
 
-    // 2. Cập nhật URL Params thông qua Functional Update an toàn tuyệt đối
     const updateUrlParams = useCallback((
         patch: Record<string, string | number | string[] | number[] | null>
     ) => {
@@ -132,7 +112,6 @@ const UserDocumentListPage = () => {
         }, { replace: true });
     }, [setSearchParams]);
 
-    // 3. Hàm fetch dữ liệu độc lập
     const loadDocuments = useCallback(async (filters: UserCurrentDocumentFilterDto) => {
         setIsLoading(true);
         try {
@@ -154,12 +133,10 @@ const UserDocumentListPage = () => {
         }
     }, []);
 
-    // Thực thi Fetch dữ liệu tập trung qua JSON Stringify để tránh lặp vô hạn
     useEffect(() => {
         loadDocuments(urlFilters);
     }, [JSON.stringify(urlFilters), loadDocuments]);
 
-    // 4. Luồng xử lý Debounce Tìm kiếm một chiều chuẩn chỉ
     useEffect(() => {
         const currentSearchInUrl = urlFilters.searchTerm || "";
         if (localSearch === currentSearchInUrl) return;
@@ -171,7 +148,6 @@ const UserDocumentListPage = () => {
         return () => clearTimeout(handler);
     }, [localSearch, urlFilters.searchTerm, updateUrlParams]);
 
-    // Đồng bộ ngược từ URL về ô Input chỉ khi URL thay đổi từ nguồn bên ngoài (ví dụ: Clear filter)
     const lastUrlSearchRef = useRef(urlFilters.searchTerm);
     useEffect(() => {
         if (lastUrlSearchRef.current !== urlFilters.searchTerm) {

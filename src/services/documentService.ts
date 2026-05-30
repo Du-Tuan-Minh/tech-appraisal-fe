@@ -179,7 +179,7 @@ export const documentService = {
         const res = await axiosClient.get<
             ApiResponse<PagedResult<OverdueDocumentDto>>
         >(
-            API_ENDPOINTS.documents.overdueDocuments,
+            API_ENDPOINTS.documents.managerOverdueDocuments,
             {
                 params: filters
             }
@@ -220,14 +220,14 @@ export const documentService = {
         return res.data.data;
     },
 
-    getDepartmentDocumentStatusDocuments: async (
+    getManagerRequestedDocumentSummary: async (
         filters: DepartmentDocumentStatusFilterDto
     ): Promise<PagedResult<ManagerDashboardDocumentDto>> => {
 
         const res = await axiosClient.get<
             ApiResponse<PagedResult<ManagerDashboardDocumentDto>>
         >(
-            API_ENDPOINTS.documents.departmentDocumentStatusDocuments,
+            API_ENDPOINTS.documents.managerRequestedDocumentSummary,
             {
                 params: filters
             }

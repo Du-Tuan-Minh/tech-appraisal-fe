@@ -52,11 +52,11 @@ export const dashboardService = {
         return res.data.data;
     },
 
-    getDepartmentDocumentStatusSummary: async (): Promise<DepartmentDocumentStatusSummaryDto> => {
+    getManagerRequestedDocumentSummary: async (): Promise<DepartmentDocumentStatusSummaryDto> => {
         const res = await axiosClient.get<
             ApiResponse<DepartmentDocumentStatusSummaryDto>
         >(
-            API_ENDPOINTS.dashboard.departmentDocumentStatusSummary
+            API_ENDPOINTS.dashboard.managerRequestedDocumentSummary
         );
 
         return res.data.data;
