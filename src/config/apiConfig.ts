@@ -45,9 +45,9 @@ export const API_ENDPOINTS = {
         getVersionDetail: (versionId: string) => `/documents/versions/${versionId}/detail`,
         myCurrentDocuments: "/documents/my-current-documents",
         managerOverdueDocuments: "/documents/manager-overdue-documents",
-        managerDashboardDocuments: "/documents/manager-dashboard-documents",
-        departmentCreatedOverdueDocuments: "/documents/department-created-overdue-documents",
-        managerRequestedDocumentSummary: "/documents/manager-requested-document-summary",
+        managerStatusDocuments: "/documents/manager-status-documents",
+        managerRequestedOverdueDocuments: "/documents/manager-requested-overdue-documents",
+        managerRequestStatusDocuments: "/documents/manager-request-status-documents",
     },
 
     appraisal: {
@@ -85,8 +85,6 @@ export const API_ENDPOINTS = {
     },
 
     signing: {
-        // getProgress: (docId: string, versionId: string) =>
-        //     `/signing/${docId}/progress?versionId=${versionId}`,
         approve: `/signing/approve-sign`,
         reject: `/signing/reject`,
         issue: (docId: string) => `/signing/${docId}/issue`,

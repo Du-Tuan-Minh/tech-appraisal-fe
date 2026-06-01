@@ -11,13 +11,11 @@ import type {
     TechnicalDocumentDetailDto,
     UserCurrentDocumentDto,
     UserCurrentDocumentFilterDto,
-    PendingAppraisalResponseDto,
-    PendingAppraisalFilterDto,
     OverdueDocumentDto,
     OverdueFilterDto,
     ManagerDashboardDocumentDto,
     ManagerDashboardDocumentFilterDto,
-    DepartmentDocumentStatusFilterDto
+    DepartmentDocumentStatusFilterDto,
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -188,14 +186,14 @@ export const documentService = {
         return res.data.data;
     },
 
-    getManagerDashboardDocuments: async (
+    getManagerStatusDocuments: async (
         filters: ManagerDashboardDocumentFilterDto
     ): Promise<PagedResult<ManagerDashboardDocumentDto>> => {
 
         const res = await axiosClient.get<
             ApiResponse<PagedResult<ManagerDashboardDocumentDto>>
         >(
-            API_ENDPOINTS.documents.managerDashboardDocuments,
+            API_ENDPOINTS.documents.managerStatusDocuments,
             {
                 params: filters
             }
@@ -204,14 +202,14 @@ export const documentService = {
         return res.data.data;
     },
 
-    getDepartmentCreatedOverdueDocuments: async (
+    getManagerRequestedOverdueDocuments: async (
         filters: OverdueFilterDto
     ): Promise<PagedResult<OverdueDocumentDto>> => {
 
         const res = await axiosClient.get<
             ApiResponse<PagedResult<OverdueDocumentDto>>
         >(
-            API_ENDPOINTS.documents.departmentCreatedOverdueDocuments,
+            API_ENDPOINTS.documents.managerRequestedOverdueDocuments,
             {
                 params: filters
             }
@@ -220,14 +218,14 @@ export const documentService = {
         return res.data.data;
     },
 
-    getManagerRequestedDocumentSummary: async (
+    getManagerRequestStatusDocuments: async (
         filters: DepartmentDocumentStatusFilterDto
     ): Promise<PagedResult<ManagerDashboardDocumentDto>> => {
 
         const res = await axiosClient.get<
             ApiResponse<PagedResult<ManagerDashboardDocumentDto>>
         >(
-            API_ENDPOINTS.documents.managerRequestedDocumentSummary,
+            API_ENDPOINTS.documents.managerRequestStatusDocuments,
             {
                 params: filters
             }

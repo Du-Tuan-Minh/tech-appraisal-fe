@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -8,10 +8,29 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { Layout } from "../../components/layout";
 import { signalRService } from "../../services/signalRService";
-
 import { notificationService } from "../../services/notificationService";
+
 import type { UserNotificationResponseDto } from "../../types/notification";
 import { NotificationType, NOTIFICATION_TYPE_MAP } from "../../constants/enum/NotificationType";
+import { NotificationRouteType } from "../../constants/enum/NotificationRouteType";
+
+export interface NotificationMetadataDto {
+    routeType: NotificationRouteType;
+    documentId?: string;
+    assignmentId?: string;
+    versionId?: string;
+    reviewerId?: string;
+    departmentId?: string;
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+}
 
 const NotificationsPage = () => {
     const navigate = useNavigate();
@@ -34,12 +53,25 @@ const NotificationsPage = () => {
     const [pageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
 
+    const debouncedSearchTerm = useDebounce(filters.searchTerm, 400);
+
     const unreadCount = useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
+
+    const parseMetadata = (rawMeta: any): NotificationMetadataDto | null => {
+        if (!rawMeta) return null;
+        try {
+            const parsed = (typeof rawMeta === "object" ? rawMeta : JSON.parse(rawMeta)) as NotificationMetadataDto;
+            return (parsed.documentId || parsed.assignmentId || parsed.reviewerId || parsed.versionId || parsed.departmentId || parsed.routeType) ? parsed : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const activeMetadata = useMemo(() => parseMetadata(selectedNotification?.metadata), [selectedNotification]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        const diffMs = Date.now() - date.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
+        const diffMins = Math.floor((Date.now() - date.getTime()) / 60000);
 
         if (diffMins < 60) return `${Math.max(1, diffMins)} phút trước`;
         if (diffMins < 1440) return `${Math.floor(diffMins / 60)} giờ trước`;
@@ -50,81 +82,51 @@ const NotificationsPage = () => {
         });
     };
 
-    const loadNotifications = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const params = {
-                page,
-                pageSize,
-                search: filters.searchTerm || undefined,
-                type: filters.type !== ""
-                    ? (Number(filters.type) as NotificationType)
-                    : undefined,
-                isRead:
-                    filters.isRead === "read"
-                        ? true
-                        : filters.isRead === "unread"
-                            ? false
-                            : undefined,
-                sortBy: filters.sortBy,
-                sortOrder: filters.sortOrder
-            };
-
-            const data = await notificationService.getMyNotifications(params);
-            setNotifications(data.items);
-            setTotalPages(data.totalPages);
-        } catch (err) {
-            toast.error("Không thể tải danh sách thông báo.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, [filters, page, pageSize]);
-
     useEffect(() => {
-        loadNotifications();
-    }, [loadNotifications]);
-
-    useEffect(() => {
-        const initSignalR = async () => {
-            signalRService.onReceiveNotification((newNotification: UserNotificationResponseDto) => {
-                setNotifications(prev => {
-                    if (prev.some(n => n.id === newNotification.id)) {
-                        return prev;
-                    }
-
-                    return [newNotification, ...prev];
+        const loadNotifications = async () => {
+            setIsLoading(true);
+            try {
+                const data = await notificationService.getMyNotifications({
+                    page,
+                    pageSize,
+                    search: debouncedSearchTerm || undefined,
+                    type: filters.type !== "" ? Number(filters.type) as NotificationType : undefined,
+                    isRead: filters.isRead === "read" ? true : filters.isRead === "unread" ? false : undefined,
+                    sortBy: filters.sortBy,
+                    sortOrder: filters.sortOrder
                 });
-
-                toast.success("Bạn có thông báo mới");
-            });
-
-            signalRService.onNotificationRead((notificationId: string) => {
-                setNotifications(prev =>
-                    prev.map(n =>
-                        n.id === notificationId
-                            ? { ...n, isRead: true }
-                            : n
-                    )
-                );
-            });
-
-            signalRService.onNotificationDeleted((notificationId: string) => {
-                setNotifications(prev =>
-                    prev.filter(n => n.id !== notificationId)
-                );
-
-                setSelectedNotification(prev => {
-                    if (prev?.id === notificationId) {
-                        setShowDetail(false);
-                        return null;
-                    }
-
-                    return prev;
-                });
-            });
+                setNotifications(data.items);
+                setTotalPages(data.totalPages);
+            } catch {
+                toast.error("Không thể tải danh sách thông báo.");
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        initSignalR();
+        loadNotifications();
+    }, [debouncedSearchTerm, filters.type, filters.isRead, filters.sortBy, filters.sortOrder, page, pageSize]);
+
+    useEffect(() => {
+        signalRService.onReceiveNotification((newNotification: UserNotificationResponseDto) => {
+            setNotifications(prev => prev.some(n => n.id === newNotification.id) ? prev : [newNotification, ...prev]);
+            toast.success("Bạn có thông báo mới");
+        });
+
+        signalRService.onNotificationRead((notificationId: string) => {
+            setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
+        });
+
+        signalRService.onNotificationDeleted((notificationId: string) => {
+            setNotifications(prev => prev.filter(n => n.id !== notificationId));
+            setSelectedNotification(prev => {
+                if (prev?.id === notificationId) {
+                    setShowDetail(false);
+                    return null;
+                }
+                return prev;
+            });
+        });
 
         return () => {
             signalRService.offReceiveNotification();
@@ -138,7 +140,7 @@ const NotificationsPage = () => {
         try {
             await notificationService.markAsRead(id);
         } catch {
-            loadNotifications();
+            setFilters(f => ({ ...f }));
             toast.error("Thao tác thất bại.");
         }
     };
@@ -164,6 +166,55 @@ const NotificationsPage = () => {
         if (!n.isRead) handleMarkAsRead(n.id);
     };
 
+    const handleNotificationNavigation = (notification: UserNotificationResponseDto) => {
+        const meta = parseMetadata(notification.metadata);
+        if (!meta) return;
+
+        const { routeType, documentId, assignmentId, reviewerId, versionId, departmentId } = meta;
+
+        switch (routeType) {
+            case NotificationRouteType.DocumentDetail:
+                if (documentId && versionId && departmentId) navigate(`/appraisals/${documentId}/review/${versionId}`);
+                break;
+            case NotificationRouteType.RejectedDocument:
+            case NotificationRouteType.IssuedDocument:
+            case NotificationRouteType.FinalApproval:
+            case NotificationRouteType.FeedbackDetail:
+                if (documentId && versionId) {
+                    const params = new URLSearchParams();
+
+                    if (assignmentId) {
+                        params.append("assignmentId", assignmentId);
+                    }
+
+                    navigate(
+                        `/appraisals/${documentId}/review/${versionId}${params.toString() ? `?${params.toString()}` : ""}`
+                    );
+                }
+                break;
+
+            case NotificationRouteType.AssignmentDetail:
+            case NotificationRouteType.ManagerAssignment:
+            case NotificationRouteType.DirectorAssignment:
+            case NotificationRouteType.PendingAppraisal:
+                if (assignmentId) navigate(`/appraisal/assignment-detail/${assignmentId}`);
+                break;
+
+            case NotificationRouteType.StaffReview:
+                if (reviewerId) navigate(`/appraisal/reviewer-detail/${reviewerId}`);
+                break;
+
+            default:
+                if (documentId) navigate(`/documents`);
+                break;
+        }
+    };
+
+    const handleResetFilters = () => {
+        setFilters({ searchTerm: "", type: "", isRead: "", sortBy: "createdAt", sortOrder: "desc" });
+        setPage(1);
+    };
+
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -180,19 +231,16 @@ const NotificationsPage = () => {
                             label="Tìm kiếm"
                             placeholder="Từ khóa..."
                             value={filters.searchTerm}
-                            onChange={(val) => setFilters(f => ({ ...f, searchTerm: val }))}
+                            onChange={(val) => { setFilters(f => ({ ...f, searchTerm: val })); setPage(1); }}
                         />
                         <Select
                             label="Loại"
                             value={filters.type}
                             options={[
                                 { value: "", label: "Tất cả" },
-                                ...Object.entries(NOTIFICATION_TYPE_MAP).map(([key, cfg]) => ({
-                                    value: key,
-                                    label: cfg.label
-                                }))
+                                ...Object.entries(NOTIFICATION_TYPE_MAP).map(([key, cfg]) => ({ value: key, label: cfg.label }))
                             ]}
-                            onChange={(val) => setFilters(f => ({ ...f, type: val }))}
+                            onChange={(val) => { setFilters(f => ({ ...f, type: val })); setPage(1); }}
                         />
                         <Select
                             label="Trạng thái"
@@ -202,20 +250,10 @@ const NotificationsPage = () => {
                                 { value: "unread", label: "Chưa đọc" },
                                 { value: "read", label: "Đã đọc" }
                             ]}
-                            onChange={(val) => setFilters(f => ({ ...f, isRead: val }))}
-                        />
-                        <Select
-                            label="Sắp xếp"
-                            value={filters.sortBy}
-                            options={[{ value: "createdAt", label: "Mới nhất" }, { value: "title", label: "Tiêu đề" }]}
-                            onChange={(val) => setFilters(f => ({ ...f, sortBy: val }))}
+                            onChange={(val) => { setFilters(f => ({ ...f, isRead: val })); setPage(1); }}
                         />
                         <div className="flex items-end">
-                            <Button
-                                variant="ghost"
-                                className="text-red-400 w-full text-sm font-medium"
-                                onClick={() => setFilters({ searchTerm: "", type: "", isRead: "", sortBy: "createdAt", sortOrder: "desc" })}
-                            >
+                            <Button variant="ghost" className="text-red-400 w-full text-sm font-medium" onClick={handleResetFilters}>
                                 Xóa bộ lọc
                             </Button>
                         </div>
@@ -225,29 +263,33 @@ const NotificationsPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-4">
                         {isLoading ? (
-                            <div className="flex justify-center p-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div></div>
+                            <div className="flex justify-center p-20">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                            </div>
                         ) : notifications.length > 0 ? (
                             notifications.map((n) => {
                                 const typeConfig = NOTIFICATION_TYPE_MAP[n.type as NotificationType] || NOTIFICATION_TYPE_MAP[NotificationType.System];
+                                const isCurrentSelected = selectedNotification?.id === n.id;
 
                                 return (
                                     <Card
                                         key={n.id}
-                                        className={`p-4 border transition-all cursor-pointer hover:bg-dark-800 ${!n.isRead ? "bg-primary-500/5 border-primary-500/30" : "bg-dark-900/20 border-dark-700"}`}
+                                        className={`p-4 border transition-all cursor-pointer hover:bg-dark-800 ${isCurrentSelected ? "ring-2 ring-primary-500/50" : ""
+                                            } ${!n.isRead ? "bg-primary-500/5 border-primary-500/30" : "bg-dark-900/20 border-dark-700"}`}
                                         onClick={() => handleViewDetail(n)}
                                     >
                                         <div className="flex gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-dark-700 flex items-center justify-center border border-dark-600 overflow-hidden font-bold text-primary-400">
+                                            <div className="w-12 h-12 rounded-full bg-dark-700 flex items-center justify-center border border-dark-600 overflow-hidden font-bold text-primary-400 flex-shrink-0">
                                                 {n.senderAvatar ? (
                                                     <img src={n.senderAvatar} alt="avatar" className="object-cover w-full h-full" />
                                                 ) : (
                                                     <span>{n.title.charAt(0)}</span>
                                                 )}
                                             </div>
-                                            <div className="flex-1">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className={`font-semibold transition-colors ${!n.isRead ? "text-primary-400" : "text-gray-200"}`}>{n.title}</h3>
-                                                    {!n.isRead && <span className="w-2 h-2 bg-primary-500 rounded-full mt-2 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start gap-2">
+                                                    <h3 className={`font-semibold truncate transition-colors ${!n.isRead ? "text-primary-400" : "text-gray-200"}`}>{n.title}</h3>
+                                                    {!n.isRead && <span className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />}
                                                 </div>
                                                 <p className="text-[13px] text-gray-400 line-clamp-1 mt-1 font-medium">{n.content}</p>
                                                 <div className="flex gap-3 mt-3 items-center">
@@ -262,41 +304,47 @@ const NotificationsPage = () => {
                                 );
                             })
                         ) : (
-                            <div className="text-center p-20 text-gray-500 border-2 border-dashed border-dark-800 rounded-xl font-medium tracking-tight">Không có thông báo mới nào.</div>
+                            <div className="text-center p-20 text-gray-500 border-2 border-dashed border-dark-800 rounded-xl font-medium tracking-tight">
+                                Không có thông báo mới nào.
+                            </div>
                         )}
                     </div>
 
                     <div className="lg:col-span-1">
                         {showDetail && selectedNotification && (
-                            <Card className="p-6 border-primary-500/30 bg-dark-900/60 sticky top-6 backdrop-blur-xl animate-in fade-in slide-in-from-right-4 ring-1 ring-primary-500/10">
-                                <div className="space-y-5">
-                                    <div className="flex justify-between items-center border-b border-dark-700 pb-4">
-                                        <span className="text-xs text-primary-400 font-mono tracking-tight uppercase">#{selectedNotification.id.slice(-6)}</span>
-                                        <button onClick={() => setShowDetail(false)} className="text-gray-500 hover:text-white transition-colors">✕</button>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-white mb-3 tracking-tight italic">{selectedNotification.title}</h2>
-                                        <p className="text-gray-300 text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{selectedNotification.content}</p>
-                                    </div>
-
-                                    {selectedNotification.metadata && (
-                                        <div className="bg-dark-800/50 p-4 rounded-lg border border-dark-700">
-                                            <p className="text-[10px] font-bold text-gray-500 mb-3 uppercase tracking-widest">Liên kết hệ thống</p>
-                                            {selectedNotification.metadata.documentId && (
-                                                <Button
-                                                    variant="primary"
-                                                    className="w-full text-xs font-bold uppercase tracking-tight"
-                                                    onClick={() => navigate(`/documents/${selectedNotification.metadata?.documentId}`)}
-                                                >
-                                                    Mở tài liệu thẩm định
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                    <Button variant="ghost" className="w-full text-red-500/70 hover:text-red-400 text-xs font-bold uppercase tracking-widest" onClick={() => handleDelete(selectedNotification.id)}>
-                                        Gỡ bỏ thông báo này
-                                    </Button>
+                            <Card className="p-6 border-primary-500/30 bg-dark-900/60 sticky top-6 backdrop-blur-xl animate-in fade-in slide-in-from-right-4 ring-1 ring-primary-500/10 space-y-5">
+                                <div className="flex justify-between items-center border-b border-dark-700 pb-4">
+                                    <button onClick={() => setShowDetail(false)} className="text-gray-500 hover:text-white transition-colors" disabled={isUpdating}>✕</button>
                                 </div>
+
+                                <div>
+                                    <h2 className="text-xl font-bold text-white mb-3 tracking-tight italic">{selectedNotification.title}</h2>
+                                    <p className="text-gray-300 text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{selectedNotification.content}</p>
+                                </div>
+
+                                {activeMetadata && (
+                                    <div className="bg-dark-800/50 p-4 rounded-lg border border-dark-700">
+                                        <p className="text-[10px] font-bold text-gray-500 mb-3 uppercase tracking-widest">
+                                            Liên kết hệ thống
+                                        </p>
+                                        <Button
+                                            variant="primary"
+                                            className="w-full text-xs font-bold uppercase tracking-tight"
+                                            onClick={() => handleNotificationNavigation(selectedNotification)}
+                                        >
+                                            Mở liên kết
+                                        </Button>
+                                    </div>
+                                )}
+
+                                <Button
+                                    variant="ghost"
+                                    className="w-full text-red-500/70 hover:text-red-400 text-xs font-bold uppercase tracking-widest"
+                                    onClick={() => handleDelete(selectedNotification.id)}
+                                    disabled={isUpdating}
+                                >
+                                    {isUpdating ? "Đang xử lý..." : "Gỡ bỏ thông báo này"}
+                                </Button>
                             </Card>
                         )}
                     </div>

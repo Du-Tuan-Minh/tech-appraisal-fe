@@ -18,20 +18,15 @@ import type {
 } from "@/types/document";
 
 import {
-    ManagerDashboardDocumentType,
     MANAGER_DASHBOARD_DOCUMENT_TYPE_MAP
 } from "@/constants/enum/ManagerDashboardDocumentType";
 
+import {
+    DEPARTMENT_DOCUMENT_STATUS_TYPE_MAP
+} from "@/constants/enum/DepartmentDocumentStatusType";
+
 import { DOCUMENT_STATUS_MAP, DocumentStatus } from "@/constants/enum/DocumentStatus";
 import { ASSIGNMENT_STATUS_MAP, AssignmentStatus } from "@/constants/enum/AssignmentStatus";
-
-const TYPE_OPTIONS = [
-    { value: "", label: "Tất cả loại" },
-    ...Object.entries(MANAGER_DASHBOARD_DOCUMENT_TYPE_MAP).map(([key, value]) => ({
-        value: key,
-        label: value.label
-    }))
-];
 
 const formatDate = (date?: string | null) => {
     if (!date) return "---";
@@ -117,7 +112,6 @@ const DocumentRow = memo(({ doc, onNavigate }: DocumentRowProps) => {
         </tr>
     );
 });
-
 DocumentRow.displayName = "DocumentRow";
 
 const ManagerDashboardDocumentListPage = () => {
@@ -134,18 +128,43 @@ const ManagerDashboardDocumentListPage = () => {
         totalPages: 0
     });
 
-    const urlFilters = useMemo<ManagerDashboardDocumentFilterDto>(() => {
+    const viewMode = useMemo(() => {
+        const mode = searchParams.get("mode");
+        return mode === "department" ? "department" : "personal";
+    }, [searchParams]);
+
+    const typeOptions = useMemo(() => {
+        const targetMap = viewMode === "personal"
+            ? MANAGER_DASHBOARD_DOCUMENT_TYPE_MAP
+            : DEPARTMENT_DOCUMENT_STATUS_TYPE_MAP;
+
+        return [
+            { value: "", label: "Tất cả loại" },
+            ...Object.entries(targetMap).map(([key, value]) => ({
+                value: key,
+                label: value.label
+            }))
+        ];
+    }, [viewMode]);
+
+    const urlFilters = useMemo(() => {
         const pageParam = Number(searchParams.get("page"));
         const pageSizeParam = Number(searchParams.get("pageSize"));
         const typeParam = searchParams.get("type");
 
-        return {
+        const baseFilter = {
             page: isNaN(pageParam) || pageParam <= 0 ? 1 : pageParam,
             pageSize: isNaN(pageSizeParam) || pageSizeParam <= 0 ? 10 : pageSizeParam,
             searchTerm: searchParams.get("search") || null,
-            type: typeParam === null || typeParam === "" || isNaN(Number(typeParam))
-                ? null
-                : (Number(typeParam) as ManagerDashboardDocumentType)
+        };
+
+        if (typeParam === null || typeParam === "" || isNaN(Number(typeParam))) {
+            return { ...baseFilter, type: null };
+        }
+
+        return {
+            ...baseFilter,
+            type: Number(typeParam)
         };
     }, [searchParams]);
 
@@ -168,10 +187,13 @@ const ManagerDashboardDocumentListPage = () => {
         }, { replace: true });
     }, [setSearchParams]);
 
-    const loadDocuments = useCallback(async (filters: ManagerDashboardDocumentFilterDto) => {
+    const loadDocuments = useCallback(async (filters: any, mode: "personal" | "department") => {
         setIsLoading(true);
         try {
-            const response = await documentService.getManagerDashboardDocuments(filters);
+            const response = mode === "personal"
+                ? await documentService.getManagerStatusDocuments(filters as ManagerDashboardDocumentFilterDto)
+                : await documentService.getManagerRequestStatusDocuments(filters);
+
             if (response) {
                 setDocuments(response.items || []);
                 setPagination({
@@ -190,8 +212,8 @@ const ManagerDashboardDocumentListPage = () => {
     }, []);
 
     useEffect(() => {
-        loadDocuments(urlFilters);
-    }, [urlFilters, loadDocuments]);
+        loadDocuments(urlFilters, viewMode);
+    }, [urlFilters, viewMode, loadDocuments]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -204,7 +226,7 @@ const ManagerDashboardDocumentListPage = () => {
     }, [localSearch, urlFilters.searchTerm, updateUrlParams]);
 
     const handleClearFilters = () => {
-        setSearchParams({}, { replace: true });
+        setSearchParams({ mode: viewMode }, { replace: true });
         setLocalSearch("");
     };
 
@@ -217,10 +239,12 @@ const ManagerDashboardDocumentListPage = () => {
             <div className="max-w-7xl mx-auto p-6 space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">
-                        Dashboard Tài Liệu Quản Lý
+                        {viewMode === "personal" ? "Dashboard Kiểm Duyệt Phòng Ban" : "Dashboard Tài Liệu Phòng Ban Tạo"}
                     </h1>
                     <p className="text-primary-400 mt-1">
-                        Quản lý tài liệu và tiến trình thẩm định toàn hệ thống
+                        {viewMode === "personal"
+                            ? "Quản lý tiến trình thẩm định và phê duyệt tài liệu nội bộ"
+                            : "Theo dõi trạng thái phát hành các tài liệu do phòng ban khởi tạo"}
                     </p>
                 </div>
 
@@ -236,7 +260,7 @@ const ManagerDashboardDocumentListPage = () => {
                         <Select
                             label="Loại danh mục dữ liệu"
                             value={urlFilters.type !== null ? urlFilters.type.toString() : ""}
-                            options={TYPE_OPTIONS}
+                            options={typeOptions}
                             onChange={(val) =>
                                 updateUrlParams({
                                     type: val !== "" ? val : null,

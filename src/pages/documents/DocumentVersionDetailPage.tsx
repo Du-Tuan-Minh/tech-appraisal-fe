@@ -148,7 +148,6 @@ const DocumentVersionDetailPage = () => {
                         </Card>
                     </div>
 
-                    {/* Right Side: Metadata */}
                     <aside className="space-y-6">
                         <Card className="p-5 bg-dark-900/60 border-none shadow-xl space-y-4">
                             <h3 className="text-[10px] font-bold text-primary-400 uppercase tracking-widest border-b border-dark-700 pb-2">Hệ thống</h3>
