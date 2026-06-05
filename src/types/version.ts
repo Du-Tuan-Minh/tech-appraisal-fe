@@ -2,7 +2,7 @@ export interface DocumentVersionDto {
     id: string;
     requestId: string;
     versionNumber: number;
-    technicalSpecsJson?: any | null;
+    technicalSpecsJson: Record<string, any>;
 }
 
 export interface DocumentVersionDetailDto extends DocumentVersionDto {
@@ -13,8 +13,6 @@ export interface DocumentVersionDetailDto extends DocumentVersionDto {
 }
 
 export interface DocumentVersionCreateDto {
-    requestId: string;
-    technicalSpecsJson: any;
+    technicalSpecsJson: Record<string, any>;
     changeReason?: string | null;
-    sourceIssueId?: string | null;
 }

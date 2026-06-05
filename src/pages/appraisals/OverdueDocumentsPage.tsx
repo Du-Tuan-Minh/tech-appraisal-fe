@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import Button from "../../components/ui/Button";
@@ -22,19 +22,24 @@ import type {
     OverdueFilterDto
 } from "../../types/document";
 
-const INITIAL_FILTERS: OverdueFilterDto = {
+const INITIAL_FILTERS: Omit<OverdueFilterDto, "searchTerm"> = {
     page: 1,
     pageSize: 10,
-    searchTerm: null,
     status: null
 };
 
 const OverdueDocumentsPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    const mode = searchParams.get("mode") || "personal";
 
     const [documents, setDocuments] = useState<OverdueDocumentDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [filters, setFilters] = useState<OverdueFilterDto>(INITIAL_FILTERS);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -43,43 +48,48 @@ const OverdueDocumentsPage = () => {
         totalPages: 0
     });
 
-    const loadDocuments = useCallback(
-        async (targetPage: number = 1) => {
-            setIsLoading(true);
-            try {
-                const currentFilters: OverdueFilterDto = {
-                    ...filters,
-                    page: targetPage
-                };
-
-                const response = await documentService.getOverdueDocuments(
-                    currentFilters
-                );
-
-                setDocuments(response.items || []);
-                setPagination({
-                    page: response.page,
-                    pageSize: response.pageSize,
-                    totalCount: response.totalCount,
-                    totalPages: response.totalPages
-                });
-            } catch (err) {
-                console.error("[Fetch Overdue Documents Error]:", err);
-                toast.error("Không thể tải danh sách tài liệu quá hạn.");
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [filters]
-    );
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            loadDocuments(1);
-        }, 300);
+        setSearchQuery("");
+        setFilters(INITIAL_FILTERS);
+    }, [mode]);
 
-        return () => clearTimeout(handler);
-    }, [filters.searchTerm, filters.status, loadDocuments]);
+    const activeFilters = useMemo<OverdueFilterDto>(() => ({
+        ...filters,
+        searchTerm: debouncedSearch.trim() || null
+    }), [filters, debouncedSearch]);
+
+    const loadDocuments = useCallback(async (params: OverdueFilterDto, currentMode: string) => {
+        setIsLoading(true);
+        try {
+            const response = currentMode === "department"
+                ? await documentService.getManagerRequestedOverdueDocuments(params)
+                : await documentService.getOverdueDocuments(params);
+
+            setDocuments(response.items || []);
+            setPagination({
+                page: response.page,
+                pageSize: response.pageSize,
+                totalCount: response.totalCount,
+                totalPages: response.totalPages
+            });
+        } catch (err) {
+            console.error("[Fetch Overdue Documents Error]:", err);
+            toast.error("Không thể tải danh sách tài liệu quá hạn.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadDocuments(activeFilters, mode);
+    }, [activeFilters, mode, loadDocuments]);
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return "---";
@@ -92,22 +102,26 @@ const OverdueDocumentsPage = () => {
 
     const getOverdueDays = (deadline: string | null) => {
         if (!deadline) return 0;
-
         const deadlineDate = new Date(deadline);
         const now = new Date();
         const diffMs = now.getTime() - deadlineDate.getTime();
-
         return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-    };
-
-    const handleViewDetail = (assignmentId: string) => {
-        navigate(`/appraisals/${assignmentId}`);
     };
 
     const handlePageChange = (page: number) => {
         setFilters((f) => ({ ...f, page }));
-        loadDocuments(page);
     };
+
+    const handleClearFilters = () => {
+        setSearchQuery("");
+        setFilters({ ...INITIAL_FILTERS, page: 1 });
+    };
+
+    const pageHeader = useMemo(() => {
+        return mode === "department"
+            ? { title: "Tài Liệu Quá Hạn Phòng Ban", sub: "Danh sách tài liệu do phòng ban yêu cầu đang quá hạn phản hồi" }
+            : { title: "Tài Liệu Quá Hạn Cá Nhân", sub: "Danh sách tài liệu gán cho bạn đang bị quá hạn phản hồi" };
+    }, [mode]);
 
     return (
         <Layout>
@@ -115,15 +129,15 @@ const OverdueDocumentsPage = () => {
                 <div className="flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">
-                            Tài Liệu Quá Hạn
+                            {pageHeader.title}
                         </h1>
                         <p className="text-red-400 mt-1">
-                            Danh sách tài liệu đang quá hạn phản hồi thẩm định
+                            {pageHeader.sub}
                         </p>
                     </div>
                     <Button
                         variant="ghost"
-                        onClick={() => navigate("/dashboard/manager")}
+                        onClick={() => navigate("/manager/dashboard")}
                     >
                         Quay lại Dashboard
                     </Button>
@@ -134,13 +148,11 @@ const OverdueDocumentsPage = () => {
                         <Input
                             label="Tìm kiếm"
                             placeholder="Người đánh giá, mã NV, tài liệu..."
-                            value={filters.searchTerm || ""}
-                            onChange={(val) =>
-                                setFilters((f) => ({
-                                    ...f,
-                                    searchTerm: val || null
-                                }))
-                            }
+                            value={searchQuery}
+                            onChange={(val) => {
+                                setSearchQuery(val);
+                                setFilters((f) => ({ ...f, page: 1 }));
+                            }}
                         />
 
                         <Select
@@ -168,6 +180,7 @@ const OverdueDocumentsPage = () => {
                             onChange={(val) =>
                                 setFilters((f) => ({
                                     ...f,
+                                    page: 1,
                                     status: val ? (Number(val) as ReviewerStatus) : null
                                 }))
                             }
@@ -176,7 +189,7 @@ const OverdueDocumentsPage = () => {
                         <div className="flex items-end">
                             <Button
                                 variant="ghost"
-                                onClick={() => setFilters(INITIAL_FILTERS)}
+                                onClick={handleClearFilters}
                                 className="text-red-400 hover:bg-red-500/10 w-full md:w-auto"
                             >
                                 Xóa lọc
@@ -202,7 +215,7 @@ const OverdueDocumentsPage = () => {
                             <tbody className="divide-y divide-dark-800">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={8} className="p-20 text-center">
+                                        <td colSpan={7} className="p-20 text-center">
                                             <div className="animate-spin inline-block w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full"></div>
                                         </td>
                                     </tr>
@@ -222,28 +235,18 @@ const OverdueDocumentsPage = () => {
                                             <tr
                                                 key={doc.assignmentId}
                                                 className="hover:bg-red-500/5 transition-colors cursor-pointer"
-                                                onClick={() => handleViewDetail(doc.assignmentId)}
+                                                onClick={() => navigate(`/appraisals/${doc.assignmentId}`)}
                                             >
                                                 <td className="p-4">
-                                                    <div className="font-semibold text-white text-sm">
-                                                        {doc.reviewerName}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        MNV: {doc.employeeCode}
-                                                    </div>
+                                                    <div className="font-semibold text-white text-sm">{doc.reviewerName}</div>
+                                                    <div className="text-xs text-gray-500">MNV: {doc.employeeCode}</div>
                                                 </td>
                                                 <td className="p-4">
-                                                    <div className="font-semibold text-white text-sm line-clamp-1 max-w-[250px]">
-                                                        {doc.documentTitle}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        Mã: {doc.documentCode}
-                                                    </div>
+                                                    <div className="font-semibold text-white text-sm line-clamp-1 max-w-[250px]">{doc.documentTitle}</div>
+                                                    <div className="text-xs text-gray-500">Mã: {doc.documentCode}</div>
                                                 </td>
                                                 <td className="p-4">
-                                                    <div className="font-semibold text-white text-sm line-clamp-1 max-w-[250px]">
-                                                        {doc.requesterName}
-                                                    </div>
+                                                    <div className="font-semibold text-white text-sm line-clamp-1 max-w-[250px]">{doc.requesterName}</div>
                                                 </td>
                                                 <td className="p-4">
                                                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusConfig.color}`}>
@@ -251,14 +254,10 @@ const OverdueDocumentsPage = () => {
                                                     </span>
                                                 </td>
                                                 <td className="p-4">
-                                                    <span className="text-sm text-gray-300">
-                                                        {formatDate(doc.deadline)}
-                                                    </span>
+                                                    <span className="text-sm text-gray-300">{formatDate(doc.deadline)}</span>
                                                 </td>
                                                 <td className="p-4">
-                                                    <span className="text-sm font-bold text-red-400">
-                                                        {overdueDays} ngày
-                                                    </span>
+                                                    <span className="text-sm font-bold text-red-400">{overdueDays} ngày</span>
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="flex justify-center">
@@ -267,7 +266,7 @@ const OverdueDocumentsPage = () => {
                                                             size="sm"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleViewDetail(doc.assignmentId);
+                                                                navigate(`/appraisals/${doc.assignmentId}`);
                                                             }}
                                                         >
                                                             Xem
@@ -279,7 +278,7 @@ const OverdueDocumentsPage = () => {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className="p-20 text-center text-gray-500 text-sm">
+                                        <td colSpan={7} className="p-20 text-center text-gray-500 text-sm">
                                             Không có tài liệu quá hạn nào.
                                         </td>
                                     </tr>

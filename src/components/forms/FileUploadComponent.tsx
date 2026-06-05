@@ -152,7 +152,7 @@ const FileUploadComponent = ({
                                 <p className="text-[11px] text-primary-200 truncate font-medium">{f.name}</p>
                             </div>
                         </div>
-                        <button type="button" onClick={() => handleRemoveFile(i)} className="p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-md">
+                        <button type="button" onClick={() => handleRemoveFile(i)} disabled={disabled} className="p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-md">
                             <X className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -176,7 +176,7 @@ const FileUploadComponent = ({
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                             <button type="button" onClick={() => handleDownload(f.id, f.fileName)} className="p-1.5 text-gray-400 hover:text-primary-400"><Download className="w-3.5 h-3.5" /></button>
-                            <button type="button" onClick={() => handleDelete(f.id)} className="p-1.5 text-gray-400 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => handleDelete(f.id)} disabled={disabled} className="p-1.5 text-gray-400 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
                         </div>
                     </div>
                 ))}

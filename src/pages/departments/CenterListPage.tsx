@@ -8,9 +8,11 @@ import InviteMemberPopUp from "@/components/popups/InviteMemberPopUp";
 import JoinDepartmentPopUp from "@/components/popups/JoinDepartmentPopUp";
 import { departmentService } from "@/services/departmentService";
 import type { DepartmentResponseDto } from "@/types/department";
+import { useAuth } from "@/hooks/useAuth";
 
 const CenterListPage = () => {
     const navigate = useNavigate();
+    const { isCoordinator } = useAuth();
 
     const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
     const [pagination, setPagination] = useState({
@@ -148,7 +150,7 @@ const CenterListPage = () => {
                                         Danh sách nhân sự
                                     </Button>
 
-                                    <Button variant="ghost" size="sm" onClick={() => navigate(`/centers/${dept.id}/departments`)}>
+                                    <Button variant="ghost" size="sm" onClick={() => navigate(isCoordinator ? `/users/department-workloads` : `/centers/${dept.id}/departments`)}>
                                         Vào phòng
                                     </Button>
                                 </div>

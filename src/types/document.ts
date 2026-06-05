@@ -55,6 +55,7 @@ export interface TechnicalDocumentUpdateDto {
     technicalSpecs?: Record<string, any> | null;
     externalDepartmentIds?: string[] | null;
     approvalProposerIds?: string | null;
+    changeReason?: string | null;
 }
 
 export interface DocumentFilterDto extends pagination {
@@ -142,4 +143,14 @@ export interface ManagerDashboardDocumentFilterDto extends pagination {
 export interface DepartmentDocumentStatusFilterDto extends pagination {
     type?: DepartmentDocumentStatusType | null;
     searchTerm?: string | null;
+}
+
+export interface IncomingAppraisalDocumentDto {
+    id: string;
+    versionId: string;
+    VersionNumber: number;
+    title: string;
+    documentCode: string;
+    status: DocumentStatus;
+    createdAt: string;
 }

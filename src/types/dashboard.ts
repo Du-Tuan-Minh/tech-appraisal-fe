@@ -9,10 +9,10 @@ export interface DashboardSummaryStaffDto {
 }
 
 export interface DashboardSummaryManagerDto {
-    internalSigningCount: number;
-    pendingReviewCount: number;
+    reviewingDocuments: number;
     needConfirmationCount: number;
     rejectedCount: number;
+    overdueReviewDocuments: number;
 }
 
 export interface DashboardSummaryDirectorDto {
@@ -38,4 +38,9 @@ export interface DepartmentDocumentStatusSummaryDto {
     overdueReviewDocuments: number;
     issuedDocuments: number;
     rejectedDocuments: number;
+}
+
+export interface DashboardSummaryCoordinatorDto {
+    totalDepartments: number;
+    pendingAssignments: number;
 }

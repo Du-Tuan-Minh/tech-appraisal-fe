@@ -8,6 +8,7 @@ import type { DocumentVersionDetailDto } from "@/types/version";
 import type { TechnicalDocumentDetailDto } from "@/types/document";
 import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
 import { ArrowLeft, Save, Send, Edit3, X, FileText, CheckCircle } from "lucide-react";
+import FileUploadComponent from "@/components/forms/FileUploadComponent";
 
 const DocumentVersionDetailPage = () => {
     const navigate = useNavigate();
@@ -144,7 +145,12 @@ const DocumentVersionDetailPage = () => {
 
                         <Card className="p-6 bg-dark-950/20 border-dark-800">
                             <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase">Tài liệu đính kèm</h3>
-                            {/* ... Giữ nguyên logic map attachments của bạn ... */}
+                            <FileUploadComponent
+                                technicalDocumentId={documentId}
+                                disabled={!isEditing}
+                                initialAttachments={document?.attachments || []}
+                                onChange={fetchData}
+                            />
                         </Card>
                     </div>
 

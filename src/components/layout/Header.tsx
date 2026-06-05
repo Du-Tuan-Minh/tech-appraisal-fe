@@ -47,6 +47,8 @@ const Header = () => {
             baseNav.push({ name: "Dashboard", path: "/manager/dashboard", icon: "🏠" });
         } else if (role === UserRole.Director || role === UserRole.InstituteDirector || role === UserRole.DeputyInstituteDirector) {
             baseNav.push({ name: "Dashboard", path: "/director/dashboard", icon: "🏠" });
+        } else if (role === UserRole.Coordinator) {
+            baseNav.push({ name: "Dashboard", path: "/coordinator/dashboard", icon: "🏠" });
         }
 
         baseNav.push(

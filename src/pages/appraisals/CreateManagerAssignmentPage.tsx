@@ -13,18 +13,19 @@ import type { DepartmentResponseDto } from "../../types/department";
 import type { UserResponseDto } from "@/types/user";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/constants/enum/UserRole";
-import { getSeniorCenter } from "@/services/userService";
+import { getSeniorCenter, getUsers } from "@/services/userService";
 
 const CreateManagerAssignmentPage = () => {
     const navigate = useNavigate();
     const { versionId } = useParams<{ versionId: string }>();
     const [searchParams] = useSearchParams();
 
-    const { role } = useAuth();
+    const { role, isCoordinator } = useAuth();
     const [seniors, setSeniors] = useState<UserResponseDto[]>([]);
     const [selectedSeniors, setSelectedSeniors] = useState<string[]>([]);
     const isInstituteDirector = role === UserRole.InstituteDirector;
     const isDeputyInstituteDirector = role === UserRole.DeputyInstituteDirector;
+    const isShowSeniorList = isInstituteDirector || isCoordinator;
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
@@ -42,14 +43,12 @@ const CreateManagerAssignmentPage = () => {
     }), [searchParams]);
 
     useEffect(() => {
-        if (isInstituteDirector) return;
+        if (isShowSeniorList || isInstituteDirector) return;
+
         const fetchDepartments = async () => {
             try {
                 const res = await departmentService.getDepartments(
-                    1,
-                    100,
-                    searchTerm,
-                    context.parentId || undefined
+                    1, 100, searchTerm, context.parentId || undefined
                 );
                 setDepartments(res.items);
             } catch (err) {
@@ -59,23 +58,40 @@ const CreateManagerAssignmentPage = () => {
 
         const debounceTimer = setTimeout(fetchDepartments, 300);
         return () => clearTimeout(debounceTimer);
-    }, [searchTerm, context.parentId]);
+    }, [searchTerm, context.parentId, isShowSeniorList, isInstituteDirector]);
 
     useEffect(() => {
-        if (!isInstituteDirector) return;
+        if (!isShowSeniorList) return;
+
         const fetchSeniors = async () => {
-            const res = await getSeniorCenter(1, 100, searchTerm);
-            setSeniors(res.items);
+            try {
+                if (isCoordinator) {
+                    const res = await getUsers({
+                        page: 1,
+                        pageSize: 100,
+                        searchTerm: searchTerm || null,
+                        isActive: true
+                    });
+                    setSeniors(res.items);
+                } else {
+                    const res = await getSeniorCenter(1, 100, searchTerm);
+                    setSeniors(res.items);
+                }
+            } catch (err) {
+                toast.error("Không thể tải danh sách cán bộ.");
+            }
         };
-        fetchSeniors();
-    }, [searchTerm, isInstituteDirector]);
+
+        const debounceTimer = setTimeout(fetchSeniors, 300);
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm, isShowSeniorList, isCoordinator]);
 
     const handleSubmit = async () => {
         if (!versionId) return toast.error("Thiếu thông tin tài liệu.");
         const hasSelection = isDeputyInstituteDirector
             ? true
-            : (isInstituteDirector ? selectedSeniors.length > 0 : selectedDepartments.length > 0);
-        if (!hasSelection) return toast.error(isInstituteDirector ? "Vui lòng chọn ít nhất 1 cán bộ." : "Vui lòng chọn ít nhất 1 phòng ban.");
+            : (isShowSeniorList ? selectedSeniors.length > 0 : selectedDepartments.length > 0);
+        if (!hasSelection) return toast.error(isShowSeniorList ? "Vui lòng chọn ít nhất 1 cán bộ." : "Vui lòng chọn ít nhất 1 phòng ban.");
         if (!deadline) return toast.error("Vui lòng chọn hạn chót thẩm định.");
 
         const utcDeadline = new Date(deadline).toISOString();
@@ -84,8 +100,7 @@ const CreateManagerAssignmentPage = () => {
         try {
             const targetIds = isDeputyInstituteDirector
                 ? []
-                : (isInstituteDirector ? selectedSeniors : selectedDepartments);
-
+                : (isShowSeniorList ? selectedSeniors : selectedDepartments);
             await appraisalService.createParallelAssignments({
                 documentId: context.documentId,
                 requestVersionId: versionId,
@@ -144,18 +159,18 @@ const CreateManagerAssignmentPage = () => {
                                         {context.parentId ? "Danh sách Phòng Ban trực thuộc" : "Danh sách Trung tâm"}
                                     </label>
                                     <span className="text-xs text-gray-500">
-                                        Đã chọn: {isInstituteDirector ? selectedSeniors.length : selectedDepartments.length}
+                                        Đã chọn: {isShowSeniorList ? selectedSeniors.length : selectedDepartments.length}
                                     </span>
                                 </div>
 
                                 <Input
-                                    placeholder={isInstituteDirector ? "Tìm kiếm cán bộ..." : "Tên phòng ban..."}
+                                    placeholder={isShowSeniorList ? "Tìm kiếm cán bộ..." : "Tên phòng ban..."}
                                     value={searchTerm}
                                     onChange={setSearchTerm}
                                 />
 
                                 <div className="max-h-64 overflow-y-auto border border-dark-700 rounded-xl p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-dark-950/50 shadow-inner">
-                                    {isInstituteDirector ? (
+                                    {isShowSeniorList ? (
                                         // HIỂN THỊ DANH SÁCH USER (SENIORS)
                                         seniors.length > 0 ? seniors.map(user => {
                                             const isChecked = selectedSeniors.includes(user.id);

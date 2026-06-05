@@ -2,7 +2,7 @@ import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 
 import type { ApiResponse } from "@/types/apiResponse";
-import type { DashboardSummaryDirectorDto, DashboardSummaryManagerDto, DashboardSummaryStaffDto, DepartmentDocumentStatusSummaryDto, ManagerWorkloadDto } from "@/types/dashboard";
+import type { DashboardSummaryDirectorDto, DashboardSummaryManagerDto, DashboardSummaryStaffDto, DepartmentDocumentStatusSummaryDto, ManagerWorkloadDto, DashboardSummaryCoordinatorDto } from "@/types/dashboard";
 import type { PagedResult } from "@/types/paginationResult";
 
 export const dashboardService = {
@@ -57,6 +57,16 @@ export const dashboardService = {
             ApiResponse<DepartmentDocumentStatusSummaryDto>
         >(
             API_ENDPOINTS.dashboard.managerRequestedDocumentSummary
+        );
+
+        return res.data.data;
+    },
+
+    getCoordinatorSummary: async (): Promise<DashboardSummaryCoordinatorDto> => {
+        const res = await axiosClient.get<
+            ApiResponse<DashboardSummaryCoordinatorDto>
+        >(
+            API_ENDPOINTS.dashboard.coordinatorSummary
         );
 
         return res.data.data;

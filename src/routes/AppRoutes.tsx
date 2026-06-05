@@ -39,6 +39,9 @@ import OverdueDocumentsPage from "../pages/appraisals/OverdueDocumentsPage";
 import TopUsersPage from "../pages/users/TopUsersPage";
 import ManagerDashboardDocumentListPage from "../pages/documents/ManagerDashboardDocumentListPage";
 import DirectorDashboardPage from "../pages/dashboard/DirectorDashboardPage";
+import CoordinatorDashboardPage from "../pages/dashboard/CoordinatorDashboardPage";
+import DepartmentAppraisalWorkloadsPage from "../pages/users/DepartmentAppraisalWorkloadsPage";
+import IncomingAppraisalDocumentPage from "../pages/documents/IncomingAppraisalDocumentPage";
 
 const AppRoutes = () => {
     return (
@@ -55,8 +58,10 @@ const AppRoutes = () => {
                 <Route path="/manager/dashboard" element={<ManagerDashboardPage />} />
                 <Route path="/manager/dashboard/documents" element={<ManagerDashboardDocumentListPage />} />
                 <Route path="/director/dashboard" element={<DirectorDashboardPage />} />
+                <Route path="/coordinator/dashboard" element={<CoordinatorDashboardPage />} />
                 <Route path="/users" element={<UserListPage />} />
                 <Route path="/users/top" element={<TopUsersPage />} />
+                <Route path="/users/department-workloads" element={<DepartmentAppraisalWorkloadsPage />} />
 
                 {/* PROFILE */}
                 <Route path="/profile" element={<ProfilePage />} />
@@ -73,6 +78,7 @@ const AppRoutes = () => {
                 <Route path="/appraisals/my-tasks" element={<MyTasksPage />} />
                 <Route path="/documents/:id/version/:versionId" element={<DocumentVersionDetailPage />} />
                 <Route path="/user/documents" element={<UserDocumentListPage />} />
+                <Route path="/incoming-appraisal-documents" element={<IncomingAppraisalDocumentPage />} />
 
                 {/* APPRAISALS */}
                 <Route path="/manager/pending-appraisals" element={<PendingAppraisalResponsesPage />} />

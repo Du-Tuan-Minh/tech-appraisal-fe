@@ -1,6 +1,6 @@
 export const ManagerDashboardDocumentType = {
-    InternalSigning: 0,
-    PendingReview: 1,
+    Overdue: 0,
+    Review: 1,
     NeedConfirmation: 2,
     Rejected: 3
 } as const;
@@ -12,12 +12,12 @@ export const MANAGER_DASHBOARD_DOCUMENT_TYPE_MAP: Record<
     ManagerDashboardDocumentType,
     { label: string; color: string }
 > = {
-    [ManagerDashboardDocumentType.InternalSigning]: {
-        label: "Ký nội bộ",
-        color: "text-blue-400 bg-blue-900/20"
+    [ManagerDashboardDocumentType.Overdue]: {
+        label: "Quá hạn",
+        color: "text-red-400 bg-red-900/20"
     },
-    [ManagerDashboardDocumentType.PendingReview]: {
-        label: "Đang thẩm định",
+    [ManagerDashboardDocumentType.Review]: {
+        label: "Cần xử lý",
         color: "text-yellow-400 bg-yellow-900/20"
     },
     [ManagerDashboardDocumentType.NeedConfirmation]: {

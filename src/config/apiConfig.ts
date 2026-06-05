@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
             `/users/senior-center?page=${page}&pageSize=${pageSize}${searchTerm ? `&searchTerm=${encodeURIComponent(searchTerm)}` : ""}`,
         topRejectedDocumentTypes: ({ page, pageSize }: pagination) =>
             `/users/top-rejected-document-types?page=${page}&pageSize=${pageSize}`,
+        departmentAppraisalWorkloads: "/users/department-appraisal-workloads",
     },
 
     documents: {
@@ -48,6 +49,7 @@ export const API_ENDPOINTS = {
         managerStatusDocuments: "/documents/manager-status-documents",
         managerRequestedOverdueDocuments: "/documents/manager-requested-overdue-documents",
         managerRequestStatusDocuments: "/documents/manager-request-status-documents",
+        incomingAppraisalDocuments: "/documents/incoming-appraisal-documents",
     },
 
     appraisal: {
@@ -103,6 +105,7 @@ export const API_ENDPOINTS = {
         directorSummary: "/dashboard/director-summary",
         managerWorkloads: "/dashboard/manager-workloads",
         managerRequestedDocumentSummary: "/dashboard/manager-requested-document-summary",
+        coordinatorSummary: "/dashboard/coordinator-summary",
     },
 
     approvalWorkflows: {

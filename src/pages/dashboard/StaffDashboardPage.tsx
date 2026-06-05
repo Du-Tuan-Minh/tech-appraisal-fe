@@ -9,6 +9,7 @@ import StatCard from "../../components/ui/StatCard";
 import { dashboardService } from "../../services/dashboardService";
 import type { DashboardSummaryStaffDto } from "../../types/dashboard";
 import { StaffDashboardDocumentType } from "../../constants/enum/StaffDashboardDocumentType";
+import WorkflowPipeline from "../../components/ui/WorkflowPipeline";
 
 const TOP_METRICS_CONFIG = [
     {
@@ -141,34 +142,14 @@ const StaffDashboardPage = () => {
                     </div>
 
                     <Card className="p-8 bg-[#121824] border border-gray-800/60 rounded-xl">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-2 max-w-5xl mx-auto">
-                            {PIPELINE_CONFIG.map((step, index) => {
-                                const count = summary ? Number(summary[step.key as keyof DashboardSummaryStaffDto] || 0) : 0;
-                                const isLast = index === PIPELINE_CONFIG.length - 1;
-
-                                return (
-                                    <div key={step.key} className="flex-1 w-full flex items-center">
-                                        <div
-                                            className="flex flex-col items-center mx-auto space-y-3 cursor-pointer group"
-                                            onClick={() => handleMetricClick(step.typeValue)}
-                                        >
-                                            <div className="w-12 h-12 rounded-full border border-gray-700 bg-[#161f30] flex items-center justify-center transition-all group-hover:border-purple-500 group-hover:bg-[#1c263b]">
-                                                <span className="text-sm font-bold text-white">
-                                                    {count}
-                                                </span>
-                                            </div>
-                                            <span className="text-xs font-semibold text-gray-400 tracking-wide whitespace-nowrap group-hover:text-purple-400 transition-colors">
-                                                {step.label}
-                                            </span>
-                                        </div>
-
-                                        {!isLast && (
-                                            <div className="hidden md:block h-[1px] bg-gray-800 flex-1 mx-2 self-center -translate-y-3" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <WorkflowPipeline
+                            items={PIPELINE_CONFIG.map((step) => ({
+                                key: step.key,
+                                label: step.label,
+                                count: summary ? Number(summary[step.key as keyof DashboardSummaryStaffDto] || 0) : 0,
+                                onClick: () => handleMetricClick(step.typeValue),
+                            }))}
+                        />
                     </Card>
                 </div>
             </div>

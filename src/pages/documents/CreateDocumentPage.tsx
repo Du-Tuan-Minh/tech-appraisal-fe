@@ -16,6 +16,7 @@ import type { UserResponseDto } from "@/types/user";
 import { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
 import { attachmentService } from "@/services/attachmentService";
 import { getSeniorCenter } from "@/services/userService";
+import SpellEditor from "@/spellcheck/SpellEditor";
 
 type PendingAttachment = {
     file: File;
@@ -97,20 +98,16 @@ const CreateDocumentPage = () => {
     };
 
     const typeOptions = useMemo(() =>
-        Object.values(DocumentType)
-            .filter(v => typeof v === 'number')
-            .map((v) => ({
-                value: String(v),
-                label: DOCUMENT_TYPE_MAP[v as DocumentType]?.label
-            })), []);
+        Object.values(DocumentType).map((v) => ({
+            value: String(v),
+            label: DOCUMENT_TYPE_MAP[v as DocumentType]?.label || "N/A"
+        })), []);
 
     const priorityOptions = useMemo(() =>
-        Object.values(IssueSeverity)
-            .filter(v => typeof v === 'number')
-            .map((v) => ({
-                value: String(v),
-                label: ISSUE_SEVERITY_MAP[v as IssueSeverity]?.label
-            })), []);
+        Object.values(IssueSeverity).map((v) => ({
+            value: String(v),
+            label: ISSUE_SEVERITY_MAP[v as IssueSeverity]?.label || "N/A"
+        })), []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -212,11 +209,21 @@ const CreateDocumentPage = () => {
 
                             <div className="space-y-2">
                                 <label className="block text-[10px] font-bold text-primary-400 uppercase tracking-widest">Mô tả mục tiêu</label>
-                                <textarea
+                                {/* <textarea
                                     className="w-full bg-dark-950/50 border border-dark-700 rounded-lg p-3 text-white text-sm focus:ring-1 focus:ring-primary-500 outline-none min-h-[80px] transition-all"
                                     placeholder="Nội dung tóm tắt phạm vi kỹ thuật..."
                                     value={formData.description || ""}
                                     onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                                /> */}
+
+                                <SpellEditor
+                                    value={formData.description || ""}
+                                    onChange={(value) =>
+                                        setFormData(p => ({
+                                            ...p,
+                                            description: value
+                                        }))
+                                    }
                                 />
                             </div>
 

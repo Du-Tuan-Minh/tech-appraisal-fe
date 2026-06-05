@@ -13,12 +13,42 @@ import type { DocumentVersionDto } from "@/types/version";
 import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
 import { DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
+import { getEnumMapValue } from "@/utils/enumHelper";
+import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
 
-import { History, Save, ArrowLeft, Eye } from "lucide-react";
+import { History, Save, ArrowLeft, Eye, Send } from "lucide-react";
 
 const DocumentEditorPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+
+    const parseDocumentType = (value: unknown): DocumentType => {
+        if (typeof value === "string") {
+            const config = getEnumMapValue(DOCUMENT_TYPE_MAP, DocumentType, value);
+            if (config) {
+                return DocumentType[value as keyof typeof DocumentType] as DocumentType;
+            }
+            return DocumentType.TechnicalSpecifications;
+        }
+
+        return typeof value === "number" && Object.values(DocumentType).includes(value as DocumentType)
+            ? (value as DocumentType)
+            : DocumentType.TechnicalSpecifications;
+    };
+
+    const parseIssueSeverity = (value: unknown): IssueSeverity => {
+        if (typeof value === "string") {
+            const config = getEnumMapValue(ISSUE_SEVERITY_MAP, IssueSeverity, value);
+            if (config) {
+                return IssueSeverity[value as keyof typeof IssueSeverity] as IssueSeverity;
+            }
+            return IssueSeverity.Minor;
+        }
+
+        return typeof value === "number" && Object.values(IssueSeverity).includes(value as IssueSeverity)
+            ? (value as IssueSeverity)
+            : IssueSeverity.Minor;
+    };
 
     const [doc, setDoc] = useState<TechnicalDocumentDetailDto | null>(null);
     const [formData, setFormData] = useState<TechnicalDocumentUpdateDto>({
@@ -26,46 +56,70 @@ const DocumentEditorPage = () => {
         type: DocumentType.TechnicalSpecifications,
         priority: IssueSeverity.Minor,
         description: "",
-        technicalSpecs: null,
+        technicalSpecs: {},
+        externalDepartmentIds: [],
+        approvalProposerIds: ""
     });
     const [versions, setVersions] = useState<DocumentVersionDto[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
     const typeOptions = useMemo(() =>
-        Object.entries(DOCUMENT_TYPE_MAP).map(([key, config]) => ({
-            value: key,
-            label: config.label
+        Object.values(DocumentType).map((value) => ({
+            value: String(value),
+            label: DOCUMENT_TYPE_MAP[value as DocumentType]?.label || "N/A"
         })), []);
 
     const priorityOptions = useMemo(() =>
-        Object.entries(ISSUE_SEVERITY_MAP).map(([key, config]) => ({
-            value: key,
-            label: config.label
+        Object.values(IssueSeverity).map((value) => ({
+            value: String(value),
+            label: ISSUE_SEVERITY_MAP[value as IssueSeverity]?.label || "N/A"
         })), []);
 
     const fetchData = useCallback(async () => {
         if (!id) return;
         setIsLoading(true);
         try {
-            const [document, versionList] = await Promise.all([
+            const [documentData, versionList] = await Promise.all([
                 documentService.getDocumentById(id),
                 documentService.getDocumentVersions(id)
             ]);
 
-            setDoc(document);
+            setDoc(documentData);
             setVersions(versionList);
 
+            const currentVersion = versionList.find((v: any) => v.isCurrent) || versionList[0];
+
+            let specs = {};
+            if (currentVersion && currentVersion.technicalSpecsJson) {
+                specs = typeof currentVersion.technicalSpecsJson === 'string'
+                    ? JSON.parse(currentVersion.technicalSpecsJson || "{}")
+                    : currentVersion.technicalSpecsJson;
+            }
+            let extDepts = [];
+            if (documentData.externalDepartmentIds) {
+                extDepts = typeof documentData.externalDepartmentIds === 'string'
+                    ? JSON.parse(documentData.externalDepartmentIds || "[]")
+                    : documentData.externalDepartmentIds;
+            }
+
             setFormData({
-                title: document.title,
-                description: document.description,
-                type: document.type,
-                priority: document.priority,
-                technicalSpecs: null,
+                title: documentData.title,
+                description: documentData.description,
+                type: parseDocumentType((documentData as any).type),
+                priority: parseIssueSeverity((documentData as any).priority),
+                technicalSpecs: specs,
+                externalDepartmentIds: extDepts,
+                approvalProposerIds: Array.isArray(documentData.approvalProposerIds)
+                    ? documentData.approvalProposerIds.join(", ")
+                    : (documentData.approvalProposerIds || "")
             });
+
         } catch (error) {
             toast.error("Không thể tải dữ liệu tài liệu");
             navigate("/documents");
@@ -86,15 +140,40 @@ const DocumentEditorPage = () => {
 
         setIsSaving(true);
         try {
-            const success = await documentService.updateDocument(id, formData);
+            const payload = {
+                ...formData,
+                approvalProposerIds: formData.approvalProposerIds?.trim() || null
+            };
+
+            const success = await documentService.updateDocument(id, payload);
             if (success) {
-                toast.success("Đã cập nhật bản nháp thành công");
+                toast.success("Đã cập nhật bản thảo thành công");
                 await fetchData();
             }
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Lỗi hệ thống khi cập nhật");
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleSendToAppraisal = async () => {
+        if (!id || !window.confirm("Gửi phiên bản hiện tại đi thẩm định?")) return;
+        setIsSubmitting(true);
+        try {
+            const payload = {
+                ...formData,
+                approvalProposerIds: formData.approvalProposerIds?.trim() || null
+            };
+            await documentService.updateDocument(id, payload);
+            await documentService.submitForAppraisal(id);
+
+            toast.success("Hồ sơ đã được gửi đi thẩm định thành công");
+            navigate("/documents");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Gửi thẩm định thất bại");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -162,9 +241,33 @@ const DocumentEditorPage = () => {
                                     />
                                 </div>
 
-                                <div className="flex justify-end pt-2">
-                                    <Button type="submit" isLoading={isSaving} className="min-w-[120px]">
-                                        <Save className="w-4 h-4 mr-2" /> Lưu bản nháp
+                                <div className="space-y-3 pt-4 border-t border-dark-800">
+                                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Thông số kỹ thuật chi tiết</label>
+                                    <NestedTechnicalSpecsEditor
+                                        value={formData.technicalSpecs || {}}
+                                        onChange={(newSpecs) => handleInputChange("technicalSpecs", newSpecs)}
+                                        readOnly={isSaving || isSubmitting}
+                                    />
+                                </div>
+
+                                <div className="flex justify-end gap-3 pt-4 border-t border-dark-800">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleSendToAppraisal}
+                                        isLoading={isSubmitting}
+                                        disabled={isSaving}
+                                    >
+                                        <Send className="w-4 h-4 mr-2" /> Gửi Thẩm Định
+                                    </Button>
+
+                                    <Button
+                                        type="submit"
+                                        isLoading={isSaving}
+                                        disabled={isSubmitting}
+                                        className="min-w-[120px]"
+                                    >
+                                        <Save className="w-4 h-4 mr-2" /> Lưu bản thảo
                                     </Button>
                                 </div>
                             </form>

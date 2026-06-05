@@ -5,7 +5,8 @@ export const UserRole = {
     Director: 4,
     Inspector: 5,
     DeputyInstituteDirector: 6,
-    InstituteDirector: 7
+    InstituteDirector: 7,
+    Coordinator: 8
 } as const;
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
@@ -38,5 +39,9 @@ export const USER_ROLE_MAP: Record<UserRole, { label: string; color: string }> =
     [UserRole.InstituteDirector]: {
         label: "Viện trưởng",
         color: "text-green-400 bg-green-900/30 border border-green-500/30"
+    },
+    [UserRole.Coordinator]: {
+        label: "Điều phối viên",
+        color: "text-cyan-400 bg-cyan-900/20"
     }
 };

@@ -174,7 +174,7 @@ const NotificationsPage = () => {
 
         switch (routeType) {
             case NotificationRouteType.DocumentDetail:
-                if (documentId && versionId && departmentId) navigate(`/appraisals/${documentId}/review/${versionId}`);
+                if (documentId && versionId) navigate(`/appraisals/${documentId}/review/${versionId}`);
                 break;
             case NotificationRouteType.RejectedDocument:
             case NotificationRouteType.IssuedDocument:

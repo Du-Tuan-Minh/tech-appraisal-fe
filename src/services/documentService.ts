@@ -16,6 +16,7 @@ import type {
     ManagerDashboardDocumentDto,
     ManagerDashboardDocumentFilterDto,
     DepartmentDocumentStatusFilterDto,
+    IncomingAppraisalDocumentDto,
 } from "@/types/document";
 
 import type { PagedResult } from "@/types/paginationResult";
@@ -228,6 +229,22 @@ export const documentService = {
             API_ENDPOINTS.documents.managerRequestStatusDocuments,
             {
                 params: filters
+            }
+        );
+
+        return res.data.data;
+    },
+
+    getIncomingAppraisalDocuments: async (
+        params: pagination & { searchTerm?: string }
+    ): Promise<PagedResult<IncomingAppraisalDocumentDto>> => {
+
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<IncomingAppraisalDocumentDto>>
+        >(
+            API_ENDPOINTS.documents.incomingAppraisalDocuments,
+            {
+                params
             }
         );
 

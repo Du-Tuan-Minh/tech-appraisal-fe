@@ -16,7 +16,7 @@ export const STAFF_DASHBOARD_DOCUMENT_TYPE_MAP: Record<
     { label: string; color: string }
 > = {
     [StaffDashboardDocumentType.Draft]: {
-        label: "Bản nháp",
+        label: "bản thảo",
         color: "text-gray-400 bg-gray-900/20"
     },
 

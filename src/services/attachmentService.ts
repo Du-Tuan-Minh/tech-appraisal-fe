@@ -1,29 +1,39 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { AttachmentCategory } from "@/constants/enum/AttachmentCategory";
+import type { LinkedEntityType } from "@/constants/enum/LinkedEntityType";
 import type { ApiResponse } from "@/types/apiResponse";
 import type { AttachmentResponseDto } from "@/types/attachment";
+import {
+    AttachmentCategory
+} from "@/constants/enum/AttachmentCategory";
 
 export const attachmentService = {
     upload: async (
         file: File,
-        entityId: string,
-        category: AttachmentCategory
+        technicalDocumentId: string,
+        contentCategory: AttachmentCategory,
+        entityId?: string,
+        entityType?: LinkedEntityType
     ): Promise<AttachmentResponseDto> => {
         const formData = new FormData();
 
         formData.append("File", file);
-        formData.append("TechnicalDocumentId", entityId);
-        formData.append("ContentCategory", String(Number(category)));
+        formData.append("TechnicalDocumentId", technicalDocumentId);
+        formData.append("ContentCategory", String(Number(contentCategory)));
 
-        const response = await axiosClient.post<ApiResponse<AttachmentResponseDto>>(
+        if (entityId) {
+            formData.append("LinkedEntityId", entityId);
+        }
+
+        if (entityType !== undefined) {
+            formData.append("LinkedEntityType", String(Number(entityType)));
+        }
+
+        const response = await axiosClient.post<
+            ApiResponse<AttachmentResponseDto>
+        >(
             API_ENDPOINTS.attachments.upload,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            }
+            formData
         );
 
         return response.data.data;

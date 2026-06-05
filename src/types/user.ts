@@ -73,3 +73,20 @@ export interface DocumentTypeStatisticDto {
     type: DocumentType;
     totalDocuments: number;
 }
+
+export interface UserAppraisalAssigneeDto {
+    departmentId: string;
+    userId: string;
+    departmentName: string;
+    fullName: string;
+    employeeCode: string;
+    role: UserRole;
+    totalDocuments: number;
+    currentDocuments: DocumentWorkloadDto[];
+}
+
+export interface DocumentWorkloadDto {
+    id: string;
+    documentCode: string;
+    title: string;
+}

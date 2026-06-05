@@ -27,7 +27,7 @@ export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus
 export const DOCUMENT_STATUS_MAP: Record<DocumentStatus, { label: string; color: string }> = {
     // GIAI ĐOẠN 1: XÂY DỰNG
     [DocumentStatus.Draft]: {
-        label: "Bản nháp",
+        label: "bản thảo",
         color: "text-gray-400 bg-gray-900/20"
     },
     [DocumentStatus.InternalPending]: {

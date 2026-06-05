@@ -7,7 +7,8 @@ const MANAGER_GROUP: UserRole[] = [
     UserRole.Manager,
     UserRole.Director,
     UserRole.DeputyInstituteDirector,
-    UserRole.InstituteDirector
+    UserRole.InstituteDirector,
+    UserRole.Coordinator
 ];
 
 const STAFF_GROUP: UserRole[] = [
@@ -36,6 +37,7 @@ export const useAuth = () => {
     return useMemo(() => ({
         role,
         isAdmin: role === UserRole.Admin,
+        isCoordinator: role === UserRole.Coordinator,
         isManager: role !== null && MANAGER_GROUP.includes(role),
         isStaff: role !== null && STAFF_GROUP.includes(role),
         isOnlyManager: role === UserRole.Manager,

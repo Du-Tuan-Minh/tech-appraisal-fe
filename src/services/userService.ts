@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { ApiResponse } from "@/types/apiResponse";
-import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto, UserFilterDto, DocumentTypeStatisticDto } from "../types/user";
+import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAccountDto, UserDetailResponseDto, UserFilterDto, DocumentTypeStatisticDto, UserAppraisalAssigneeDto } from "../types/user";
 import type { UserRole } from "../constants/enum/UserRole";
 import type { PagedResult } from "@/types/paginationResult";
 
@@ -77,6 +77,20 @@ export const getTopRejectedDocumentTypes = async (
     >(
         API_ENDPOINTS.users.topRejectedDocumentTypes({ page, pageSize })
     );
+
+    return res.data.data;
+};
+
+export const getDepartmentAppraisalWorkloads = async (
+    page: number = 1,
+    pageSize: number = 10,
+    searchTerm?: string
+): Promise<PagedResult<UserAppraisalAssigneeDto>> => {
+    const res = await axiosClient.get<
+        ApiResponse<PagedResult<UserAppraisalAssigneeDto>>
+    >(API_ENDPOINTS.users.departmentAppraisalWorkloads, {
+        params: { page, pageSize, searchTerm },
+    });
 
     return res.data.data;
 };
