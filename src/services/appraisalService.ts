@@ -8,7 +8,8 @@ import type {
     CompleteAssignmentRequest,
     CreateParallelAssignmentsRequest,
     ConsolidateAppraisalRequest,
-    AppraisalAssignmentDto
+    AppraisalAssignmentDto,
+    CoordinatorAssignRequest
 } from "../types/assignment";
 
 import type {
@@ -137,6 +138,17 @@ export const appraisalService = {
             API_ENDPOINTS.appraisal.recallAssignments,
             documentId
         );
+        return handleResponse(res);
+    },
+
+    coordinatorAssign: async (
+        data: CoordinatorAssignRequest
+    ): Promise<boolean> => {
+        const res = await axiosClient.post<ApiResponse<boolean>>(
+            API_ENDPOINTS.appraisal.coordinatorAssign,
+            data
+        );
+
         return handleResponse(res);
     },
 };

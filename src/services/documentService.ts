@@ -250,4 +250,21 @@ export const documentService = {
 
         return res.data.data;
     },
+
+    getUserWorkloadDocuments: async (
+        userId: string,
+        params: pagination & { searchTerm?: string }
+    ): Promise<PagedResult<IncomingAppraisalDocumentDto>> => {
+
+        const res = await axiosClient.get<
+            ApiResponse<PagedResult<IncomingAppraisalDocumentDto>>
+        >(
+            API_ENDPOINTS.documents.userWorkloadDocuments(userId),
+            {
+                params
+            }
+        );
+
+        return res.data.data;
+    },
 };

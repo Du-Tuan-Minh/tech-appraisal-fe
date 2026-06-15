@@ -74,7 +74,7 @@ const DocumentListPage = () => {
                     <Button variant="primary" onClick={() => navigate("/documents/create")}>+ Tạo Mới</Button>
                 </header>
 
-                <Card className="p-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end bg-dark-900/40">
+                <Card className="p-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end bg-dark-900/40">
                     <Input label="Tìm kiếm" placeholder="Tiêu đề tài liệu..." value={filters.searchTerm || ""} onChange={(v) => setFilters(p => ({ ...p, searchTerm: v, page: 1 }))} />
 
                     <Select
@@ -93,7 +93,6 @@ const DocumentListPage = () => {
                         onChange={(v) => setFilters(p => ({ ...p, status: v ? (Number(v) as DocumentStatus) : null, page: 1 }))}
                     />
 
-                    <Input label="Từ ngày" type="date" value={filters.fromDate || ""} onChange={(v) => setFilters(p => ({ ...p, fromDate: v, page: 1 }))} />
                     <Button variant="ghost" className="text-gray-400 hover:text-white" onClick={() => setFilters(initialFilters)}>Xóa bộ lọc</Button>
                 </Card>
 
@@ -141,7 +140,7 @@ const DocumentListPage = () => {
                                                 {doc.status === DocumentStatus.Draft && (
                                                     <Button variant="outline" size="sm" onClick={() => handleAction(() => documentService.submitForAppraisal(doc.id), "Đã gửi!")} isLoading={isSubmittingAction}>Gửi</Button>
                                                 )}
-                                                <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button>
+                                                {/* <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button> */}
                                                 {/* <Button variant="ghost" size="sm" className="text-red-500/70" onClick={() => { if (confirm("Xác nhận xóa tài liệu?")) handleAction(() => documentService.getDocumentById(doc.id), "Đã xóa"); }}>Xóa</Button> */}
                                             </div>
                                         </td>

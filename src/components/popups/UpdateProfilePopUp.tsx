@@ -9,8 +9,8 @@ import type { UserResponseDto, UpdateProfileDto } from "@/types/user";
 type Props = {
     isOpen: boolean;
     onClose: () => void;
-    userData: UserResponseDto;
-    onSuccess: (updatedData: UserResponseDto) => void;
+    userData: UpdateProfileDto;
+    onSuccess: (updatedData: UpdateProfileDto) => void;
     onError: (msg: string) => void;
 };
 

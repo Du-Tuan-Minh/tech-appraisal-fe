@@ -133,7 +133,7 @@ const CreateStaffAssignmentPage = () => {
         <Layout>
             <div className="w-full px-6 py-6 space-y-6">
                 <div className="flex justify-between items-center border-b border-dark-700 pb-4">
-                    <h1 className="text-2xl font-black text-white uppercase">Phân công Reviewers</h1>
+                    <h1 className="text-2xl font-black text-white uppercase">Phân công người đánh giá</h1>
                     <Button variant="ghost" onClick={() => navigate(-1)}>Quay lại</Button>
                 </div>
 
@@ -179,7 +179,7 @@ const CreateStaffAssignmentPage = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-white font-bold">{user.firstName} {user.lastName}</p>
-                                                    <p className="text-xs text-gray-500 font-mono">{user.employeeCode} • {user.departmentName}</p>
+                                                    <p className="text-xs text-gray-500 font-mono">{user.employeeCode}</p>
                                                 </div>
                                             </div>
                                             <span className="text-[10px] bg-dark-700 px-2 py-1 rounded text-gray-400 font-bold">{user.role}</span>

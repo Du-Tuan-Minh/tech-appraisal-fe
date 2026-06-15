@@ -10,8 +10,10 @@ import CommentSection from "../../components/forms/CommentSection";
 import { feedbackService } from "../../services/feedbackService";
 import type { FeedbackIssueDetailDto } from "@/types/feedback";
 
-import { ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
 import { DOCUMENT_STATUS_MAP } from "../../constants/enum/DocumentStatus";
+import { IssueSeverity, ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
+import { IssueStatus, ISSUE_STATUS_MAP } from "../../constants/enum/IssueStatus";
+import { getEnumMapValue } from "@/utils/enumHelper";
 
 const FeedbackDetailPage = () => {
     const navigate = useNavigate();
@@ -40,6 +42,9 @@ const FeedbackDetailPage = () => {
 
     if (isLoading) return <LoadingSpinner />;
     if (!feedback) return null;
+
+    const severityConfig = getEnumMapValue(ISSUE_SEVERITY_MAP, IssueSeverity, feedback.severity);
+    const statusConfig = getEnumMapValue(ISSUE_STATUS_MAP, IssueStatus, feedback.status);
 
     return (
         <Layout>
@@ -72,11 +77,12 @@ const FeedbackDetailPage = () => {
                                 <div className="space-y-5">
                                     <BadgeField
                                         label="Mức độ"
-                                        config={ISSUE_SEVERITY_MAP[feedback.severity]}
+                                        config={severityConfig}
                                     />
+
                                     <BadgeField
                                         label="Trạng thái"
-                                        config={DOCUMENT_STATUS_MAP[feedback.status]}
+                                        config={statusConfig}
                                     />
                                     <DetailItem label="Người báo cáo" value={feedback.reporterName} />
                                     <DetailItem
@@ -92,7 +98,7 @@ const FeedbackDetailPage = () => {
 
                             <Card className="p-6 bg-primary-500/5 border-primary-500/10">
                                 <label className="text-[10px] text-primary-400 font-bold uppercase tracking-widest block mb-2">
-                                    Vị trí lỗi (Indicator Path)
+                                    Vị trí lỗi
                                 </label>
                                 <code className="text-xs text-primary-200 break-all leading-relaxed font-mono">
                                     {feedback.indicatorPath}
@@ -114,7 +120,6 @@ const FeedbackDetailPage = () => {
                         <div className="border-t border-white/10 pt-8">
                             <div className="flex items-center gap-3 mb-6">
                                 <h2 className="text-xl font-bold text-white">Thảo luận hệ thống</h2>
-                                <span className="px-2 py-0.5 bg-white/5 rounded-full text-xs text-gray-500">Live</span>
                             </div>
                             <CommentSection feedbackIssueId={feedback.id} />
                         </div>

@@ -11,7 +11,7 @@ import type { TechnicalDocumentDetailDto, TechnicalDocumentUpdateDto } from "@/t
 import type { DocumentVersionDto } from "@/types/version";
 
 import { DocumentType, DOCUMENT_TYPE_MAP } from "@/constants/enum/DocumentType";
-import { DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentStatus";
+import { DOCUMENT_STATUS_MAP, DocumentStatus } from "@/constants/enum/DocumentStatus";
 import { IssueSeverity, ISSUE_SEVERITY_MAP } from "@/constants/enum/IssueSeverity";
 import { getEnumMapValue } from "@/utils/enumHelper";
 import NestedTechnicalSpecsEditor from "@/components/forms/NestedTechnicalSpecsEditor";
@@ -133,6 +133,8 @@ const DocumentEditorPage = () => {
     const handleInputChange = (field: keyof TechnicalDocumentUpdateDto, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
+
+    const statusInfo = getEnumMapValue(DOCUMENT_STATUS_MAP, DocumentStatus, doc?.status);
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -284,7 +286,6 @@ const DocumentEditorPage = () => {
                                         <thead className="bg-dark-900 text-gray-500 uppercase font-bold">
                                             <tr>
                                                 <th className="px-4 py-3">Phiên bản</th>
-                                                <th className="px-4 py-3">Mã yêu cầu</th>
                                                 <th className="px-4 py-3 text-right">Thao tác</th>
                                             </tr>
                                         </thead>
@@ -292,7 +293,6 @@ const DocumentEditorPage = () => {
                                             {paginatedVersions.length > 0 ? paginatedVersions.map(v => (
                                                 <tr key={v.id} className="hover:bg-white/[0.03] transition-colors">
                                                     <td className="px-4 py-3 font-semibold text-primary-400">v{v.versionNumber}</td>
-                                                    <td className="px-4 py-3 font-mono opacity-70">{v.requestId}</td>
                                                     <td className="px-4 py-3 text-right">
                                                         <Button
                                                             variant="ghost"
@@ -330,8 +330,8 @@ const DocumentEditorPage = () => {
                             <h4 className="text-xs font-bold text-gray-400 border-b border-dark-700 pb-2 uppercase">Thông tin hệ thống</h4>
                             <MetaRow
                                 label="Trạng thái"
-                                value={DOCUMENT_STATUS_MAP[doc.status]?.label || "N/A"}
-                                color={DOCUMENT_STATUS_MAP[doc.status]?.color}
+                                value={statusInfo?.label || "N/A"}
+                                color={statusInfo?.color}
                             />
                             <MetaRow label="Phòng ban quản lý" value={doc.departmentName} />
                             <MetaRow label="Người khởi tạo" value={doc.requesterName} />

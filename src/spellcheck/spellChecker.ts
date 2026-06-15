@@ -1,6 +1,7 @@
 ﻿import { mountBuffer, unmount } from "emscripten-wasm-loader";
 import { wrapHunspellInterface } from "hunspell-asm/dist/esm/wrapHunspellInterface.js";
 import browserRuntime from "hunspell-asm/dist/esm/lib/browser/hunspell.js";
+import { spellCache, suggestionCache, trimCache } from "./cache";
 
 const basePath = import.meta.env.BASE_URL ?? "/";
 const dictionaryPath = (name: string) => `${basePath}dictionaries/${name}`;
@@ -130,8 +131,6 @@ export async function initializeSpellChecker() {
     );
 
     initialized = true;
-    console.log("English checker:", englishChecker);
-    console.log("Vietnamese checker:", vietnameseChecker);
 }
 
 export function checkWord(word: string): boolean {
@@ -141,10 +140,19 @@ export function checkWord(word: string): boolean {
 
     if (!value) return true;
 
-    return (
+    const cached = spellCache.get(value);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const result =
         englishChecker.spell(value) ||
-        vietnameseChecker.spell(value)
-    );
+        vietnameseChecker.spell(value);
+
+    trimCache(spellCache);
+    spellCache.set(value, result);
+
+    return result;
 }
 
 export function suggestWord(word: string): string[] {
@@ -152,8 +160,18 @@ export function suggestWord(word: string): string[] {
 
     const value = word.trim().toLowerCase();
 
-    return [
+    const cached = suggestionCache.get(value);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const result = [
         ...englishChecker.suggest(value),
         ...vietnameseChecker.suggest(value)
     ];
+
+    trimCache(suggestionCache);
+    suggestionCache.set(value, result);
+
+    return result;
 }

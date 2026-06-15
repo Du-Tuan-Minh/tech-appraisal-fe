@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Pagination } from "@/components/ui";
 import { toast } from "react-hot-toast";
@@ -10,6 +10,9 @@ import { DocumentStatus, DOCUMENT_STATUS_MAP } from "@/constants/enum/DocumentSt
 
 const IncomingAppraisalDocumentPage = () => {
     const navigate = useNavigate();
+
+    const [searchParams] = useSearchParams();
+    const urlUserId = useMemo(() => searchParams.get("userid"), [searchParams]);
 
     const initialFilters = {
         page: 1,
@@ -24,14 +27,19 @@ const IncomingAppraisalDocumentPage = () => {
     const fetchDocuments = useCallback(async () => {
         setIsLoading(true);
         try {
-            const res = await documentService.getIncomingAppraisalDocuments(filters);
+            let res;
+            if (urlUserId) {
+                res = await documentService.getUserWorkloadDocuments(urlUserId, filters);
+            } else {
+                res = await documentService.getIncomingAppraisalDocuments(filters);
+            }
             setData(res);
         } catch (err) {
             toast.error("Lỗi tải danh sách tài liệu thẩm định.");
         } finally {
             setIsLoading(false);
         }
-    }, [filters]);
+    }, [filters, urlUserId]);
 
     useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
 
@@ -42,14 +50,16 @@ const IncomingAppraisalDocumentPage = () => {
         const version = doc.VersionNumber || "1";
 
         navigate(
-            `/appraisals/assignment/create/${doc.versionId}?documentId=${documentId}&title=${title}&code=${code}&v=${version}`
+            `/appraisals/assignment/create/coordinator/${doc.versionId}?documentId=${documentId}&title=${title}&code=${code}&v=${version}&parentId=${"00000000-0000-0000-0000-000000000000"}`
         );
     };
     return (
         <Layout>
             <div className="w-full px-6 py-6 space-y-6">
                 <header className="flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-white tracking-tight italic">Tài Liệu Chờ Thẩm Định</h1>
+                    <h1 className="text-3xl font-bold text-white tracking-tight italic">
+                        {urlUserId ? "Khối Lượng Công Việc Nhân Sự" : "Tài Liệu Chờ Thẩm Định"}
+                    </h1>
                 </header>
 
                 <Card className="p-6 flex gap-4 items-end bg-dark-900/40">

@@ -6,9 +6,10 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { Layout } from "../../components/layout";
 import { appraisalService } from "../../services/appraisalService";
-import { ASSIGNMENT_STATUS_MAP } from "../../constants/enum/AssignmentStatus";
-import { REVIEWER_STATUS_MAP } from "../../constants/enum/ReviewerStatus";
+import { ASSIGNMENT_STATUS_MAP, AssignmentStatus } from "../../constants/enum/AssignmentStatus";
+import { REVIEWER_STATUS_MAP, ReviewerStatus } from "../../constants/enum/ReviewerStatus";
 import type { AppraisalAssignmentDetailDto } from "../../types/assignment";
+import { getEnumMapValue } from "@/utils/enumHelper";
 
 const AssignmentDetailPage = () => {
     const navigate = useNavigate();
@@ -58,7 +59,6 @@ const AssignmentDetailPage = () => {
     return (
         <Layout>
             <div className="max-w-7xl mx-auto p-6">
-                {/* Page Header */}
                 <div className="mb-8 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-white uppercase tracking-tight">Chi Tiết Phân Công</h1>
@@ -72,7 +72,6 @@ const AssignmentDetailPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Left Column: Document Info */}
                     <div className="lg:col-span-7 space-y-6">
                         <Card className="p-6 border-dark-700 bg-dark-900/50">
                             <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
@@ -92,7 +91,11 @@ const AssignmentDetailPage = () => {
                                 <div className="md:col-span-2">
                                     <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Trạng thái hệ thống</span>
                                     <div className="mt-2">
-                                        <StatusBadge status={assignment.status} map={ASSIGNMENT_STATUS_MAP} />
+                                        <StatusBadge
+                                            status={assignment.status}
+                                            map={ASSIGNMENT_STATUS_MAP}
+                                            enumObj={AssignmentStatus}
+                                        />
                                     </div>
                                 </div>
 
@@ -120,9 +123,13 @@ const AssignmentDetailPage = () => {
                                         <div key={reviewer.id} className="group border border-dark-700 rounded-lg p-3 bg-dark-800/30 flex justify-between items-center hover:border-primary-500/50 transition-all">
                                             <div>
                                                 <p className="text-white font-medium group-hover:text-primary-400 transition-colors">{reviewer.staffName}</p>
-                                                <p className="text-[10px] text-gray-500 font-mono">ID: {reviewer.id}</p>
+                                                <p className="text-[10px] text-gray-500 font-mono">ID: {reviewer.employeeCode}</p>
                                             </div>
-                                            <StatusBadge status={reviewer.status} map={REVIEWER_STATUS_MAP} />
+                                            <StatusBadge
+                                                status={reviewer.status}
+                                                map={REVIEWER_STATUS_MAP}
+                                                enumObj={ReviewerStatus}
+                                            />
                                         </div>
                                     ))
                                 )}
@@ -157,11 +164,21 @@ const InfoItem = ({ label, value, isBold, className = "" }: { label: string; val
     </div>
 );
 
-const StatusBadge = ({ status, map }: { status: any; map: any }) => {
-    const config = map[status] || { label: "N/A", color: "text-gray-400 bg-gray-900/20" };
+interface StatusBadgeProps {
+    status: string | number | null | undefined;
+    map: Record<string | number, { label: string; color: string }>;
+    enumObj: Record<string, string | number>;
+}
+
+const StatusBadge = ({ status, map, enumObj }: StatusBadgeProps) => {
+    const config = getEnumMapValue(map, enumObj, status);
+
+    const label = config?.label || "N/A";
+    const colorClass = config?.color || "text-gray-400 bg-gray-900/20 border border-gray-800";
+
     return (
-        <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-sm ${config.color}`}>
-            {config.label}
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-sm transition-colors duration-200 ${colorClass}`}>
+            {label}
         </span>
     );
 };

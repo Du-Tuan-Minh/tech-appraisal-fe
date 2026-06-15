@@ -170,14 +170,25 @@ const ManagerAssignmentListPage = () => {
                                             <td className="p-4">
                                                 <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
                                                     {role === UserRole.Manager && (
-                                                        <Button
-                                                            variant="primary"
-                                                            size="sm"
-                                                            className="h-8 px-3 text-[11px]"
-                                                            onClick={() => navigate(`/appraisals/department/${item.departmentId}/assignment/${item.id}/staff`)}
-                                                        >
-                                                            + Gán việc
-                                                        </Button>
+                                                        <>
+                                                            <Button
+                                                                variant="primary"
+                                                                size="sm"
+                                                                className="h-8 px-3 text-[11px]"
+                                                                onClick={() => navigate(`/appraisals/department/${item.departmentId}/assignment/${item.id}/staff`)}
+                                                            >
+                                                                + Gán việc
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
+                                                                onClick={() => navigate(`/appraisals/reviewer-assignments/${item.id}/staff`)}
+                                                            >
+                                                                Danh sách phân công
+                                                            </Button>
+                                                        </>
                                                     )}
 
                                                     <Button
@@ -187,14 +198,6 @@ const ManagerAssignmentListPage = () => {
                                                         onClick={() => navigate(`/appraisals/assignments/${item.id}`)}
                                                     >
                                                         Chi tiết
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 px-3 text-[11px] border border-dark-600 hover:border-primary-500"
-                                                        onClick={() => navigate(`/appraisals/reviewer-assignments/${item.id}/staff`)}
-                                                    >
-                                                        Danh sách phân công
                                                     </Button>
                                                 </div>
                                             </td>

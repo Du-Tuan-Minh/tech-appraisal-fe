@@ -5,6 +5,7 @@ export interface AppraisalReviewerDto {
     id: string;
     staffName: string;
     status: ReviewerStatus;
+    employeeCode: string;
 }
 
 export interface AppraisalReviewerDetailDto extends AppraisalReviewerDto {

@@ -12,6 +12,7 @@ import { getUsers, updateAccountStatus } from "../../services/userService";
 import { UserRole, USER_ROLE_MAP } from "../../constants/enum/UserRole";
 import type { UserResponseDto } from "@/types/user";
 import UpdateAccountStatusPopUp from "../../components/popups/UpdateAccountStatusPopUp";
+import { getEnumMapValue } from "@/utils/enumHelper";
 
 const UserListPage = () => {
     const navigate = useNavigate();
@@ -89,16 +90,20 @@ const UserListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6 animate-fadeIn">
+            <div className="w-full mx-auto p-6 space-y-6 animate-fadeIn">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Quản Lý Nhân Sự</h1>
                         <p className="text-primary-400 font-medium">Danh sách nhân sự của phòng ban</p>
                     </div>
                 </header>
-
                 <Card className="p-6 border-primary-500/10 bg-dark-900/40 backdrop-blur-md">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Thay đổi cấu trúc Grid: 
+      - Mobile: 1 cột dọc (grid-cols-1)
+      - Tablet: 2 cột (md:grid-cols-2)
+      - Desktop: Tất cả 4 phần tử nằm chung 1 hàng (lg:grid-cols-4)
+    */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                         <div className="relative">
                             <Input
                                 label="Tìm kiếm nhanh"
@@ -106,7 +111,8 @@ const UserListPage = () => {
                                 value={searchQuery}
                                 onChange={(v) => setSearchQuery(v)}
                             />
-                            <Search className="absolute right-3 top-10 w-4 h-4 text-gray-500" />
+                            {/* Căn chỉnh lại top-10 thành top-[38px] để icon kính lúp nằm chính giữa input có label */}
+                            <Search className="absolute right-3 top-[38px] w-4 h-4 text-gray-500" />
                         </div>
 
                         <Select
@@ -130,30 +136,15 @@ const UserListPage = () => {
                             onChange={(v) => setFilters(p => ({ ...p, isActive: v === "" ? undefined : v === "true", page: 1 }))}
                         />
 
-                        <Input
-                            label="Ngày tham gia từ"
-                            type="date"
-                            value={filters.fromDate}
-                            onChange={(v) => setFilters(p => ({ ...p, fromDate: v, page: 1 }))}
-                        />
-
-                        <Input
-                            label="Đến ngày"
-                            type="date"
-                            value={filters.toDate}
-                            onChange={(v) => setFilters(p => ({ ...p, toDate: v, page: 1 }))}
-                        />
-
-                        <div className="flex items-end">
-                            <Button
-                                variant="outline"
-                                className="w-full border-dark-700 hover:bg-dark-800 text-gray-400"
-                                onClick={resetFilters}
-                            >
-                                <RotateCcw className="w-4 h-4 mr-2" />
-                                Làm mới bộ lọc
-                            </Button>
-                        </div>
+                        {/* Loại bỏ div bọc ngoài không cần thiết, tận dụng class `items-end` ở Grid cha để đẩy nút Button bằng hàng với các Input */}
+                        <Button
+                            variant="outline"
+                            className="w-full border-dark-700 hover:bg-dark-800 text-gray-400 h-10"
+                            onClick={resetFilters}
+                        >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Làm mới bộ lọc
+                        </Button>
                     </div>
                 </Card>
 
@@ -201,7 +192,7 @@ const UserListPage = () => {
                                             </td>
                                             <td className="p-4">
                                                 <span className="px-3 py-1 rounded-md bg-dark-800 text-xs font-semibold text-gray-300 border border-dark-700">
-                                                    {USER_ROLE_MAP[user.role]?.label}
+                                                    {getEnumMapValue(USER_ROLE_MAP, UserRole, user.role)?.label}
                                                 </span>
                                             </td>
                                             <td className="p-4">

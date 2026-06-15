@@ -78,3 +78,12 @@ export interface SendParallelAssignmentsRequest {
     documentId: string;
     comment?: string | null;
 }
+
+export interface CoordinatorAssignRequest {
+    documentId: string;
+    versionId: string;
+    managerIds?: string[];
+    staffIds?: string[];
+    deadline?: string | null;
+    comment?: string | null;
+}

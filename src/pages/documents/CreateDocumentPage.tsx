@@ -177,7 +177,7 @@ const CreateDocumentPage = () => {
                                 <div className="md:col-span-2">
                                     <Input
                                         label="Tiêu đề dự án/tài liệu"
-                                        placeholder="VD: Hệ thống Core Banking"
+                                        placeholder="VD: Hệ thống bảo trì thiết bị"
                                         value={formData.title}
                                         onChange={(v) => setFormData(p => ({ ...p, title: v }))}
                                         required

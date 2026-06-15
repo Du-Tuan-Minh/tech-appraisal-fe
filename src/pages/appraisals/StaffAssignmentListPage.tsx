@@ -9,7 +9,8 @@ import Input from "../../components/ui/Input";
 import Pagination from "../../components/ui/Pagination";
 
 import { appraisalService } from "../../services/appraisalService";
-import { REVIEWER_STATUS_MAP } from "@/constants/enum/ReviewerStatus";
+import { ReviewerStatus, REVIEWER_STATUS_MAP } from "@/constants/enum/ReviewerStatus";
+import { getEnumMapValue } from "../../utils/enumHelper";
 import type { AppraisalReviewerDto } from "@/types/reviewer";
 
 const StaffAssignmentListPage = () => {
@@ -19,49 +20,33 @@ const StaffAssignmentListPage = () => {
     const [reviewers, setReviewers] = useState<AppraisalReviewerDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [pagination, setPagination] = useState({ page: 1, pageSize: 10, totalPages: 0 });
 
-    const [pagination, setPagination] = useState({
-        page: 1,
-        pageSize: 10,
-        totalCount: 0,
-        totalPages: 0
-    });
-
-    const handleSearch = () => {
-        loadData(1);
-    };
-
-    const loadData = useCallback(async (page: number = 1) => {
+    const loadData = useCallback(async (page: number, search?: string) => {
         if (!assignmentId) return;
-
         setIsLoading(true);
         try {
-            const params = {
+            const queryParams: any = {
                 page,
                 pageSize: pagination.pageSize,
-                searchTerm: searchTerm || undefined
+                searchTerm: search?.trim() || undefined
             };
 
-            const response = await appraisalService.getReviewerAssignments(assignmentId, params);
+            const response = await appraisalService.getReviewerAssignments(assignmentId, queryParams);
 
             setReviewers(response.items);
-            setPagination(prev => ({
-                ...prev,
-                page: response.page,
-                totalCount: response.totalCount,
-                totalPages: response.totalPages
-            }));
-        } catch (err) {
+            setPagination(prev => ({ ...prev, page: response.page, totalPages: response.totalPages }));
+        } catch {
             toast.error("Không thể tải danh sách nhân viên thẩm định.");
         } finally {
             setIsLoading(false);
         }
-    }, [assignmentId, searchTerm, pagination.pageSize]);
+    }, [assignmentId, pagination.pageSize]);
 
     useEffect(() => {
-        const handler = setTimeout(() => loadData(1), 400);
+        const handler = setTimeout(() => loadData(1, searchTerm), 400);
         return () => clearTimeout(handler);
-    }, [searchTerm, loadData]);
+    }, [searchTerm]);
 
     return (
         <Layout>
@@ -81,15 +66,10 @@ const StaffAssignmentListPage = () => {
                                 placeholder="Tìm kiếm tên nhân viên..."
                                 value={searchTerm}
                                 onChange={(val) => setSearchTerm(val)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                onKeyDown={(e) => e.key === 'Enter' && loadData(1, searchTerm)}
                             />
                         </div>
-                        <Button
-                            variant="primary"
-                            onClick={handleSearch}
-                            isLoading={isLoading}
-                            className="min-w-[120px]"
-                        >
+                        <Button variant="primary" onClick={() => loadData(1, searchTerm)} isLoading={isLoading} className="min-w-[120px]">
                             Tìm kiếm
                         </Button>
                     </div>
@@ -107,35 +87,35 @@ const StaffAssignmentListPage = () => {
                             </thead>
                             <tbody className="divide-y divide-dark-800">
                                 {isLoading ? (
-                                    <LoadingState colSpan={3} />
+                                    <tr>
+                                        <td colSpan={3} className="p-20 text-center">
+                                            <div className="animate-spin inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" />
+                                        </td>
+                                    </tr>
                                 ) : reviewers.length > 0 ? (
-                                    reviewers.map((reviewer) => (
-                                        <tr key={reviewer.id} className="hover:bg-primary-500/5 transition-colors">
-                                            <td className="p-4">
-                                                <div className="font-semibold text-white">{reviewer.staffName}</div>
-                                                <div className="text-xs text-gray-500 font-mono">ID: {reviewer.id.split('-')[0]}...</div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${REVIEWER_STATUS_MAP[reviewer.status].color}`}>
-                                                    {REVIEWER_STATUS_MAP[reviewer.status]?.label}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => navigate(`/appraisals/assignments/${reviewer.id}`)}
-                                                >
-                                                    Chi tiết
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    reviewers.map((reviewer) => {
+                                        const statusConfig = getEnumMapValue(REVIEWER_STATUS_MAP, ReviewerStatus, reviewer.status);
+                                        return (
+                                            <tr key={reviewer.id} className="hover:bg-primary-500/5 transition-colors">
+                                                <td className="p-4">
+                                                    <div className="font-semibold text-white">{reviewer.staffName}</div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${statusConfig?.color || "text-gray-400 bg-gray-900/20 border-dark-700"}`}>
+                                                        {statusConfig?.label || "N/A"}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <Button variant="ghost" size="sm" onClick={() => navigate(`/appraisals/assignments/${reviewer.id}`)}>
+                                                        Chi tiết
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
                                     <tr>
-                                        <td colSpan={3} className="p-20 text-center text-gray-500">
-                                            Chưa có nhân viên nào được phân công.
-                                        </td>
+                                        <td colSpan={3} className="p-20 text-center text-gray-500 italic">Chưa có nhân viên nào được phân công.</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -148,7 +128,7 @@ const StaffAssignmentListPage = () => {
                         <Pagination
                             currentPage={pagination.page}
                             totalPages={pagination.totalPages}
-                            onPageChange={loadData}
+                            onPageChange={(page) => loadData(page, searchTerm)}
                         />
                     </div>
                 )}
@@ -156,13 +136,5 @@ const StaffAssignmentListPage = () => {
         </Layout>
     );
 };
-
-const LoadingState = ({ colSpan }: { colSpan: number }) => (
-    <tr>
-        <td colSpan={colSpan} className="p-20 text-center">
-            <div className="animate-spin inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full"></div>
-        </td>
-    </tr>
-);
 
 export default StaffAssignmentListPage;

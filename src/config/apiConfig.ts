@@ -50,6 +50,7 @@ export const API_ENDPOINTS = {
         managerRequestedOverdueDocuments: "/documents/manager-requested-overdue-documents",
         managerRequestStatusDocuments: "/documents/manager-request-status-documents",
         incomingAppraisalDocuments: "/documents/incoming-appraisal-documents",
+        userWorkloadDocuments: (userId: string) => `/documents/user-appraisal-workloads/${userId}/documents`,
     },
 
     appraisal: {
@@ -64,6 +65,7 @@ export const API_ENDPOINTS = {
         listReviewer: (assignmentId?: string) => `/appraisal/list-reviewer${assignmentId ? `/${assignmentId}` : ""}`,
         getReviewerDetail: (reviewerId: string) => `/appraisal/reviewer-detail/${reviewerId}`,
         recallAssignments: `/appraisal/recall-assignments`,
+        coordinatorAssign: `/appraisal/coordinator-assign`,
     },
 
     appraisalHistory: {

@@ -117,7 +117,7 @@ const StaffDashboardPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-10">
+            <div className="w-full mx-auto p-6 space-y-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                     {TOP_METRICS_CONFIG.map((metric) => {
                         const count = summary ? Number(summary[metric.key as keyof DashboardSummaryStaffDto] || 0) : 0;
@@ -137,8 +137,7 @@ const StaffDashboardPage = () => {
 
                 <div className="space-y-4">
                     <div>
-                        <h2 className="text-xl font-bold text-white tracking-tight">Quy trình làm việc</h2>
-                        <p className="text-xs text-gray-500 mt-0.5">Các giai đoạn hiện tại</p>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Luồng thẩm định tài liệu</h2>
                     </div>
 
                     <Card className="p-8 bg-[#121824] border border-gray-800/60 rounded-xl">

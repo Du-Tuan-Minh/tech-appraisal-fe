@@ -7,12 +7,13 @@ import { toast } from "react-hot-toast";
 import ChangePasswordPopUp from "@/components/popups/ChangePasswordPopUp";
 import UpdateProfilePopUp from "@/components/popups/UpdateProfilePopUp";
 import RequestPromotionPopUp from "@/components/popups/RequestPromotionPopUp";
-import type { UserResponseDto } from "@/types/user";
+import type { UserDetailResponseDto } from "@/types/user";
 import { UserRole, USER_ROLE_MAP } from "@/constants/enum/UserRole";
+import { getEnumMapValue } from "@/utils/enumHelper";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
-    const [userData, setUserData] = useState<UserResponseDto | null>(null);
+    const [userData, setUserData] = useState<UserDetailResponseDto | null>(null);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isPassOpen, setIsPassOpen] = useState(false);
     const [isPromotionOpen, setIsPromotionOpen] = useState(false);
@@ -77,12 +78,12 @@ const ProfilePage = () => {
                     <Card className="p-6 h-fit border-dark-700">
                         <h2 className="text-xl font-bold text-white mb-6">Tài Khoản</h2>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium">{USER_ROLE_MAP[userData.role]?.label}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-primary-400">Vai trò</span><span className="text-white font-medium"> {getEnumMapValue(USER_ROLE_MAP, UserRole, userData.role)?.label || "N/A"}</span></div>
                             <div className="flex justify-between items-center"><span className="text-primary-400">Trạng thái</span><span className="text-green-400 font-medium">{userData.isActive ? "Hoạt động" : "Không hoạt động"}</span></div>
                         </div>
                         <div className="space-y-3 mt-10">
                             <Button variant="outline" className="w-full" onClick={() => setIsPassOpen(true)}>Đổi mật khẩu</Button>
-                            {userData.role < UserRole.Admin && (
+                            {userData.role !== UserRole.Admin && (
                                 <Button variant="primary" className="w-full" onClick={() => setIsPromotionOpen(true)}>
                                     Yêu cầu thăng cấp
                                 </Button>

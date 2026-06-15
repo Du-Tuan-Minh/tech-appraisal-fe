@@ -5,8 +5,8 @@ import type { UserResponseDto, UpdateProfileDto, ChangePasswordDto, UserUpdateAc
 import type { UserRole } from "../constants/enum/UserRole";
 import type { PagedResult } from "@/types/paginationResult";
 
-export const getProfile = async (): Promise<UserResponseDto> => {
-    const res = await axiosClient.get<ApiResponse<UserResponseDto>>(
+export const getProfile = async (): Promise<UserDetailResponseDto> => {
+    const res = await axiosClient.get<ApiResponse<UserDetailResponseDto>>(
         API_ENDPOINTS.users.profile
     );
     return res.data.data;
@@ -41,7 +41,7 @@ export const getUsers = async (filters: UserFilterDto): Promise<PagedResult<User
 //     return res.data.data;
 // };
 
-export const requestPromotion = async (requestedRole: UserRole, reason: string) => {
+export const requestPromotion = async (currentRole: UserRole, requestedRole: UserRole, reason: string) => {
     const res = await axiosClient.post<ApiResponse<any>>(
         API_ENDPOINTS.users.requestPromotion + `?requestedRole=${requestedRole}`,
         reason

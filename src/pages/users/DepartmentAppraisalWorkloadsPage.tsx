@@ -10,8 +10,9 @@ import Input from "../../components/ui/Input";
 import Pagination from "../../components/ui/Pagination";
 
 import { getDepartmentAppraisalWorkloads } from "../../services/userService";
-import { USER_ROLE_MAP } from "../../constants/enum/UserRole";
+import { USER_ROLE_MAP, UserRole } from "../../constants/enum/UserRole";
 import type { UserAppraisalAssigneeDto } from "@/types/user";
+import { getEnumMapValue } from "../../utils/enumHelper";
 
 const DepartmentAppraisalWorkloadsPage = () => {
     const navigate = useNavigate();
@@ -149,10 +150,8 @@ const DepartmentAppraisalWorkloadsPage = () => {
                                                 {item.departmentName}
                                             </td>
 
-                                            <td className="p-4">
-                                                <span className="px-3 py-1 rounded-md bg-dark-800 text-xs font-semibold text-gray-300 border border-dark-700">
-                                                    {USER_ROLE_MAP[item.role]?.label || "N/A"}
-                                                </span>
+                                            <td className="p-4 text-gray-300 font-medium">
+                                                {getEnumMapValue(USER_ROLE_MAP, UserRole, item.role)?.label || "N/A"}
                                             </td>
 
                                             <td className="p-4 text-center">
@@ -168,7 +167,7 @@ const DepartmentAppraisalWorkloadsPage = () => {
                                                         size="sm"
                                                         variant="ghost"
                                                         title="Xem chi tiết hồ sơ đang thẩm định"
-                                                        onClick={() => navigate(`/coordinator/workloads/${item.userId}?dept=${item.departmentId}`)}
+                                                        onClick={() => navigate(`/incoming-appraisal-documents?userid=${item.userId}`)}
                                                         className="hover:bg-primary-500/10 hover:text-primary-400"
                                                     >
                                                         <Eye className="w-4 h-4 mr-1" />

@@ -4,6 +4,7 @@ export interface DepartmentResponseDto {
     codeDepartment: string;
     description: string | null;
     managerName: string | null;
+    managerId: string | null;
     parentId: string | null;
     createdAt: string;
 }

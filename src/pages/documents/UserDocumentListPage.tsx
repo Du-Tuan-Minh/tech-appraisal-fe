@@ -180,7 +180,7 @@ const UserDocumentListPage = () => {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto p-6 space-y-6">
+            <div className="w-full mx-auto p-6 space-y-6">
                 <div className="flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Tài Liệu Của Tôi</h1>
@@ -301,7 +301,7 @@ const UserDocumentListPage = () => {
                                                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                                                         <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/editor`)}>Sửa</Button>
-                                                        <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button>
+                                                        {/* <Button variant="ghost" size="sm" onClick={() => navigate(`/documents/${doc.id}/versions`)}>Vòng đời</Button> */}
                                                     </div>
                                                 </td>
                                             </tr>

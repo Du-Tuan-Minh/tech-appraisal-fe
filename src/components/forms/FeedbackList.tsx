@@ -2,9 +2,11 @@ import Button from "../ui/Button";
 import Card from "../ui/Card";
 import Pagination from "../ui/Pagination";
 
-import { ISSUE_STATUS_MAP } from "../../constants/enum/IssueStatus";
 import { ISSUE_SEVERITY_MAP } from "../../constants/enum/IssueSeverity";
 import type { FeedbackIssueResponseDto } from "../../types/feedback";
+import { getEnumMapValue } from "@/utils/enumHelper";
+import { IssueSeverity } from "../../constants/enum/IssueSeverity";
+import { IssueStatus, ISSUE_STATUS_MAP } from "../../constants/enum/IssueStatus";
 
 interface FeedbackListProps {
   data: FeedbackIssueResponseDto[];
@@ -70,6 +72,8 @@ const FeedbackList = ({
               ) : data.length > 0 ? (
                 data.map((item) => {
                   const isRejected = rejectedIds?.includes(item.id);
+                  const severity = getEnumMapValue(ISSUE_SEVERITY_MAP, IssueSeverity, item.severity);
+                  const status = getEnumMapValue(ISSUE_STATUS_MAP, IssueStatus, item.status);
 
                   return (
                     <tr
@@ -101,14 +105,20 @@ const FeedbackList = ({
                       </td>
 
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tight ${ISSUE_SEVERITY_MAP[item.severity]?.color}`}>
-                          {ISSUE_SEVERITY_MAP[item.severity]?.label}
+                        <span
+                          className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tight ${severity?.color ?? ""
+                            }`}
+                        >
+                          {severity?.label ?? "-"}
                         </span>
                       </td>
 
                       <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${ISSUE_STATUS_MAP[item.status]?.color}`}>
-                          {ISSUE_STATUS_MAP[item.status]?.label}
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${status?.color ?? ""
+                            }`}
+                        >
+                          {status?.label ?? "-"}
                         </span>
                       </td>
 

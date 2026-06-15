@@ -5,7 +5,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import StaffDashboardPage from "../pages/dashboard/StaffDashboardPage";
 import ProfilePage from "../pages/users/ProfilePage";
-import DepartmentListPage from "../pages/departments/DepartmentListPage";
+//import DepartmentListPage from "../pages/departments/DepartmentListPage";
 import CenterListPage from "../pages/departments/CenterListPage";
 import DocumentListPage from "../pages/documents/DocumentListPage";
 import CreateDocumentPage from "../pages/documents/CreateDocumentPage";
@@ -36,12 +36,12 @@ import UserDocumentListPage from "../pages/documents/UserDocumentListPage";
 import ManagerDashboardPage from "../pages/dashboard/ManagerDashboardPage";
 import PendingAppraisalResponsesPage from "../pages/appraisals/PendingAppraisalResponsesPage";
 import OverdueDocumentsPage from "../pages/appraisals/OverdueDocumentsPage";
-import TopUsersPage from "../pages/users/TopUsersPage";
 import ManagerDashboardDocumentListPage from "../pages/documents/ManagerDashboardDocumentListPage";
 import DirectorDashboardPage from "../pages/dashboard/DirectorDashboardPage";
 import CoordinatorDashboardPage from "../pages/dashboard/CoordinatorDashboardPage";
 import DepartmentAppraisalWorkloadsPage from "../pages/users/DepartmentAppraisalWorkloadsPage";
 import IncomingAppraisalDocumentPage from "../pages/documents/IncomingAppraisalDocumentPage";
+import CreateCoordinatorAssignmentPage from "../pages/appraisals/CreateCoordinatorAssignmentPage";
 
 const AppRoutes = () => {
     return (
@@ -60,7 +60,6 @@ const AppRoutes = () => {
                 <Route path="/director/dashboard" element={<DirectorDashboardPage />} />
                 <Route path="/coordinator/dashboard" element={<CoordinatorDashboardPage />} />
                 <Route path="/users" element={<UserListPage />} />
-                <Route path="/users/top" element={<TopUsersPage />} />
                 <Route path="/users/department-workloads" element={<DepartmentAppraisalWorkloadsPage />} />
 
                 {/* PROFILE */}
@@ -68,7 +67,7 @@ const AppRoutes = () => {
 
                 {/* DEPARTMENTS */}
                 <Route path="/centers" element={<CenterListPage />} />
-                <Route path="/centers/:parentId/departments" element={<DepartmentListPage />} />
+                <Route path="/centers/:parentId/departments" element={<CenterListPage />} />
 
                 {/* DOCUMENTS */}
                 <Route path="/documents" element={<DocumentListPage />} />
@@ -92,6 +91,7 @@ const AppRoutes = () => {
                 <Route path="/appraisals/reviewer-assignments/:assignmentId/staff" element={<StaffAssignmentListPage />} />
                 <Route path="/appraisals/department/:departmentId/assignment/:assignmentId/staff" element={<CreateStaffAssignmentPage />} />
                 <Route path="/appraisals/feedback/:issueId" element={<FeedbackDetailPage />} />
+                <Route path="/appraisals/assignment/create/coordinator/:versionId?" element={<CreateCoordinatorAssignmentPage />} />
 
                 {/* SIGNATURES */}
                 <Route path="/signatures" element={<SigningDashboardPage />} />

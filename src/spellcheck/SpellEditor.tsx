@@ -35,7 +35,6 @@ export default function SpellEditor({
                     setSpellCheckReady(true);
                     setSpellCheckStatus("ready");
                     setSpellCheckError(null);
-                    console.log("Spell checker is ready");
                 }
             } catch (error: any) {
                 const message = error?.message || String(error);
@@ -60,7 +59,7 @@ export default function SpellEditor({
             return;
         }
 
-        const words = value.match(/\p{L}+/gu) ?? [];
+        const words = [...new Set(value.match(/\p{L}+/gu) ?? [])];
 
         const wrongWords = words
             .filter(word => !checkWord(word))
@@ -74,21 +73,27 @@ export default function SpellEditor({
 
     const editor = useEditor({
         extensions: [StarterKit],
-
         content: value,
-
         editorProps: {
             attributes: {
-                spellcheck: "false"
+                spellcheck: "false",
+                class: "focus:outline-none min-h-[200px] p-4 text-gray-200"
             }
         },
-
         onUpdate: ({ editor }) => {
             const text = editor.getText();
-            console.log("SpellEditor onUpdate", { spellCheckStatus, text });
             onChange(text);
         }
     });
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const currentText = editor.getText();
+        if (value.trim() !== currentText.trim()) {
+            editor.commands.setContent(value, { emitUpdate: false });
+        }
+    }, [value, editor]);
 
     return (
         <div className="space-y-3">
@@ -106,11 +111,8 @@ export default function SpellEditor({
                 </div>
             )}
 
-            <div className="border border-dark-700 rounded-lg">
-                <EditorContent
-                    editor={editor}
-                    className="min-h-[120px] p-3"
-                />
+            <div className="border border-neutral-800 bg-dark-950/40 rounded-lg overflow-hidden focus-within:border-neutral-700 transition-colors">
+                <EditorContent editor={editor} />
             </div>
 
             {invalidWords.length > 0 && (

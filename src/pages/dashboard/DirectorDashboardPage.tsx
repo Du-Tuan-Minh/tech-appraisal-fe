@@ -154,7 +154,6 @@ const DirectorDashboardPage = () => {
                 {summary && summary.overdueSigningCount > 0 && (
                     <div className="flex items-center justify-between p-4 bg-red-950/20 border border-red-900/40 rounded-xl gap-4">
                         <div className="flex items-center gap-3 min-w-0">
-                            <span className="text-xl flex-shrink-0 animate-pulse">🚨</span>
                             <div className="min-w-0">
                                 <h4 className="text-sm font-bold text-red-400">Cảnh báo điểm nghẽn hệ thống</h4>
                                 <p className="text-gray-400 text-xs mt-0.5 truncate">

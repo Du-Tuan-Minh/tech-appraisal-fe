@@ -13,23 +13,24 @@ import type { DepartmentResponseDto } from "../../types/department";
 import type { UserResponseDto } from "@/types/user";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/constants/enum/UserRole";
-import { getSeniorCenter, getUsers } from "@/services/userService";
+import { getSeniorCenter } from "@/services/userService";
 
 const CreateManagerAssignmentPage = () => {
     const navigate = useNavigate();
     const { versionId } = useParams<{ versionId: string }>();
     const [searchParams] = useSearchParams();
 
-    const { role, isCoordinator } = useAuth();
-    const [seniors, setSeniors] = useState<UserResponseDto[]>([]);
-    const [selectedSeniors, setSelectedSeniors] = useState<string[]>([]);
+    const { role } = useAuth();
     const isInstituteDirector = role === UserRole.InstituteDirector;
     const isDeputyInstituteDirector = role === UserRole.DeputyInstituteDirector;
-    const isShowSeniorList = isInstituteDirector || isCoordinator;
+
+    const [seniors, setSeniors] = useState<UserResponseDto[]>([]);
+    const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
+
+    const [selectedSeniors, setSelectedSeniors] = useState<string[]>([]);
+    const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [departments, setDepartments] = useState<DepartmentResponseDto[]>([]);
-    const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [deadline, setDeadline] = useState("");
     const [globalComment, setGlobalComment] = useState("");
@@ -43,64 +44,75 @@ const CreateManagerAssignmentPage = () => {
     }), [searchParams]);
 
     useEffect(() => {
-        if (isShowSeniorList || isInstituteDirector) return;
+        setSelectedSeniors([]);
+        setSelectedDepartments([]);
+    }, [searchTerm]);
 
+    useEffect(() => {
+        if (isInstituteDirector || isDeputyInstituteDirector) return;
+
+        let isMounted = true; // Chống Memory Leak
         const fetchDepartments = async () => {
             try {
                 const res = await departmentService.getDepartments(
-                    1, 100, searchTerm, context.parentId || undefined
+                    1,
+                    100,
+                    searchTerm,
+                    context.parentId || undefined
                 );
-                setDepartments(res.items);
+                if (isMounted) setDepartments(res.items);
             } catch (err) {
                 toast.error("Không thể tải danh sách đơn vị thực hiện.");
             }
         };
 
         const debounceTimer = setTimeout(fetchDepartments, 300);
-        return () => clearTimeout(debounceTimer);
-    }, [searchTerm, context.parentId, isShowSeniorList, isInstituteDirector]);
+        return () => {
+            isMounted = false;
+            clearTimeout(debounceTimer);
+        };
+    }, [searchTerm, context.parentId, isInstituteDirector, isDeputyInstituteDirector]);
 
     useEffect(() => {
-        if (!isShowSeniorList) return;
+        if (!isInstituteDirector) return;
 
+        let isMounted = true;
         const fetchSeniors = async () => {
             try {
-                if (isCoordinator) {
-                    const res = await getUsers({
-                        page: 1,
-                        pageSize: 100,
-                        searchTerm: searchTerm || null,
-                        isActive: true
-                    });
-                    setSeniors(res.items);
-                } else {
-                    const res = await getSeniorCenter(1, 100, searchTerm);
-                    setSeniors(res.items);
-                }
+                const res = await getSeniorCenter(1, 100, searchTerm);
+                if (isMounted) setSeniors(res.items);
             } catch (err) {
                 toast.error("Không thể tải danh sách cán bộ.");
             }
         };
 
         const debounceTimer = setTimeout(fetchSeniors, 300);
-        return () => clearTimeout(debounceTimer);
-    }, [searchTerm, isShowSeniorList, isCoordinator]);
+        return () => {
+            isMounted = false;
+            clearTimeout(debounceTimer);
+        };
+    }, [searchTerm, isInstituteDirector]);
 
     const handleSubmit = async () => {
         if (!versionId) return toast.error("Thiếu thông tin tài liệu.");
+
         const hasSelection = isDeputyInstituteDirector
             ? true
-            : (isShowSeniorList ? selectedSeniors.length > 0 : selectedDepartments.length > 0);
-        if (!hasSelection) return toast.error(isShowSeniorList ? "Vui lòng chọn ít nhất 1 cán bộ." : "Vui lòng chọn ít nhất 1 phòng ban.");
+            : (isInstituteDirector ? selectedSeniors.length > 0 : selectedDepartments.length > 0);
+
+        if (!hasSelection) {
+            return toast.error(isInstituteDirector ? "Vui lòng chọn ít nhất 1 cán bộ." : "Vui lòng chọn ít nhất 1 phòng ban.");
+        }
         if (!deadline) return toast.error("Vui lòng chọn hạn chót thẩm định.");
 
         const utcDeadline = new Date(deadline).toISOString();
-
         setIsSubmitting(true);
+
         try {
             const targetIds = isDeputyInstituteDirector
                 ? []
-                : (isShowSeniorList ? selectedSeniors : selectedDepartments);
+                : (isInstituteDirector ? selectedSeniors : selectedDepartments);
+
             await appraisalService.createParallelAssignments({
                 documentId: context.documentId,
                 requestVersionId: versionId,
@@ -159,19 +171,18 @@ const CreateManagerAssignmentPage = () => {
                                         {context.parentId ? "Danh sách Phòng Ban trực thuộc" : "Danh sách Trung tâm"}
                                     </label>
                                     <span className="text-xs text-gray-500">
-                                        Đã chọn: {isShowSeniorList ? selectedSeniors.length : selectedDepartments.length}
+                                        Đã chọn: {isInstituteDirector ? selectedSeniors.length : selectedDepartments.length}
                                     </span>
                                 </div>
 
                                 <Input
-                                    placeholder={isShowSeniorList ? "Tìm kiếm cán bộ..." : "Tên phòng ban..."}
+                                    placeholder={isInstituteDirector ? "Tìm kiếm cán bộ..." : "Tên phòng ban..."}
                                     value={searchTerm}
                                     onChange={setSearchTerm}
                                 />
 
                                 <div className="max-h-64 overflow-y-auto border border-dark-700 rounded-xl p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-dark-950/50 shadow-inner">
-                                    {isShowSeniorList ? (
-                                        // HIỂN THỊ DANH SÁCH USER (SENIORS)
+                                    {isInstituteDirector ? (
                                         seniors.length > 0 ? seniors.map(user => {
                                             const isChecked = selectedSeniors.includes(user.id);
                                             return (

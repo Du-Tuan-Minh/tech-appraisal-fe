@@ -21,7 +21,7 @@ export const USER_ROLE_MAP: Record<UserRole, { label: string; color: string }> =
         color: "text-blue-400 bg-blue-900/20"
     },
     [UserRole.Manager]: {
-        label: "Lãnh đạo cấp phòng",
+        label: "Quản lý",
         color: "text-indigo-400 bg-indigo-900/20"
     },
     [UserRole.Director]: {
